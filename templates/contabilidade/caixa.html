@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cash-register"></i> Livro Caixa
+                    </h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Livro Caixa</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-table"></i> Entradas no Livro Caixa
+                    </h5>
+                    <a href="{% url 'adicionar_livro_caixa' %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus"></i> Adicionar Entrada
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th>Tipo</th>
+                                    <th>Valor (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entrada in entradas_caixa %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ entrada.data }}</td>
+                                    <td>{{ entrada.descricao }}</td>
+                                    <td>
+                                        <span class="badge {% if entrada.tipo == 'Receita' %}badge-success{% else %}badge-danger{% endif %}">
+                                            {{ entrada.tipo }}
+                                        </span>
+                                    </td>
+                                    <td>{{ entrada.valor|floatformat:2 }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Nenhuma entrada no Livro Caixa.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

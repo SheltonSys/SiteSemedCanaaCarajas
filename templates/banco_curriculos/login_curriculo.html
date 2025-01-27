@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-box">
+    <h2>Login Currículo</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" name="email" id="email" required>
+        </div>
+        <div>
+            <label for="password">Senha:</label>
+            <input type="password" name="password" id="password" required>
+        </div>
+        <button type="submit">Entrar</button>
+    </form>
+</div>
+{% endblock %}

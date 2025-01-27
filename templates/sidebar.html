@@ -1,0 +1,1001 @@
+{% load static %}
+
+
+<aside class="main-sidebar sidebar-light-primary elevation-4">
+
+    <!-- Logo -->
+    <a href="#" class="brand-link">
+        <img src="{% static 'assets/dist/img/logo prefeitura brasão.png' %}" alt="Logo"
+            class="brand-image img-circle elevation-3">
+        <span class="brand-text font-weight-bold text-white">SemedSIEDGE</span>
+
+    </a>
+    <!-- User Info -->
+    <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+        <div class="image">
+            <img src="{% static 'assets/dist/img/banner-atividades.jpg' %}" class="img-circle elevation-2"
+                alt="User Image">
+        </div>
+        <div class="info">
+            <a href="#" class="d-block">{{ user.first_name }} {{ user.last_name }}</a>
+            <small class="d-block text-muted">{{ user.email }}</small>
+        </div>
+    </div>
+    <!-- Sidebar Menu -->
+    <div class="sidebar">
+        <nav class="mt-2">
+            <ul class="nav nav-pills nav-sidebar flex-column" role="menu" data-accordion="false" id="sidebar-menu">
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a href="{% url 'dashboardadmin' %}" class="nav-link" data-id="dashboard">
+                        <i class="nav-icon fas fa-tachometer-alt"></i>
+                        <p>Dashboard</p>
+                    </a>
+                </li>
+
+                <!-- Configuração Administrador -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'config-menu')" data-id="configuracao">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>
+                            Configuração
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview submenu" id="config-menu" style="display: none;">
+                        <!-- Definir Permissões -->
+                        <li class="nav-item">
+                            <a href="{% url 'definir_permissoes' %}" class="nav-link" data-id="permissao">
+                                <i class="fas fa-user-shield nav-icon"></i>
+                                <p>Definir Permissões</p>
+                            </a>
+                        </li>
+
+                        <!-- Vinculações -->
+                        <li class="nav-item">
+                            <a href="{% url 'vinculacoes' %}" class="nav-link" data-id="vinculacao">
+                                <i class="fas fa-link nav-icon"></i>
+                                <p>Vinculações</p>
+                            </a>
+                        </li>
+
+                        <!-- Controle de Usuários -->
+                        <li class="nav-item">
+                            <a href="{% url 'controle_usuarios' %}" class="nav-link" data-id="usuario">
+                                <i class="fas fa-users-cog nav-icon"></i>
+                                <p>Usuários</p>
+                            </a>
+                        </li>
+
+                        <!-- Gerenciamento de Permissões -->
+                        <li class="nav-item">
+                            <a href="{% url 'gerenciar_permissoes' %}" class="nav-link" data-id="gpermissao">
+                                <i class="fas fa-key nav-icon"></i>
+                                <p>Permissões</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+
+                <!-- Cadastro de demandas -->
+                <!-- Cadastro de Demandas -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'config-demandas')" data-id="demandas">
+                        <i class="nav-icon fas fa-cogs"></i>
+                        <p>
+                            Cadastro Demanda
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview submenu" id="config-demandas" style="display: none;">
+                        <!-- Cadastro Tipo Demandas -->
+                        <li class="nav-item">
+                            <a href="{% url 'tipo_demandas' %}" class="nav-link" data-id="tipoDemandas">
+                                <i class="fas fa-user-shield nav-icon"></i>
+                                <p>Tipo Demandas</p>
+                            </a>
+                        </li>
+
+                        <!-- Cadastro Demandas -->
+                        <li class="nav-item">
+                            <a href="{% url 'cadastro_demandas' %}" class="nav-link" data-id="cadastroDemandas">
+                                <i class="fas fa-link nav-icon"></i>
+                                <p>Cadastro Demandas</p>
+                            </a>
+                        </li>
+
+                        <!-- Gestão de Demandas -->
+                        <li class="nav-item">
+                            <a href="{% url 'gestao_demandas' %}" class="nav-link" data-id="gestaoDemandas">
+                                <i class="fas fa-users-cog nav-icon"></i>
+                                <p>Gestão Demandas</p>
+                            </a>
+                        </li>
+
+                        <!-- Relatórios de Demanda -->
+                        <li class="nav-item">
+                            <a href="{% url 'relatorios_demandas' %}" class="nav-link" data-id="relatoriosDemandas">
+                                <i class="fas fa-key nav-icon"></i>
+                                <p>Relatórios</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+
+
+
+
+                <!-- Indicadores -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'indicadores-menu')" data-id="indicador">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        <p>
+                            Indicadores
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview submenu" id="indicadores-menu" style="display: none;">
+                        <li
+                            class="nav-item {% if request.resolver_match.url_name == 'transporte_escolar' %}active{% endif %}">
+                            <a href="{% url 'transporte_escolar' %}" class="nav-link" data-id="etransporte">
+                                <i class="fas fa-bus nav-icon"></i>
+                                <p>Dados Escolares</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{% url 'upload_arquivos' %}" class="nav-link" data-id="uarquivo">
+                                <i class="fas fa-upload nav-icon"></i>
+                                <p>Upload de Arquivos</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'gestao_dados' %}" class="nav-link" data-id="gdados">
+                                <i class="fas fa-database nav-icon"></i>
+                                <p>Gestão de Dados</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Pedagógico -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'pedagogico-submenu')"
+                        data-id="pedagogico">
+                        <i class="nav-icon fas fa-book-open"></i>
+                        <p>
+                            Pedagógico
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview submenu" id="pedagogico-submenu" style="display: none;">
+                        <!-- Setor Pedagógico -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'setor-pedagogico-submenu')"
+                                data-id="spedagogico">
+                                <i class="fas fa-clipboard nav-icon"></i>
+                                <p>
+                                    Setor Pedagógico
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview submenu" id="setor-pedagogico-submenu" style="display: none;">
+
+                                <li class="nav-item">
+                                    <a href="{% url 'site_pedagogico' %}" class="nav-link"
+                                        data-id="site_setor_pedagogico" target="_blank">
+                                        <i class="fas fa-chalkboard-teacher nav-icon"></i>
+                                        <p>Site Pedagógico</p>
+                                    </a>
+                                </li>
+
+
+                                <li class="nav-item">
+                                    <a href="{% url 'adm_site_pedagogico' %}" class="nav-link" data-id="adm-pedagogico">
+                                        <i class="fas fa-user-cog nav-icon"></i>
+                                        <p>ADM Site</p>
+                                    </a>
+                                </li>
+
+
+
+
+                                <li class="nav-item">
+                                    <a href="{% url 'gestao_habilidades' %}" class="nav-link" data-id="ghabilidade">
+                                        <i class="fas fa-book nav-icon"></i>
+                                        <p>Gestão de Habilidades</p>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a href="{% url 'indicadores_setor_pedagogico' %}" class="nav-link"
+                                        data-id="pindicadores">
+                                        <i class="fas fa-chart-line nav-icon"></i>
+                                        <p>Indicadores</p>
+                                    </a>
+                                </li>
+
+
+                                <li class="nav-item">
+                                    <a href="{% url 'relatorios_pedagogicos' %}" class="nav-link" data-id="rpedagogico">
+                                        <i class="fas fa-file-alt nav-icon"></i>
+                                        <p>Relatórios</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+
+                        <!-- Diagnosis -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'diagnosis-submenu')"
+                                data-id="pdiagnosis">
+                                <i class="fas fa-clipboard nav-icon"></i>
+                                <p>
+                                    Diagnosis
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview submenu" id="diagnosis-submenu" style="display: none;">
+
+                                <!-- SAMACC -->
+                                <li class="nav-item">
+                                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'samacc-submenu')"
+                                        data-id="samacc">
+                                        <i class="fas fa-clipboard-list nav-icon"></i>
+                                        <p>
+                                            SAMACC
+                                            <span class="right">
+                                                <i class="fas fa-angle-left"></i>
+                                            </span>
+                                        </p>
+                                    </a>
+
+                                    <ul class="nav nav-treeview submenu" id="samacc-submenu" style="display: none;">
+
+                                        <!-- Prof -->
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'prof-submenu')"
+                                                data-id="sprof">
+                                                <i class="fas fa-user-graduate nav-icon"></i>
+                                                <p>
+                                                    Prof
+                                                    <span class="right">
+                                                        <i class="fas fa-angle-left"></i>
+                                                    </span>
+                                                </p>
+                                            </a>
+
+                                            <ul class="nav nav-treeview submenu" id="prof-submenu"
+                                                style="display: none;">
+                                                <li class="nav-item">
+                                                    <a href="{% url 'diagnosis_prof_portugues' %}" class="nav-link"
+                                                        data-id="pportugues">
+                                                        <i class="fas fa-book nav-icon"></i>
+                                                        <p>Português</p>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="{% url 'diagnosis_prof_portugues_finais' %}"
+                                                        class="nav-link" data-id="ppportugues">
+                                                        <i class="fas fa-book nav-icon"></i>
+                                                        <p>Português Finais</p>
+                                                    </a>
+                                                </li>
+
+
+
+                                                <li class="nav-item">
+                                                    <a href="{% url 'diagnosis_prof_matematica' %}" class="nav-link"
+                                                        data-id="pmatematica">
+                                                        <i class="fas fa-calculator nav-icon"></i>
+                                                        <p>Matemática</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+
+                                        <!-- Aluno -->
+                                        <li class="nav-item">
+                                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'aluno-submenu')"
+                                                data-id="aluno">
+                                                <i class="fas fa-user nav-icon"></i>
+                                                <p>
+                                                    Aluno
+                                                    <i class="right fas fa-angle-left"></i>
+                                                </p>
+                                            </a>
+                                            <ul class="nav nav-treeview submenu" id="aluno-submenu"
+                                                style="display: none;">
+                                                <li class="nav-item">
+                                                    <a href="{% url 'diagnosis_aluno_portugues' %}" class="nav-link"
+                                                        data-id="aportugues">
+                                                        <i class="fas fa-book nav-icon"></i>
+                                                        <p>Português</p>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="{% url 'diagnosis_aluno_matematica' %}" class="nav-link"
+                                                        data-id="amatematica">
+                                                        <i class="fas fa-calculator nav-icon"></i>
+                                                        <p>Matemática</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+
+                                            <!-- Habilidades -->
+                                        <li class="nav-item has-treeview">
+                                            <a href="#" class="nav-link"
+                                                onclick="toggleSubmenu(event, 'habilidades-menu')">
+                                                <i class="nav-icon fas fa-brain"></i>
+                                                <p>
+                                                    Habilidades
+                                                    <i class="right fas fa-angle-left"></i>
+                                                </p>
+                                            </a>
+                                            <ul class="nav nav-treeview submenu" id="habilidades-menu"
+                                                style="display: none;">
+                                                <li class="nav-item">
+                                                    <a href="{% url 'habilidades_portugues_view' %}" class="nav-link">
+                                                        <i class="fas fa-book-open nav-icon"></i>
+                                                        <p>Português 5º e 9º</p>
+                                                    </a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a href="{% url 'habilidades_matematica_view' %}" class="nav-link">
+                                                        <i class="fas fa-calculator nav-icon"></i>
+                                                        <p>Matemática 5º e 9º</p>
+                                                    </a>
+                                                </li>
+
+                                                <li class="nav-item">
+                                                    <a href="{% url 'habilidades_pesquisa' %}" class="nav-link">
+                                                        <i class="fas fa-calculator nav-icon"></i>
+                                                        <p>Pesquisa</p>
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </li>
+
+
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- EJA -->
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'eja-submenu')" data-id="eja">
+                                <i class="fas fa-school nav-icon"></i>
+                                <p>
+                                    EJA
+                                    <i class="right fas fa-angle-left"></i>
+                                </p>
+                            </a>
+                            <ul class="nav nav-treeview submenu" id="eja-submenu" style="display: none;">
+                                <li class="nav-item">
+                                    <a href="{% url 'diagnosis_eja_site' %}" class="nav-link" data-id="ejasite"
+                                        target="_blank">
+                                        <i class="fas fa-globe nav-icon"></i>
+                                        <p>Site</p>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a href="{% url 'diagnosis_eja_adm' %}" class="nav-link" data-id="ejaadm">
+                                        <i class="fas fa-user-cog nav-icon"></i>
+                                        <p>Adm</p>
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+
+                        <!-- EMCCEJA -->
+                        <li class="nav-item">
+                            <a href="{% url 'diagnosis_emcceja' %}" class="nav-link" data-id="encceja">
+                                <i class="fas fa-university nav-icon"></i>
+                                <p>EMCCEJA</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Orientação Educacional -->
+                <li class="nav-item">
+                    <a href="{% url 'orientacao_educacional' %}" class="nav-link" data-id="oeducacional">
+                        <i class="fas fa-chalkboard-teacher nav-icon"></i>
+                        <p>S.O.E</p>
+                    </a>
+                </li>
+                <!-- Legislação -->
+                <li class="nav-item">
+                    <a href="{% url 'legislacao' %}" class="nav-link" data-id="legislacao">
+                        <i class="fas fa-gavel nav-icon"></i>
+                        <p>Legislação</p>
+                    </a>
+                </li>
+            </ul>
+            </li>
+
+            <!-- SEPPEC -->
+            <li class="nav-item">
+                <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'contabilidade-menu')" data-id="seppec">
+                    <i class="nav-icon fas fa-calculator"></i>
+                    <p>
+                        SEPPEC
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview submenu" id="contabilidade-menu" style="display: none;">
+                    <li class="nav-item">
+                        <a href="{% url 'dashboard' %}" class="nav-link" data-id="seppecpainel">
+                            <i class="fas fa-school nav-icon"></i>
+                            <p>Painel ADM</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'escolas' %}" class="nav-link" data-id="sepeccescolas">
+                            <i class="fas fa-school nav-icon"></i>
+                            <p>Escolas</p>
+                        </a>
+                    </li>
+                    <li class="nav-item has-treeview">
+                        <a href="#" class="nav-link" data-id="movimentacao"
+                            onclick="toggleDropdown(event, 'movimentacao')">
+                            <i class="fas fa-users nav-icon"></i>
+                            <p>
+                                Movimentação
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview" id="movimentacao" style="display: none;">
+                            <li class="nav-item">
+                                <a href="{% url 'contabilidade_pdde' %}" class="nav-link" data-id="pdde">
+                                    <i class="fas fa-hand-holding-usd nav-icon"></i>
+                                    <p>PDDE</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'conselho_diretoria' %}" class="nav-link" data-id="pddediretoria">
+                                    <i class="fas fa-users nav-icon"></i>
+                                    <p>Diretoria</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'conselho_membros' %}" class="nav-link" data-id="pddemembros">
+                                    <i class="fas fa-user-friends nav-icon"></i>
+                                    <p>Membros</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'adicionar_livro_caixa' %}" class="nav-link" data-id="pddecaixa">
+                                    <i class="fas fa-cash-register nav-icon"></i>
+                                    <p>Caixa</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'listar_livro_caixa' %}" class="nav-link" data-id="pdderel">
+                                    <i class="fas fa-file-alt nav-icon"></i>
+                                    <p>Relatórios PDDE</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'download_manual' 'pdde_manual.pdf' %}" class="nav-link">
+                                    <i class="fas fa-book nav-icon"></i>
+                                    <p>Baixar Manual PDDE</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'contas' %}" class="nav-link" data-id="pmatematica"
+                                    data-id="pdeecontas">
+                                    <i class="fas fa-wallet nav-icon"></i>
+                                    <p>Contas</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'emissao_certidoes' %}" class="nav-link" data-id="pddecertidoes">
+                                    <i class="fas fa-file-alt nav-icon"></i>
+                                    <p>Emissão Certidões</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+
+            <!-- Banco de Currículos -->
+            <!-- <li class="nav-item">
+                <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'banco-curriculos-menu')"
+                    data-id="bcurriculo">
+                    <i class="nav-icon fas fa-briefcase"></i>
+                    <p>
+                        Banco de Currículos
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview submenu" id="banco-curriculos-menu" style="display: none;"> -->
+                    <!-- Site -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'site_curriculos' %}" class="nav-link" data-id="curriculosite" target="_blank">
+                            <i class="fas fa-globe nav-icon"></i>
+                            <p>Site</p>
+                        </a>
+                    </li> -->
+
+                    <!-- Cadastro de Currículo -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'cadastro_curriculo' %}" class="nav-link" data-id="cadcurriculo">
+                            <i class="fas fa-file-alt nav-icon"></i>
+                            <p>Cadastros</p>
+                        </a>
+                    </li> -->
+                    <!-- Gestão de Currículo -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'gestao_curriculo' %}" class="nav-link" data-id="gcurriculo">
+                            <i class="fas fa-tasks nav-icon"></i>
+                            <p>Gestão ADM</p>
+                        </a>
+                    </li> -->
+
+                    <!-- Listar Professores -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'listar_professores' %}" class="nav-link" data-id="listarProfessores">
+                            <i class="fas fa-list nav-icon"></i>
+                            <p>Gestão ADM</p>
+                        </a>
+                    </li> -->
+                    <!-- Cadastrar Professor -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'cadastrar_professor' %}" class="nav-link" data-id="cadastrarProfessor">
+                            <i class="fas fa-user-plus nav-icon"></i>
+                            <p>Cadastrar Currículo</p>
+                        </a>
+                    </li>
+
+
+                </ul>
+            </li> -->
+
+
+
+            <!-- Cadastro de Diretor -->
+            <li class="nav-item">
+                <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'diretor-menu')" data-id="bdiretor">
+                    <i class="nav-icon fas fa-briefcase"></i>
+                    <p>
+                        Banco de Currículos
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview submenu" id="diretor-menu" style="display: none;">
+                    <!-- Site -->
+                    <li class="nav-item">
+                        <a href="{% url 'site_curriculos' %}" class="nav-link" data-id="curriculosite" target="_blank">
+                            <i class="fas fa-globe nav-icon"></i>
+                            <p>Site</p>
+                        </a>
+                    </li>
+                    <!-- Cadastro de Currículo -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'cadastro_curriculo' %}" class="nav-link" data-id="cadcurriculo">
+                            <i class="fas fa-file-alt nav-icon"></i>
+                            <p>Cadastros</p>
+                        </a>
+                    </li> -->
+                    <!-- Gestão de Currículo -->
+                    <!-- <li class="nav-item">
+                        <a href="{% url 'gestao_curriculo' %}" class="nav-link" data-id="gcurriculo">
+                            <i class="fas fa-tasks nav-icon"></i>
+                            <p>Gestão ADM</p>
+                        </a>
+                    </li> -->
+
+                    <!-- Listar Diretor -->
+                    <li class="nav-item">
+                        <a href="{% url 'listar_diretores' %}" class="nav-link" data-id="listarDiretor">
+                            <i class="fas fa-list nav-icon"></i>
+                            <p>Gestão Currículo</p>
+                        </a>
+                    </li>
+                    <!-- Cadastrar Diretor -->
+                    <li class="nav-item">
+                        <a href="{% url 'cadastrar_diretor' %}" class="nav-link" data-id="cadastrarDiretor" target="_blank">
+                            <i class="fas fa-user-plus nav-icon"></i>
+                            <p>Cadastrar Currículo</p>
+                        </a>
+                    </li>
+
+
+
+                </ul>
+            </li>
+
+
+
+            <!-- Professor -->
+            <!-- <li class="nav-item">
+                <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'professor-submenu')" data-id="professor">
+                    <i class="fas fa-user-graduate nav-icon"></i>
+                    <p>
+                        Professores
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview submenu" id="professor-submenu" style="display: none;"> -->
+            <!-- Listar Professores -->
+            <!-- <li class="nav-item">
+                        <a href="{% url 'listar_professores' %}" class="nav-link" data-id="listarProfessores">
+                            <i class="fas fa-list nav-icon"></i>
+                            <p>Listar Professores</p>
+                        </a>
+                    </li> -->
+            <!-- Cadastrar Professor -->
+            <!-- <li class="nav-item">
+                        <a href="{% url 'cadastrar_professor' %}" class="nav-link" data-id="cadastrarProfessor">
+                            <i class="fas fa-user-plus nav-icon"></i>
+                            <p>Cadastrar Professor</p>
+                        </a>
+                    </li> -->
+            <!-- Relatórios de Professores -->
+            <!-- <li class="nav-item">
+                        <a href="{% url 'relatorios_professores' %}" class="nav-link" data-id="relatoriosProfessores">
+                            <i class="fas fa-file-alt nav-icon"></i>
+                            <p>Relatórios</p>
+                        </a>
+                    </li>
+                </ul>
+            </li> -->
+
+
+
+            <!-- Site Semed -->
+            <li class="nav-item">
+                <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'site-semed-menu')" data-id="ssemed">
+                    <i class="fas fa-globe nav-icon"></i>
+                    <p>
+                        Site Semed
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview submenu" id="site-semed-menu" style="display: none;">
+                    <!-- Página Principal -->
+                    <li class="nav-item">
+                        <a href="{% url 'site_semed' %}" class="nav-link" data-id="pprincipal" target="_blank">
+                            <i class="fas fa-globe nav-icon"></i>
+                            <p>Página Principal</p>
+                        </a>
+                    </li>
+
+                    <!-- Cadastro de Imagens -->
+                    <li class="nav-item">
+                        <a href="{% url 'cadastro_imagens' %}" class="nav-link" data-id="cadimg">
+                            <i class="fas fa-images nav-icon"></i>
+                            <p>Imagens</p>
+                        </a>
+                    </li>
+
+                    <!-- Cadastro de Conteúdo -->
+                    <li class="nav-item">
+                        <a href="{% url 'cadastro_conteudo' %}" class="nav-link" data-id="cadcont">
+                            <i class="fas fa-pencil-alt nav-icon"></i>
+                            <p>Conteúdo</p>
+                        </a>
+                    </li>
+
+                    <!-- Gestão de Conteúdo -->
+                    <li class="nav-item">
+                        <a href="{% url 'gestao_conteudo' %}" class="nav-link" data-id="gcont">
+                            <i class="fas fa-tasks nav-icon"></i>
+                            <p>Gestão de Conteúdo</p>
+                        </a>
+                    </li>
+
+                    <!-- Gerenciamento de Notícias -->
+                    <li class="nav-item">
+                        <a href="{% url 'gestao_noticias' %}" class="nav-link" data-id="gnot">
+                            <i class="fas fa-newspaper nav-icon"></i>
+                            <p>Gestão de Notícias</p>
+                        </a>
+                    </li>
+
+                    <!-- Gerenciamento de Eventos -->
+                    <li class="nav-item">
+                        <a href="{% url 'gestao_eventos' %}" class="nav-link" data-id="gevent">
+                            <i class="fas fa-calendar-alt nav-icon"></i>
+                            <p>Gestão de Eventos</p>
+                        </a>
+                    </li>
+
+                    <!-- Configurações do Site -->
+                    <li class="nav-item">
+                        <a href="{% url 'configuracoes_site' %}" class="nav-link" data-id="configsite">
+                            <i class="fas fa-cogs nav-icon"></i>
+                            <p>Configurar Site</p>
+                        </a>
+                    </li>
+
+                    <!-- Estatísticas e Relatórios -->
+                    <li class="nav-item">
+                        <a href="{% url 'estatisticas_site' %}" class="nav-link" data-id="estrelat">
+                            <i class="fas fa-chart-pie nav-icon"></i>
+                            <p>Dados e Relatórios</p>
+                        </a>
+                    </li>
+
+                    <!-- Gestão de Usuários -->
+                    <li class="nav-item">
+                        <a href="{% url 'gestao_usuarios_site' %}" class="nav-link" data-id="gdusarios">
+                            <i class="fas fa-users nav-icon"></i>
+                            <p>Gestão de Usuários</p>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Footer com Tipo de Usuário -->
+    <div class="sidebar-footer">
+        <div class="d-flex flex-column align-items-center">
+            <small class="text-muted">Tipo de Usuário</small>
+            <span class="text-primary font-weight-bold">{{ user.username }}</span>
+        </div>
+    </div>
+
+
+
+</aside>
+
+<!-- Custom CSS -->
+<style>
+    .sidebar-footer {
+        background-color: #e9ecef;
+        /* Fundo claro */
+        padding: 10px;
+        border-top: 1px solid #dee2e6;
+        /* Linha separadora */
+        text-align: center;
+    }
+
+    .sidebar-footer .text-muted {
+        font-size: 0.9rem;
+    }
+
+    .sidebar-footer .text-primary {
+        font-size: 1rem;
+        font-weight: bold;
+    }
+
+
+    .main-sidebar {
+        background-color: #f8f9fa;
+        /* Fundo claro */
+        color: #343a40;
+        /* Texto escuro */
+        width: 255px;
+        transition: width 0.3s ease-in-out;
+        border-right: 2px solid #dee2e6;
+        /* Borda lateral */
+    }
+
+    .brand-link {
+        background-color: #007bff;
+        /* Fundo azul para o logo */
+        color: #ffffff;
+        /* Texto branco */
+        text-align: center;
+        font-weight: bold;
+        padding: 10px;
+        border-bottom: 3px solid #0056b3;
+    }
+
+    .brand-link:hover {
+        background-color: #0056b3;
+    }
+
+    .brand-image {
+        border-radius: 50%;
+        border: 2px solid #ffffff;
+        /* Destaque no logo */
+    }
+
+    .user-panel {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .user-panel .image img {
+        border: 2px solid #6c757d;
+    }
+
+    .user-panel .info a {
+        color: #343a40;
+        font-weight: bold;
+    }
+
+    .user-panel .info small {
+        color: #6c757d;
+    }
+
+    .nav-sidebar .nav-item>.nav-link {
+        color: #495057;
+        /* Texto padrão */
+        font-weight: 500;
+        border-left: 3px solid transparent;
+        /* Destaque lateral */
+    }
+
+    .nav-sidebar .nav-item>.nav-link:hover {
+        background-color: #e9ecef;
+        color: #007bff;
+        /* Texto azul */
+        border-left: 3px solid #007bff;
+    }
+
+    .nav-sidebar .nav-item>.nav-link.active {
+        background-color: #007bff;
+        color: #ffffff;
+        border-left: 3px solid #0056b3;
+    }
+
+    .nav-sidebar .nav-icon {
+        color: #6c757d;
+        /* Ícones padrão */
+    }
+
+    .nav-sidebar .nav-link:hover .nav-icon,
+    .nav-sidebar .nav-link.active .nav-icon {
+        color: #ffffff;
+    }
+
+    .nav-treeview .nav-link {
+        padding-left: 2rem;
+        color: #6c757d;
+        /* Texto para submenus */
+    }
+
+    .nav-treeview .nav-link:hover {
+        background-color: #f8f9fa;
+        color: #007bff;
+    }
+
+    .nav-treeview .nav-link.active {
+        background-color: #007bff;
+        color: #ffffff;
+    }
+
+    /* Rolagem estilizada */
+    .sidebar::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: #ced4da;
+        border-radius: 4px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover {
+        background-color: #adb5bd;
+    }
+
+    /* Ajuste para os ícones */
+    .nav-sidebar .nav-icon {
+        transition: color 0.3s ease;
+    }
+
+    /* Destaques individuais */
+    .nav-item.dashboard .nav-link {
+        background-color: #17a2b8;
+        /* Fundo azul claro */
+        color: #ffffff;
+    }
+
+    .nav-item.dashboard .nav-link:hover {
+        background-color: #138496;
+    }
+
+    .nav-item.dashboard .nav-icon {
+        color: #ffffff;
+    }
+
+    .nav-item.configuracao .nav-link {
+        background-color: #ffc107;
+        /* Fundo amarelo */
+        color: #343a40;
+    }
+
+    .nav-item.configuracao .nav-link:hover {
+        background-color: #e0a800;
+    }
+
+    .nav-item.configuracao .nav-icon {
+        color: #343a40;
+    }
+
+    /* Destaques para outros menus */
+    .nav-item.indicador .nav-link {
+        background-color: #28a745;
+        /* Verde */
+        color: #ffffff;
+    }
+
+    .nav-item.indicador .nav-link:hover {
+        background-color: #218838;
+    }
+
+    .nav-item.indicador .nav-icon {
+        color: #ffffff;
+    }
+
+    /* Customizações de fontes */
+    .nav-sidebar .nav-header {
+        color: #6c757d;
+        font-size: 0.9rem;
+        font-weight: bold;
+    }
+</style>
+
+
+
+
+<script>
+    function toggleDropdown(event, id) {
+        event.preventDefault();
+        const dropdown = document.getElementById(id);
+        if (dropdown.style.display === "none" || dropdown.style.display === "") {
+            dropdown.style.display = "block";
+        } else {
+            dropdown.style.display = "none";
+        }
+    }
+</script>
+
+<script>
+    $(document).ready(function () {
+        $('.nav-item.has-treeview > a').on('click', function (e) {
+            e.preventDefault();
+            const $parent = $(this).parent();
+            $parent.toggleClass('menu-open');
+            $parent.find('.nav-treeview').slideToggle();
+        });
+    });
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const sidebarMenu = document.getElementById("sidebar-menu");
+
+        // Recupera o item selecionado anteriormente
+        const activeItem = localStorage.getItem("activeSidebarItem");
+        if (activeItem) {
+            const item = sidebarMenu.querySelector(`[data-id="${activeItem}"]`);
+            if (item) {
+                item.classList.add("active");
+                const parentTreeview = item.closest(".nav-treeview");
+                if (parentTreeview) {
+                    parentTreeview.style.display = "block";
+                    parentTreeview.parentElement.classList.add("menu-open");
+                }
+            }
+        }
+
+        // Adiciona o evento de clique para salvar a seleção
+        sidebarMenu.querySelectorAll(".nav-link").forEach(link => {
+            link.addEventListener("click", function () {
+                localStorage.setItem("activeSidebarItem", this.getAttribute("data-id"));
+            });
+        });
+    });
+</script>
+
+<script>
+    function toggleSubmenu(event, submenuId) {
+        event.preventDefault(); // Evita o comportamento padrão do link
+        const submenu = document.getElementById(submenuId);
+        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+    }
+</script>

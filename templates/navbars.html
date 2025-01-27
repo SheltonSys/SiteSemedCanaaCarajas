@@ -1,0 +1,57 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <!-- Logo -->
+        <a class="navbar-brand" href="#">
+            <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED" height="40">
+        </a>
+
+        <!-- Botão de Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPublic" aria-controls="navbarPublic" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Menu -->
+        <div class="collapse navbar-collapse" id="navbarPublic">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" href="{% url 'index' %}">Início</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownPublic" role="button" data-bs-toggle="dropdown" aria-expanded="false">Institucional</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownPublic">
+                        <li><a class="dropdown-item" href="{% url 'apresentacao' %}">Sobre a Semed</a></li>
+                        <li><a class="dropdown-item" href="{% url 'organograma' %}">Organograma</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarConhecaRede" role="button" data-bs-toggle="dropdown" aria-expanded="false">Conheça a Rede</a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarConhecaRede">
+                        <li><a class="dropdown-item" href="{% url 'escola' %}">Escolas</a></li>
+                        <li><a class="dropdown-item" href="{% url 'centro_viver_conviver' %}">Centro Viver e Conviver</a></li>
+                        <li><a class="dropdown-item" href="{% url 'centro_formacao' %}">Centro de Formação</a></li>
+                        <li><a class="dropdown-item" href="{% url 'diretoria_ensino_superior' %}">Diretoria de Ensino Superior</a></li>
+                        <li><a class="dropdown-item" href="{% url 'centro_midias_educacionais' %}">Centro de Mídias Educacionais</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Eventos</a></li>
+                <li class="nav-item"><a class="nav-link" href="#services">Serviços</a></li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarSocial" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Participação Social
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarSocial">
+                        <li><a class="dropdown-item" href="{% url 'conselho_municipal_educacao' %}">Conselho Municipal de Educação</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cacs_fundeb' %}">CACS-FUNDEB</a></li>
+                        <li><a class="dropdown-item" href="{% url 'conselho_alimentacao_escolar' %}">Conselho de Alimentação Escolar</a></li>
+                        <li><a class="dropdown-item" href="{% url 'forum_municipal_educacao' %}">Fórum Municipal de Educação</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item"><a class="nav-link" href="#transparencia">Transparência</a></li>
+                <li class="nav-item"><a class="nav-link" href="#contact">Fale Conosco</a></li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">ADM</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>

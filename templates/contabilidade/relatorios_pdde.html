@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="card shadow-lg border-0 mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title font-weight-bold">
+                    <i class="fas fa-chart-line"></i> Relatórios PDDE - Área de Filtros
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" id="filtersForm">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="tipo_relatorio">Tipo de Relatório</label>
+                            <select class="form-control" id="tipo_relatorio" name="tipo_relatorio">
+                                <option value="">Todos</option>
+                                <option value="prestacao">Prestação de Contas</option>
+                                <option value="financeiro">Financeiro</option>
+                                <option value="conciliacao">Conciliação Bancária</option>
+                                <option value="geral">Geral</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="ano">Ano</label>
+                            <input type="number" class="form-control" id="ano" name="ano" placeholder="2024">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="escola">Escola</label>
+                            <input type="text" class="form-control" id="escola" name="escola" placeholder="Digite o nome da escola">
+                        </div>
+                    </div>
+                    <div class="text-right mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter"></i> Filtrar
+                        </button>
+                        <button type="reset" class="btn btn-secondary" onclick="resetFilters()">
+                            <i class="fas fa-undo"></i> Limpar Filtros
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabela de Relatórios -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="card-title font-weight-bold">
+                    <i class="fas fa-table"></i> Resultados de Relatórios
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Tipo</th>
+                                <th>Ano</th>
+                                <th>Escola</th>
+                                <th>Data de Geração</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for relatorio in relatorios_data %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ relatorio.tipo }}</td>
+                                <td>{{ relatorio.ano }}</td>
+                                <td>{{ relatorio.escola }}</td>
+                                <td>{{ relatorio.data_geracao|date:"d/m/Y" }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'download_manual' relatorio.arquivo %}" class="btn btn-info btn-sm shadow-sm">
+                                        <i class="fas fa-download"></i> Baixar
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Nenhum relatório encontrado com os filtros aplicados.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function resetFilters() {
+        document.getElementById('filtersForm').reset();
+        window.location.href = "{% url 'listar_livro_caixa' %}";
+    }
+</script>
+{% endblock %}
+
+<style>
+    .content-wrapper {
+        margin-left: 0; /* Remove qualquer margem entre o sidebar e o conteúdo */
+        padding: 0; /* Remove padding interno */
+    }
+    .card {
+        margin-bottom: 20px; /* Espaçamento entre os cartões */
+    }
+</style>

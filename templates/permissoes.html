@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gerenciamento de Permissões de Usuários">
+    <meta name="author" content="SemedSIEDGE Development Team">
+    <meta name="keywords" content="AdminLTE, Gerenciamento, Permissões, Usuários">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Gerenciamento de Permissões</title>
+
+    <link rel="icon" href="{% static 'assets/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=fallback">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+
+    <style>
+        /* Custom styles */
+        .permissions-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: #f7f9fb;
+            padding: 20px;
+        }
+
+        .permissions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .permissions-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .permissions-table th, 
+        .permissions-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .btn-permissions {
+            margin: 0 5px;
+            font-size: 0.85rem;
+        }
+
+        .user-actions {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        {% include "navbar.html" %}
+        {% include "sidebar.html" %}
+
+        <div class="content-wrapper">
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="permissions-card">
+                                <div class="permissions-header">
+                                    <h2>Gerenciamento de Permissões de Usuários</h2>
+                                    <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#addUserModal">
+                                        <i class="fas fa-user-plus"></i> Adicionar Usuário
+                                    </button>
+                                </div>
+                                <table class="table table-hover permissions-table">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Usuário</th>
+                                            <th>Email</th>
+                                            <th>Tipo</th>
+                                            <th>Permissões</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ user.first_name }} {{ user.last_name }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                {% if user.is_superuser %}
+                                                <span class="badge badge-danger">Administrador</span>
+                                                {% elif user.is_staff %}
+                                                <span class="badge badge-primary">Técnico</span>
+                                                {% else %}
+                                                <span class="badge badge-secondary">Usuário</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% for permission in user.user_permissions.all %}
+                                                <span class="badge badge-info">{{ permission.name }}</span>
+                                                {% empty %}
+                                                <span class="text-muted">Sem permissões atribuídas</span>
+                                                {% endfor %}
+                                            </td>
+                                            <td class="user-actions">
+                                                <button class="btn btn-warning btn-permissions btn-sm" data-toggle="modal" data-target="#editPermissionsModal" data-user-id="{{ user.id }}">
+                                                    <i class="fas fa-edit"></i> Editar
+                                                </button>
+                                                <button class="btn btn-danger btn-permissions btn-sm" data-toggle="modal" data-target="#deleteUserModal" data-user-id="{{ user.id }}">
+                                                    <i class="fas fa-trash-alt"></i> Excluir
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modals -->
+        <!-- Add User Modal -->
+        <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addUserModalLabel">Adicionar Novo Usuário</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="POST" action="{% url 'add_user' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="first_name">Nome</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="user_type">Tipo de Usuário</label>
+                                <select class="form-control" id="user_type" name="user_type" required>
+                                    <option value="admin">Administrador</option>
+                                    <option value="staff">Técnico</option>
+                                    <option value="user">Usuário</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Permissions Modal -->
+        <div class="modal fade" id="editPermissionsModal" tabindex="-1" aria-labelledby="editPermissionsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editPermissionsModalLabel">Editar Permissões</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="POST" action="{% url 'edit_permissions' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <input type="hidden" id="user_id" name="user_id">
+                            <div class="form-group">
+                                <label for="permissions">Permissões</label>
+                                <select class="form-control" id="permissions" name="permissions" multiple>
+                                    {% for permission in all_permissions %}
+                                    <option value="{{ permission.id }}">{{ permission.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+</body>
+
+</html>

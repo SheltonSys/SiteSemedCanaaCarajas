@@ -1,0 +1,39 @@
+<!-- templates/configure_access.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurar Acesso</title>
+</head>
+<body>
+    <h1>Configuração de Acessos</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Salvar</button>
+    </form>
+
+    <h2>Acessos Configurados</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Usuário</th>
+                <th>Módulo</th>
+                <th>Ação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for permission in permissions %}
+            <tr>
+                <td>{{ permission.user.username }}</td>
+                <td>{{ permission.get_module_display }}</td>
+                <td>
+                    <a href="{% url 'delete_permission' permission.id %}">Excluir</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

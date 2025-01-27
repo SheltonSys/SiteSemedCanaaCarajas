@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Banco de Currículos - SEMED Canaã dos Carajás{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}"><i class="fas fa-briefcase"></i> Currículos</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'vagas' %}">Vagas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'curriculos' %}">Currículos</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-outline-light btn-sm ms-2" href="#">Login</a></li>
+                    <li class="nav-item"><a class="nav-link btn btn-light btn-sm ms-2" href="#">Registrar</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2025 SEMED Canaã dos Carajás. Todos os direitos reservados.</p>
+        <p><a href="#" class="text-white">Política de Privacidade</a> | <a href="#" class="text-white">Termos de Uso</a></p>
+        <p>
+            <a href="#"><i class="fab fa-facebook fa-lg me-2"></i></a>
+            <a href="#"><i class="fab fa-instagram fa-lg me-2"></i></a>
+            <a href="#"><i class="fab fa-linkedin fa-lg"></i></a>
+        </p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+</body>
+
+</html>

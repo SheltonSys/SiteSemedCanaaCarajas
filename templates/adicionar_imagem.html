@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Adicionar Nova Imagem</h1>
+    <form method="post" enctype="multipart/form-data" class="shadow p-4 bg-light rounded">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título</label>
+            {{ form.titulo }}
+        </div>
+        <div class="mb-3">
+            <label for="descricao" class="form-label">Descrição</label>
+            {{ form.descricao }}
+        </div>
+        <div class="mb-3">
+            <label for="imagem" class="form-label">Imagem</label>
+            {{ form.imagem }}
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
+{% endblock %}

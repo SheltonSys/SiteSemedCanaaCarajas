@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 class="m-0"><i class="fas fa-bus"></i> Dashboard de Transporte Escolar</h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}">Dashboard Geral</a></li>
+                        <li class="breadcrumb-item active">Transporte Escolar</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Cards Section -->
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ total_alunos }}</h3>
+                            <p>Total de Alunos</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">Mais informações <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ total_escolas }}</h3>
+                            <p>Total de Escolas</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-school"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">Mais informações <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>{{ alunos_ensino_medio }}</h3>
+                            <p>Alunos Ensino Médio</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">Mais informações <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+                <!-- Card 4 -->
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>{{ alunos_ensino_fundamental }}</h3>
+                            <p>Alunos Ensino Fundamental</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <a href="#" class="small-box-footer">Mais informações <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="row">
+                <!-- Bar Chart -->
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Número de Alunos por Escola</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="barChart" style="min-height: 300px; height: 300px; max-height: 300px; width: 100%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Line Chart -->
+                <div class="col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-chart-line"></i> Distribuição Mensal de Alunos</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="lineChart" style="min-height: 300px; height: 300px; max-height: 300px; width: 100%;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+<script>
+    // document.addEventListener("DOMContentLoaded", function () {
+    //     // Bar Chart
+    //     var barChartCanvas = document.getElementById('barChart').getContext('2d');
+    //     new Chart(barChartCanvas, {
+    //         type: 'bar',
+    //         data: {
+    //             labels: {{ bar_chart_labels|safe }},
+    //             datasets: [{
+    //                 label: 'Número de Alunos',
+    //                 data: {{ bar_chart_data|safe }},
+    //                 backgroundColor: 'rgba(60,141,188,0.9)',
+    //                 borderColor: 'rgba(60,141,188,0.8)',
+    //             }]
+    //         },
+    //         options: { responsive: true, maintainAspectRatio: false }
+    //     });
+
+        // Line Chart
+    //     var lineChartCanvas = document.getElementById('lineChart').getContext('2d');
+    //     new Chart(lineChartCanvas, {
+    //         type: 'line',
+    //         data: {
+    //             labels: {{ line_chart_labels|safe }},
+    //             datasets: [{
+    //                 label: 'Total de Alunos',
+    //                 data: {{ line_chart_data|safe }},
+    //                 borderColor: 'rgba(60,141,188,0.8)',
+    //                 fill: false
+    //             }]
+    //         },
+    //         options: { responsive: true, maintainAspectRatio: false }
+    //     });
+    // });
+</script>

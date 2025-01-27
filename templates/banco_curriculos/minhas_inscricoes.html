@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Minhas Inscrições</h1>
+    <ul class="list-group">
+        {% for inscricao in inscricoes %}
+            <li class="list-group-item">
+                <strong>Vaga:</strong> {{ inscricao.vaga.nome }} <br>
+                <strong>Status:</strong> {{ inscricao.status }}
+            </li>
+        {% empty %}
+            <p class="text-muted">Você ainda não possui inscrições.</p>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

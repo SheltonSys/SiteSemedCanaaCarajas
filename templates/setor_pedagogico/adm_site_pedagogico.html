@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 0; min-height: calc(100vh - 56px);">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col text-center">
+                    <h1 class="font-weight-bold text-primary">Painel Administrativo - Site Pedagógico</h1>
+                    <p class="text-muted">Gerencie as funcionalidades e conteúdos do site pedagógico.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Cards de Estatísticas -->
+            <div class="row">
+                <!-- Total de Artigos -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-primary text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Total de Artigos</h6>
+                                    <h3 class="font-weight-bold">02</h3>
+                                </div>
+                                <i class="fas fa-book fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total de Usuários -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-success text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Usuários Cadastrados</h6>
+                                    <h3 class="font-weight-bold">02</h3>
+                                </div>
+                                <i class="fas fa-users fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Artigos Pendentes -->
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-warning text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Artigos Pendentes</h6>
+                                    <h3 class="font-weight-bold">8</h3>
+                                </div>
+                                <i class="fas fa-hourglass-half fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Artigos -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="font-weight-bold"><i class="fas fa-table"></i> Lista de Artigos</h5>
+                        </div>
+                        <div class="card-body">
+                            <table id="articles-table" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Título</th>
+                                        <th>Capítulo</th>
+                                        <th>Tipo de Alteração</th>
+                                        <th>Nome</th>
+                                        <th>Email</th>
+                                        <th>CPF</th>
+                                        <th>Telefone</th>
+                                        <th>Cargo</th>
+                                        <th>Lotação</th>
+                                        <th>Data de Submissão</th>
+                                        <th>Status</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>TÍTULO I</td>
+                                        <td>CAPÍTULO I</td>
+                                        <td>Inclusão</td>
+                                        <td>João Silva</td>
+                                        <td>joao.silva@email.com</td>
+                                        <td>123.456.789-00</td>
+                                        <td>(99) 91234-5678</td>
+                                        <td>Professor</td>
+                                        <td>EMEIF Raio de Luz</td>
+                                        <td>2025-01-11</td>
+                                        <td>Pendente</td>
+                                        <td>
+                                            <a href="#" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Visualizar</a>
+                                            <a href="#" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Editar</a>
+                                            <a href="#" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Excluir</a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>2</td>
+                                        <td>TÍTULO II</td>
+                                        <td>CAPÍTULO II</td>
+                                        <td>Edição</td>
+                                        <td>Maria Oliveira</td>
+                                        <td>maria.oliveira@email.com</td>
+                                        <td>987.654.321-00</td>
+                                        <td>(94) 92345-6789</td>
+                                        <td>Coordenadora</td>
+                                        <td>SEMED</td>
+                                        <td>2025-01-10</td>
+                                        <td>Aprovado</td>
+                                        <td>
+                                            <a href="#" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Visualizar</a>
+                                            <a href="#" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Editar</a>
+                                            <a href="#" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Excluir</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                
+                            </table>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Scripts Necessários -->
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
+<!-- <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#articles-table').DataTable({
+            ajax: {
+    url: "{% url 'get_articles_data' %}",
+    dataSrc: 'data'
+},
+
+    columns: [
+        { data: 'id' },
+        { data: 'titulo' },
+        { data: 'capitulo' },
+        { data: 'tipo_alteracao' },
+        { data: 'nome_completo' },
+        { data: 'email' },
+        { data: 'cpf' },
+        { data: 'telefone' },
+        { data: 'cargo' },
+        { data: 'lotacao' },
+        {
+            data: 'data_submissao',
+            render: function (data) {
+                return new Date(data).toLocaleDateString();
+            }
+        },
+        { data: 'status' },
+        {
+            data: null,
+            render: function (data, type, row) {
+                return `
+                    <a href="#" class="btn btn-info btn-sm"><i class="fas fa-eye"></i> Visualizar</a>
+                    <a href="#" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Excluir</a>
+                `;
+            }
+        }
+    ],
+    paging: true,
+    ordering: true,
+    info: true,
+    searching: true
+});
+
+});
+
+</script> -->
+
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-3">
+            <div class="col">
+                <h1 class="text-primary font-weight-bold">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard SEPPEC
+                </h1>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card bg-primary text-white shadow">
+                    <div class="card-body">
+                        <h5>Total de Escolas</h5>
+                        <h2>{{ total_escolas }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-success text-white shadow">
+                    <div class="card-body">
+                        <h5>Total de Membros</h5>
+                        <h2>{{ total_membros }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-warning text-white shadow">
+                    <div class="card-body">
+                        <h5>Total PDDE</h5>
+                        <h2>R$ {{ total_pdde|floatformat:2 }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card bg-danger text-white shadow">
+                    <div class="card-body">
+                        <h5>Total em Caixa</h5>
+                        <h2>R$ {{ total_caixas|floatformat:2 }}</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Movements & Certificates -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title"><i class="fas fa-history"></i> Movimentações Recentes</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Descrição</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in recent_movements %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ movement.descricao }}</td>
+                                    <td>R$ {{ movement.valor|floatformat:2 }}</td>
+                                    <td>{{ movement.data_movimentacao|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Nenhuma movimentação recente</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title"><i class="fas fa-file-alt"></i> Certidões Recentes</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nome</th>
+                                    <th>Data</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for certidao in recent_certidoes %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ certidao.nome }}</td>
+                                    <td>{{ certidao.data_emissao|date:"d/m/Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'download_manual' certidao.arquivo %}" class="btn btn-info btn-sm">
+                                            <i class="fas fa-download"></i> Baixar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Nenhuma certidão recente</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphs -->
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <canvas id="pddeChart"></canvas>
+            </div>
+            <div class="col-md-6">
+                <canvas id="membrosChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- <script>
+    const pddeChartCtx = document.getElementById('pddeChart').getContext('2d');
+    new Chart(pddeChartCtx, {
+        type: 'bar',
+        data: {
+            labels: ['PDDE Aprovado', 'PDDE Pendente'],
+            datasets: [{
+                label: 'Valores (R$)',
+                data: [{{ total_pdde }}, 50000], // Exemplo: ajuste dinamicamente
+                backgroundColor: ['#007bff', '#dc3545'],
+            }]
+        }   
+    });
+
+    const membrosChartCtx = document.getElementById('membrosChart').getContext('2d');
+    new Chart(membrosChartCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Ativos', 'Inativos'],
+            datasets: [{
+                label: 'Membros',
+                data: [{{ total_membros }}, 10], // Exemplo: ajuste dinamicamente
+                backgroundColor: ['#28a745', '#ffc107'],
+            }]
+        }
+    }); -->
+</script>
+{% endblock %}

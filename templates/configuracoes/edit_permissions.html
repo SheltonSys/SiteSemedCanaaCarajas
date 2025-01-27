@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Permissões{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Editar Permissões</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="permissions">Permissões</label>
+            <select class="form-control" id="permissions" name="permissions" multiple>
+                {% for permission in permissions %}
+                    <option value="{{ permission.id }}" 
+                        {% if permission in user.user_permissions.all %}selected{% endif %}>
+                        {{ permission.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{% url 'gerenciar_permissoes' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

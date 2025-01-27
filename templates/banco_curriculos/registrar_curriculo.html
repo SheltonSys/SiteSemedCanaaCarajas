@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+{%load static%}
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Currículo - Banco de Currículos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #152238;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .content {
+            flex: 1;
+        }
+
+        footer {
+            background: #152238;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .form-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+        }
+
+        .nav-pills .nav-link.active {
+            background-color: #152238;
+        }
+
+        .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+
+
+        /* Geral */
+        .form-label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-control,
+        .form-select {
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            outline: none;
+        }
+
+        /* Upload de Foto */
+        #foto {
+            border: 2px dashed #6c757d;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #foto:hover {
+            border-color: #007bff;
+        }
+
+        #foto:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        small.text-muted {
+            font-size: 12px;
+            color: #6c757d;
+            display: block;
+            margin-top: 5px;
+            text-align: center;
+        }
+
+
+        .form-container {
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+
+        .form-title {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: #f57c00;
+        }
+
+        .form-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .form-content {
+            display: flex;
+            gap: 20px;
+        }
+
+        .photo-area {
+            text-align: center;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f9f9f9;
+        }
+
+        .photo-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .btn-photo {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #000;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .photo-input {
+            display: none;
+        }
+
+        .form-fields {
+            flex: 1;
+        }
+
+        .form-label {
+            font-weight: bold;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #f57c00;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(14px);
+        }
+
+        /* Estilos gerais */
+        .form-container {
+            max-width: 1000px;
+            /* Valor padrão */
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Títulos e labels */
+        h2 {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #152238;
+        }
+
+        .form-label {
+            font-weight: bold;
+            font-size: 1rem;
+            color: #333;
+        }
+
+        /* Inputs e selects */
+        .form-control,
+        .form-select {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+        }
+
+        /* Upload de Foto */
+        .photo-container {
+            border: 2px dashed #6c757d;
+            border-radius: 5px;
+            height: 250px;
+            width: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 10px;
+            background-color: #f9f9f9;
+        }
+
+        .photo-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .btn-photo {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-photo:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsividade */
+        @media (max-width: 1200px) {
+            .form-container {
+                max-width: 900px;
+                padding: 15px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .form-container {
+                max-width: 750px;
+                padding: 15px;
+            }
+
+            .photo-container {
+                height: 200px;
+                width: 200px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                max-width: 100%;
+                margin: 10px;
+            }
+
+            .photo-container {
+                height: 180px;
+                width: 180px;
+            }
+
+            h2 {
+                font-size: 1.8rem;
+            }
+
+            .form-label {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .form-container {
+                padding: 10px;
+            }
+
+            .photo-container {
+                height: 150px;
+                width: 150px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            .form-label {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><a class="navbar-brand" href="#">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo Banco de Currículos"
+                        style="height: 40px; margin-right: 10px;">
+                    Currículos
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'site_curriculos' %}">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'vagas' %}">Vagas</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login_curriculo' %}">Login</a></li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-light btn-sm ms-2" href="{% url 'registrar' %}">Registrar</a>
+                        </li>
+                    </ul>
+                </div>
+        </div>
+    </nav>
+
+    <!-- Formulário de Registro -->
+    <div class="content">
+        <div class="container my-5">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold text-primary display-4">Registrar Currículo</h2>
+                <p class="text-muted fs-5">
+                    Preencha as informações abaixo para cadastrar seu currículo no banco de dados da
+                    <span class="text-primary fw-bold">SEMED Canaã dos Carajás</span>.
+                </p>
+            </div>
+            <div class="form-container">
+
+                <form method="post" enctype="multipart/form-data" novalidate>
+                    {% csrf_token %}
+                    <!-- {{ curriculo_form.as_p }}  Renderiza o formulário automaticamente -->
+                    <!-- Tabs -->
+                    <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-dados-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-dados" type="button" role="tab" aria-controls="pills-dados"
+                                aria-selected="true">Dados Pessoais</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-formacao-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-formacao" type="button" role="tab" aria-controls="pills-formacao"
+                                aria-selected="false">Formação Acadêmica</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-experiencia-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-experiencia" type="button" role="tab"
+                                aria-controls="pills-experiencia" aria-selected="false">Experiência
+                                Profissional</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-arquivos-tab" data-bs-toggle="pill"
+                                data-bs-target="#pills-arquivos" type="button" role="tab" aria-controls="pills-arquivos"
+                                aria-selected="false">Upload Arquivos</button>
+                        </li>
+                    </ul>
+
+                    <!-- Tabs Content -->
+                    <div class="tab-content" id="pills-tabContent">
+                        <!-- Dados Pessoais -->
+                        <div class="tab-pane fade show active" id="pills-dados" role="tabpanel"
+                            aria-labelledby="pills-dados-tab">
+                            <div class="container py-5 px-5 shadow-lg rounded bg-white"
+                                style="max-width: 1200px; margin: 0 auto; border: 1px solid #e3e3e3;">
+                                <h2 class="text-center mb-4 text-primary display-4 fw-bold">Informações Pessoais</h2>
+                                <p class="text-center text-muted mb-5 fs-5">Preencha os campos abaixo para completar seu
+                                    cadastro. Informações com <span class="text-danger">*</span> são obrigatórias.</p>
+
+                                <div class="row g-5">
+                                    <!-- Coluna da Foto -->
+                                    <div class="col-lg-4 d-flex flex-column align-items-center">
+                                        <div class="photo-container border border-3 border-primary rounded bg-light mb-3 shadow-sm"
+                                            style="height: 200px; width: 200px; display: flex; justify-content: center; align-items: center; overflow: hidden;">
+                                            <img id="previewImage" src="{% static 'assets/dist/img/fotoDefault2.jpg' %}"
+                                                alt="Foto" class="img-fluid border border-primary shadow-sm"
+                                                style="width: 100%; height: 100%; object-fit: fill;">
+                                        </div>
+
+                                        <!-- Botão estilizado para upload -->
+                                        <button type="button" id="uploadButton"
+                                            class="btn btn-outline-primary btn-md w-75">
+                                            <i class="fas fa-camera me-2"></i> Upload Foto
+                                        </button>
+
+                                        <!-- Campo de arquivo oculto -->
+                                        <input type="file" id="foto" name="foto" accept="image/*"
+                                            style="display: none;">
+
+                                        <small class="text-muted mt-2">Envie uma foto no formato JPG ou PNG.</small>
+                                    </div>
+
+                                    <!-- Colunas do Formulário -->
+                                    <div class="col-lg-8">
+                                        <div class="row g-4">
+                                            <!-- Primeira Coluna -->
+                                            <div class="col-md-6">
+                                                <div class="mb-4 position-relative">
+                                                    <label for="nome" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-user text-primary me-2"></i> Nome Completo
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="nome" name="nome" placeholder="Digite seu nome completo"
+                                                        >
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="email" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-envelope text-primary me-2"></i> E-mail <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="email"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="email" name="email" placeholder="Digite seu e-mail"
+                                                        >
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="telefone" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-phone text-primary me-2"></i> Telefone <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="tel"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="telefone" name="telefone" placeholder="(XX) XXXXX-XXXX"
+                                                        >
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="cpf" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-id-card text-primary me-2"></i> CPF <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm" id="cpf"
+                                                        name="cpf" placeholder="Digite seu CPF">
+                                                </div>
+                                            </div>
+
+                                            <!-- Segunda Coluna -->
+                                            <div class="col-md-6">
+                                                <div class="mb-4 position-relative">
+                                                    <label for="rg" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-id-badge text-primary me-2"></i> RG <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm" id="rg"
+                                                        name="rg" placeholder="Digite seu RG">
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="data_nascimento"
+                                                        class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-calendar-alt text-primary me-2"></i> Data de
+                                                        Nascimento <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="date"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="data_nascimento" name="data_nascimento">
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="genero" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-venus-mars text-primary me-2"></i> Gênero <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select form-select-lg border-2 shadow-sm"
+                                                        id="genero" name="genero">
+                                                        <option value="" selected disabled>Selecione</option>
+                                                        <option value="masculino">Masculino</option>
+                                                        <option value="feminino">Feminino</option>
+                                                        <option value="outro">Outro</option>
+                                                        <option value="nao_informar">Prefiro não informar</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="estado_civil" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-heart text-primary me-2"></i> Estado Civil
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select form-select-lg border-2 shadow-sm"
+                                                        id="estado_civil" name="estado_civil">
+                                                        <option value="" selected disabled>Selecione</option>
+                                                        <option value="solteiro">Solteiro(a)</option>
+                                                        <option value="casado">Casado(a)</option>
+                                                        <option value="divorciado">Divorciado(a)</option>
+                                                        <option value="viuvo">Viúvo(a)</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Campos de Endereço -->
+                                        <div class="row g-4 mt-4">
+                                            <div class="col-md-6">
+                                                <div class="mb-4 position-relative">
+                                                    <label for="endereco" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-map-marker-alt text-primary me-2"></i> Endereço
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="endereco" name="endereco"
+                                                        placeholder="Ex.: Rua Exemplo, Nº 123">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-4 position-relative">
+                                                    <label for="cep" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-mail-bulk text-primary me-2"></i> CEP <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm" id="cep"
+                                                        name="cep" placeholder="Ex.: 68537-000">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Formação Acadêmica -->
+                        <div class="tab-pane fade" id="pills-formacao" role="tabpanel"
+                            aria-labelledby="pills-formacao-tab">
+                            <div class="container py-5 px-5 shadow-lg rounded bg-white"
+                                style="max-width: 1200px; margin: 0 auto; border: 1px solid #e3e3e3;">
+                                <h2 class="text-center mb-4 text-primary display-4 fw-bold">Formação Acadêmica</h2>
+                                <p class="text-center text-muted mb-5 fs-5">Preencha os campos abaixo com os detalhes
+                                    sobre sua formação acadêmica. Informações com <span class="text-danger">*</span> são
+                                    obrigatórias.</p>
+                                <div id="formacoes">
+                                    <div class="formacao mb-4" id="formacao_1">
+                                        <h5 class="text-primary">Formação 1</h5>
+                                        <div class="row g-4">
+                                            <div class="col-md-6">
+                                                <div class="mb-4 position-relative">
+                                                    <label for="nivel_1" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-graduation-cap text-primary me-2"></i> Nível
+                                                        Educacional <span class="text-danger">*</span>
+                                                    </label>
+                                                    <select class="form-select form-select-lg border-2 shadow-sm"
+                                                        id="nivel_1" name="nivel_1">
+                                                        <option value="" selected disabled>Selecione</option>
+                                                        <option value="Medio">Médio</option>
+                                                        <option value="MedioTecnico">Médio e Técnico</option>
+                                                        <option value="graduado">Graduado</option>
+                                                        <option value="GraduadoIncomepleto">Graduação Incompleta
+                                                        </option>
+                                                        <option value="especialista">Especialista</option>
+                                                        <option value="mestre">Mestre</option>
+                                                        <option value="doutor">Doutor</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="instituicao_1"
+                                                        class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-university text-primary me-2"></i> Instituição
+                                                        <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="instituicao_1" name="instituicao_1"
+                                                        placeholder="Digite o nome da instituição">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-4 position-relative">
+                                                    <label for="curso_1" class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-book text-primary me-2"></i> Curso <span
+                                                            class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="text"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="curso_1" name="curso_1" placeholder="Digite o nome do curso"
+                                                        >
+                                                </div>
+                                                <div class="mb-4 position-relative">
+                                                    <label for="ano_conclusao_1"
+                                                        class="form-label fw-bold text-uppercase">
+                                                        <i class="fas fa-calendar-check text-primary me-2"></i> Ano de
+                                                        Conclusão <span class="text-danger">*</span>
+                                                    </label>
+                                                    <input type="date"
+                                                        class="form-control form-control-lg border-2 shadow-sm"
+                                                        id="ano_conclusao_1" name="ano_conclusao_1" min="1900"
+                                                        max="2100">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-4">
+                                    <button type="button" class="btn btn-outline-primary btn-lg" id="add-formacao">
+                                        <i class="fas fa-plus me-2"></i> Adicionar Formação
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+
+                        <!-- Experiência Profissional -->
+                        <div class="tab-pane fade" id="pills-experiencia" role="tabpanel"
+                            aria-labelledby="pills-experiencia-tab">
+                            <div id="experiencias">
+                                <div class="experiencia mb-4" id="experiencia_1">
+                                    <h5 class="text-primary">Experiência 1</h5>
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <div class="mb-4 position-relative">
+                                                <label for="empresa_1" class="form-label fw-bold text-uppercase">
+                                                    <i class="fas fa-building text-primary me-2"></i> Empresa <span
+                                                        class="text-danger">*</span>
+                                                </label>
+                                                <input type="text"
+                                                    class="form-control form-control-lg border-2 shadow-sm"
+                                                    id="empresa_1" name="empresa_1" placeholder="Ex.: Empresa X"
+                                                    required>
+                                            </div>
+                                            <div class="mb-4 position-relative">
+                                                <label for="cargo_1" class="form-label fw-bold text-uppercase">
+                                                    <i class="fas fa-briefcase text-primary me-2"></i> Cargo <span
+                                                        class="text-danger">*</span>
+                                                </label>
+                                                <input type="text"
+                                                    class="form-control form-control-lg border-2 shadow-sm" id="cargo_1"
+                                                    name="cargo_1" placeholder="Ex.: Analista">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-4 position-relative">
+                                                <label for="data_inicio_1" class="form-label fw-bold text-uppercase">
+                                                    <i class="fas fa-calendar-alt text-primary me-2"></i> Data de Início
+                                                    <span class="text-danger">*</span>
+                                                </label>
+                                                <input type="date"
+                                                    class="form-control form-control-lg border-2 shadow-sm"
+                                                    id="data_inicio_1" name="data_inicio_1">
+                                            </div>
+                                            <div class="mb-4 position-relative">
+                                                <label for="data_fim_1" class="form-label fw-bold text-uppercase">
+                                                    <i class="fas fa-calendar-check text-primary me-2"></i> Data de
+                                                    Término
+                                                </label>
+                                                <input type="date"
+                                                    class="form-control form-control-lg border-2 shadow-sm"
+                                                    id="data_fim_1" name="data_fim_1">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-4 position-relative">
+                                        <label for="descricao_1" class="form-label fw-bold text-uppercase">
+                                            <i class="fas fa-tasks text-primary me-2"></i> Descrição das Atividades
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <textarea class="form-control form-control-lg border-2 shadow-sm"
+                                            id="descricao_1" name="descricao_1" rows="3"
+                                            placeholder="Descreva as atividades realizadas no cargo"
+                                            required></textarea>
+                                    </div>
+                                    <!-- <div class="text-center">
+                                        <button type="button" class="btn btn-outline-danger btn-md" onclick="removerElemento('experiencia_1')">
+                                            <i class="fas fa-trash-alt me-2"></i> Excluir Experiência
+                                        </button>
+                                    </div> -->
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-md mt-3" id="add-experiencia">
+                                <i class="fas fa-plus-circle me-2"></i> Adicionar Experiência
+                            </button>
+                        </div>
+
+
+
+                        <!-- Subir Arquivos -->
+                        <!-- Subir Arquivos -->
+                        <div class="tab-pane fade" id="pills-arquivos" role="tabpanel"
+                            aria-labelledby="pills-arquivos-tab">
+                            <div class="container py-5 px-5 shadow-lg rounded bg-light"
+                                style="max-width: 800px; margin: 0 auto; border: 1px solid #e0e0e0;">
+                                <h2 class="text-center text-primary display-5 fw-bold mb-4">Envio de Arquivos</h2>
+                                <p class="text-center text-muted fs-5 mb-4">
+                                    Faça o upload do seu currículo e certificados nos formatos indicados. Campos com
+                                    <span class="text-danger">*</span> são obrigatórios.
+                                </p>
+                                <div class="row g-4">
+                                    <!-- Upload do Currículo -->
+                                    <div class="col-md-6">
+                                        <div class="position-relative">
+                                            <label for="arquivo_curriculo" class="form-label fw-bold text-uppercase">
+                                                <i class="fas fa-file-pdf text-primary me-2"></i> Currículo (PDF)
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <input type="file" class="form-control form-control-lg shadow-sm border-2"
+                                                id="arquivo_curriculo" name="arquivo_curriculo" accept=".pdf">
+                                            <small class="text-muted">Formato permitido: PDF.</small>
+                                        </div>
+                                    </div>
+                                    <!-- Upload dos Certificados -->
+                                    <div class="col-md-6">
+                                        <div class="position-relative">
+                                            <label class="form-label fw-bold text-uppercase">
+                                                <i class="fas fa-file-archive text-primary me-2"></i> Certificados (ZIP ou PDF)
+                                                <span class="text-danger">*</span>
+                                            </label>
+                                            <div id="certificado-container">
+                                                <input type="file" class="form-control form-control-lg shadow-sm border-2" name="arquivo_certificados[]" accept=".zip, .pdf">
+                                            </div>
+                                            <button type="button" id="add-certificado" class="btn btn-outline-primary btn-sm mt-3">
+                                                <i class="fas fa-plus-circle me-2"></i> Adicionar Certificado
+                                            </button>
+                                            <small class="text-muted">Formatos permitidos: ZIP ou PDF. Você pode adicionar mais de um arquivo.</small>
+                                            <ul id="certificadoPreview" style="list-style-type: none; margin-top: 10px; padding-left: 0;"></ul>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mt-3">Registrar</button>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script>
+        // Adicionar Formação
+        document.getElementById("add-formacao").addEventListener("click", function () {
+            const formacoesDiv = document.getElementById("formacoes");
+            const index = formacoesDiv.children.length + 1;
+
+            const novaFormacao = `
+                <div class="formacao mb-4" id="formacao_${index}">
+                    <h5 class="text-primary">Formação ${index}</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="mb-4 position-relative">
+                                <label for="nivel_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-graduation-cap text-primary me-2"></i> Nível Educacional <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select form-select-lg border-2 shadow-sm" id="nivel_${index}" name="nivel_${index}" required>
+                                    <option value="" selected disabled>Selecione</option>
+                                    <option value="Medio">Médio</option>
+                                    <option value="MedioTecnico">Médio e Técnico</option>
+                                    <option value="graduado">Graduado</option>
+                                    <option value="GraduadoIncomepleto">Graduação Incompleta</option>
+                                    <option value="especialista">Especialista</option>
+                                    <option value="mestre">Mestre</option>
+                                    <option value="doutor">Doutor</option>
+                                </select>
+                            </div>
+                            <div class="mb-4 position-relative">
+                                <label for="instituicao_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-university text-primary me-2"></i> Instituição <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg border-2 shadow-sm" id="instituicao_${index}" name="instituicao_${index}" placeholder="Digite o nome da instituição" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4 position-relative">
+                                <label for="curso_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-book text-primary me-2"></i> Curso <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg border-2 shadow-sm" id="curso_${index}" name="curso_${index}" placeholder="Digite o nome do curso" required>
+                            </div>
+                            <div class="mb-4 position-relative">
+                                <label for="ano_conclusao_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-calendar-check text-primary me-2"></i> Ano de Conclusão <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control form-control-lg border-2 shadow-sm" id="ano_conclusao_${index}" name="ano_conclusao_${index}" min="1900" max="2100" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-md" onclick="removerElemento('formacao_${index}')">
+                            <i class="fas fa-trash-alt me-2"></i> Excluir Formação
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            formacoesDiv.insertAdjacentHTML("beforeend", novaFormacao);
+        });
+
+        // Função para remover elementos
+        function removerElemento(id) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.remove();
+            }
+        }
+
+
+        // Adicionar Experiência
+        document.getElementById("add-experiencia").addEventListener("click", function () {
+            const experienciasDiv = document.getElementById("experiencias");
+            const index = experienciasDiv.children.length + 1;
+
+            const novaExperiencia = `
+                <div class="experiencia mb-4" id="experiencia_${index}">
+                    <h5 class="text-primary">Experiência ${index}</h5>
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="mb-4 position-relative">
+                                <label for="empresa_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-building text-primary me-2"></i> Empresa <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg border-2 shadow-sm" id="empresa_${index}" name="empresa_${index}" placeholder="Ex.: Empresa X" required>
+                            </div>
+                            <div class="mb-4 position-relative">
+                                <label for="cargo_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-briefcase text-primary me-2"></i> Cargo <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg border-2 shadow-sm" id="cargo_${index}" name="cargo_${index}" placeholder="Ex.: Analista" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-4 position-relative">
+                                <label for="data_inicio_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i> Data de Início <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control form-control-lg border-2 shadow-sm" id="data_inicio_${index}" name="data_inicio_${index}" required>
+                            </div>
+                            <div class="mb-4 position-relative">
+                                <label for="data_fim_${index}" class="form-label fw-bold text-uppercase">
+                                    <i class="fas fa-calendar-check text-primary me-2"></i> Data de Término
+                                </label>
+                                <input type="date" class="form-control form-control-lg border-2 shadow-sm" id="data_fim_${index}" name="data_fim_${index}">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-4 position-relative">
+                        <label for="descricao_${index}" class="form-label fw-bold text-uppercase">
+                            <i class="fas fa-tasks text-primary me-2"></i> Descrição das Atividades <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control form-control-lg border-2 shadow-sm" id="descricao_${index}" name="descricao_${index}" rows="3" placeholder="Descreva as atividades realizadas no cargo" required></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-md" onclick="removerElemento('experiencia_${index}')">
+                            <i class="fas fa-trash-alt me-2"></i> Excluir Experiência
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            experienciasDiv.insertAdjacentHTML("beforeend", novaExperiencia);
+        });
+
+        // Função para remover elementos
+        function removerElemento(id) {
+            const elemento = document.getElementById(id);
+            if (elemento) {
+                elemento.remove();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Adicionar Formação
+            document.getElementById("add-formacao").addEventListener("click", function () {
+                const formacoesDiv = document.getElementById("formacoes");
+                const index = formacoesDiv.children.length + 1;
+
+                const novaFormacao = `
+            <div class="formacao mb-4" id="formacao_${index}">
+                <h5 class="text-primary">Formação ${index}</h5>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="mb-4 position-relative">
+                            <label for="nivel_${index}" class="form-label fw-bold text-uppercase">
+                                <i class="fas fa-graduation-cap text-primary me-2"></i> Nível Educacional <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select form-select-lg border-2 shadow-sm" id="nivel_${index}" name="nivel_${index}" required>
+                                <option value="" selected disabled>Selecione</option>
+                                <option value="Medio">Médio</option>
+                                <option value="MedioTecnico">Médio e Técnico</option>
+                                <option value="graduado">Graduado</option>
+                                <option value="GraduadoIncomepleto">Graduação Incompleta</option>
+                                <option value="especialista">Especialista</option>
+                                <option value="mestre">Mestre</option>
+                                <option value="doutor">Doutor</option>
+                            </select>
+                        </div>
+                        <div class="mb-4 position-relative">
+                            <label for="instituicao_${index}" class="form-label fw-bold text-uppercase">
+                                <i class="fas fa-university text-primary me-2"></i> Instituição <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg border-2 shadow-sm" id="instituicao_${index}" name="instituicao_${index}" placeholder="Digite o nome da instituição" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-4 position-relative">
+                            <label for="curso_${index}" class="form-label fw-bold text-uppercase">
+                                <i class="fas fa-book text-primary me-2"></i> Curso <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control form-control-lg border-2 shadow-sm" id="curso_${index}" name="curso_${index}" placeholder="Digite o nome do curso" required>
+                        </div>
+                        <div class="mb-4 position-relative">
+                            <label for="ano_conclusao_${index}" class="form-label fw-bold text-uppercase">
+                                <i class="fas fa-calendar-check text-primary me-2"></i> Ano de Conclusão <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control form-control-lg border-2 shadow-sm" id="ano_conclusao_${index}" name="ano_conclusao_${index}" min="1900" max="2100" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-md" onclick="removerElemento('formacao_${index}')">
+                        <i class="fas fa-trash-alt me-2"></i> Excluir Formação
+                    </button>
+                </div>
+            </div>
+        `;
+
+                formacoesDiv.insertAdjacentHTML("beforeend", novaFormacao);
+            });
+
+            // Visualização de Certificados
+            document.addEventListener("DOMContentLoaded", () => {
+    const certificadoContainer = document.getElementById("certificado-container");
+    const certificadoPreview = document.getElementById("certificadoPreview");
+    const addCertificadoButton = document.getElementById("add-certificado");
+
+    // Função para criar um novo campo de upload de certificado
+    const criarCampoCertificado = () => {
+        // Cria novo input de upload
+        const novoInput = document.createElement("input");
+        novoInput.type = "file";
+        novoInput.className = "form-control form-control-lg shadow-sm border-2 mt-2";
+        novoInput.name = "arquivo_certificados[]";
+        novoInput.accept = ".zip, .pdf";
+        novoInput.required = true;
+
+        // Adiciona evento para atualizar a visualização ao selecionar arquivos
+        novoInput.addEventListener("change", () => atualizarCertificadoPreview(novoInput));
+
+        // Adiciona o novo input ao contêiner
+        certificadoContainer.appendChild(novoInput);
+    };
+
+    // Função para atualizar a lista de pré-visualização
+    const atualizarCertificadoPreview = (inputElement) => {
+        const files = inputElement.files;
+
+        // Limpa a pré-visualização
+        certificadoPreview.innerHTML = "";
+
+        if (files.length > 0) {
+            Array.from(files).forEach((file) => {
+                const listItem = document.createElement("li");
+                listItem.textContent = `${file.name} (${(file.size / 1024).toFixed(2)} KB)`;
+                listItem.style.padding = "10px";
+                listItem.style.border = "1px solid #ddd";
+                listItem.style.marginBottom = "5px";
+                listItem.style.borderRadius = "5px";
+                listItem.style.backgroundColor = "#f9f9f9";
+                certificadoPreview.appendChild(listItem);
+            });
+        } else {
+            const emptyMessage = document.createElement("li");
+            emptyMessage.textContent = "Nenhum certificado selecionado.";
+            emptyMessage.style.color = "#888";
+            certificadoPreview.appendChild(emptyMessage);
+        }
+    };
+
+    // Evento para adicionar novo campo ao clicar no botão
+    addCertificadoButton.addEventListener("click", () => {
+        criarCampoCertificado();
+    });
+});
+
+
+
+
+        });
+
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const fileInput = document.getElementById("foto");
+            const uploadButton = document.getElementById("uploadButton");
+            const previewImage = document.getElementById("previewImage");
+
+            // Disparar o clique no campo de arquivo ao clicar no botão
+            uploadButton.addEventListener("click", () => {
+                fileInput.click();
+            });
+
+            // Atualizar o preview da imagem após selecionar um arquivo
+            fileInput.addEventListener("change", (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+    </script>
+
+    <script>
+        function previewImage(event) {
+            console.log("previewImage foi chamado");
+            const fileInput = event.target;
+            const preview = document.getElementById("previewImage");
+
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    preview.src = e.target.result;
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                preview.src = "https://via.placeholder.com/250";
+            }
+        }
+
+
+    </script>
+
+
+    <!-- Footer -->
+    <footer class="footer-bg py-5">
+        <div class="container">
+            <!-- Linhas principais -->
+            <div class="row">
+                <!-- Destaques -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                            profissionalizante</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                            dos Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                            Vice-diretor de unidade escolar</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">18 de outubro de 2023</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                            Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                            Fundamental</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">1 de março de 2023</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Temas Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                    <div class="d-flex flex-wrap align-items-baseline">
+                        <span class="badge bg-primary m-1">Educação <span
+                                class="badge bg-light text-dark ms-1">243</span></span>
+                        <span class="badge bg-primary m-1">Destaque <span
+                                class="badge bg-light text-dark ms-1">234</span></span>
+                        <span class="badge bg-primary m-1">Ensino Superior <span
+                                class="badge bg-light text-dark ms-1">58</span></span>
+                        <span class="badge bg-primary m-1">Polo Educacional <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Ensino Infantil <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Jovens e Adultos <span
+                                class="badge bg-light text-dark ms-1">37</span></span>
+                        <span class="badge bg-primary m-1">Cultura <span
+                                class="badge bg-light text-dark ms-1">36</span></span>
+                        <span class="badge bg-primary m-1">Ensino Integral <span
+                                class="badge bg-light text-dark ms-1">27</span></span>
+                        <span class="badge bg-primary m-1">Governo <span
+                                class="badge bg-light text-dark ms-1">26</span></span>
+                        <span class="badge bg-primary m-1">Esportes <span
+                                class="badge bg-light text-dark ms-1">19</span></span>
+                        <span class="badge bg-primary m-1">Saúde Escolar <span
+                                class="badge bg-light text-dark ms-1">15</span></span>
+                        <span class="badge bg-primary m-1">Inclusão Digital <span
+                                class="badge bg-light text-dark ms-1">12</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Linha inferior -->
+            <hr class="border-secondary">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 150px; height: 150px; object-fit: contain;">
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="col-md-4 mb-4 mb-md-0 text-center">
+                    <p style="text-align: justify;">
+                        <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                        14:00 às 18:00 (expediente interno).
+                    </p>
+                    <p style="text-align: justify;">
+                        <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                            class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                    </p>
+                </div>
+                <!-- Redes Sociais -->
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                    <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-facebook fa-2x"></i>
+                    </a>
+                    <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-instagram fa-2x"></i>
+                    </a>
+                    <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                        target="_blank">
+                        <i class="fab fa-youtube fa-2x"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+</body>
+
+
+</html>

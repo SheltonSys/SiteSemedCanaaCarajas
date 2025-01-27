@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Língua Portuguesa Anos Iniciais - Alunos{% endblock %}
+
+{% block extra_head %}
+<link rel="icon" type="image/x-icon" href="{% static 'img/logocanaa2.ico' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<style>
+    /* Ajuste do layout para remover espaços */
+    .wrapper {
+        display: flex;
+        align-items: stretch;
+        width: 100%;
+    }
+
+    .main-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1040;
+        height: 100%;
+        float: left; /* Garante alinhamento correto */
+    }
+
+    .content-wrapper {
+        margin: 0 !important;
+        padding: 0 !important;
+        flex-grow: 1;
+        transition: none;
+        overflow-x: hidden;
+    }
+
+    .layout-fixed .wrapper .content-wrapper {
+        margin-left: 0 !important; /* Corrige a margem adicionada pelo layout */
+    }
+
+    .sidebar-mini .content-wrapper {
+        margin-left: 70px !important; /* Para sidebar minimizada */
+    }
+
+    .content {
+        padding: 0 !important;
+    }
+
+    .table-responsive {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .small-box .icon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 0;
+        opacity: 0.4;
+        font-size: 4rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-12">
+                    <h1 class="m-0">Língua Portuguesa Anos Iniciais - Alunos</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="overflow-y: auto; flex: 1;">
+        <div class="container-fluid">
+            <!-- Cards -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ total_corretas }}</h3>
+                            <p>Acertos</p>
+                            <p>115</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>{{ total_erradas }}</h3>
+                            <p>Erros</p>
+                            <p>166</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ percentual_acertos }}%</h3>
+                            <p>Percentual de Acertos</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>{{ percentual_erros }}%</h3>
+                            <p>Percentual de Erros</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Upload -->
+            <form method="post" enctype="multipart/form-data" class="my-4">
+                {% csrf_token %}
+                <div class="form-group d-flex align-items-center">
+                    <label for="planilha" class="mr-2">Upload da Planilha:</label>
+                    <input type="file" class="form-control mr-2" name="planilha" id="planilha" required style="width: auto;">
+                    <button type="submit" class="btn btn-primary" name="upload_planilha">Upload</button>
+                </div>
+            </form>
+
+            {% if uploaded_file_url %}
+            <p>Planilha carregada com sucesso! <a href="{{ uploaded_file_url }}">Baixar planilha</a></p>
+            {% endif %}
+
+            <!-- Tabela -->
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Série</th>
+                            <th>Habilidade</th>
+                            <th>Acerto (%)</th>
+                            <th>Erro (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for aluno in alunos %}
+                        <tr>
+                            <td>{{ aluno.serie }}</td>
+                            <td class="position-relative">{{ aluno.habilidade }}</td>
+                            <td>{{ aluno.acerto|floatformat:2 }}%</td>
+                            <td>{{ aluno.erro|floatformat:2 }}%</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+<script>
+    $(document).ready(function(){
+        $.ajax({
+            url: "{% url 'get_diagnose_data_inic_alunos_port' %}",
+            method: "GET",
+            success: function(response) {
+                console.log("Dados carregados:", response);
+            },
+            error: function(error) {
+                console.log("Erro ao carregar os dados:", error);
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AdminLTE Dashboard for SemedSIEDGE">
+    <meta name="author" content="SemedSIEDGE Development Team">
+    <meta name="keywords" content="AdminLTE, Dashboard, Semed, Education">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>{% block title %}SemedSIEDGE{% endblock %}</title>
+
+    <link rel="icon" href="{% static 'assets/img/favicon.ico' %}">
+
+    <!-- Fonts and Styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=fallback">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+
+    <!-- Custom CSS -->
+    <style>
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div id="preloader">
+        <div class="loader"></div>
+    </div>
+
+    <div class="wrapper">
+        {% include "navbars.html" %} <!-- Navbar -->
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            {% block content %}
+            <div class="content">
+                <div class="container-fluid">
+                    <h1 class="text-center my-4">{% block page_title %}Bem-vindo ao Semed|SIEDGE{% endblock %}</h1>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+        <!-- /.content-wrapper -->
+
+        {% include "footers.html" %} <!-- Footer -->
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Scripts -->
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Preloader Script -->
+    <script>
+        window.onload = function () {
+            document.getElementById('preloader').style.display = 'none';
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 0; min-height: calc(100vh - 56px);">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col text-center">
+                    <h1 class="font-weight-bold text-primary">Habilidades - Português 5º e 9º Ano</h1>
+                    <p class="text-muted">Gerencie as habilidades de Português para 5º e 9º anos.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="font-weight-bold">Lista de Habilidades</h5>
+                        </div>
+                        <div class="card-body">
+                            <table id="habilidades-table" class="table table-striped table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Série</th>
+                                        <th>Tópico</th>
+                                        <th>Habilidade</th>
+                                        <th>Descrição</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for habilidade in habilidades %}
+                                    <tr>
+                                        <td>{{ habilidade.serie }}</td>
+                                        <td>{{ habilidade.topico }}</td>
+                                        <td>{{ habilidade.habilidade }}</td>
+                                        <td>{{ habilidade.descricao }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">Nenhuma habilidade encontrada.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Inicializar DataTables
+        $('#habilidades-table').DataTable({
+            paging: true,
+            ordering: true,
+            info: true,
+            searching: true,
+            language: {
+                url: "//cdn.datatables.net/plug-ins/1.13.1/i18n/Portuguese-Brasil.json"
+            }
+        });
+    });
+</script>
+{% endblock %}

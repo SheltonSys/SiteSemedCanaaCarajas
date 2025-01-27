@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Diagnosis</h2>
+    <p>Total de Escolas Avaliadas: {{ dados.total_escolas_avaliadas }}</p>
+    <p>Total de Alunos Avaliados: {{ dados.total_alunos_avaliados }}</p>
+    <p>Média Geral: {{ dados.medias_gerais }}</p>
+</div>
+{% endblock %}

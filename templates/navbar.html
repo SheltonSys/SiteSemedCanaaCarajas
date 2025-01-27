@@ -1,0 +1,48 @@
+{% load static %}
+<nav class="main-header navbar navbar-expand-lg navbar-white navbar-light">
+    <!-- Logo -->
+    <a class="navbar-brand" href="#">SemedSIEDGE</a>
+
+    <!-- Botão de Toggle para dispositivos móveis -->
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Menu colapsável -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <!-- Links à esquerda -->
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+        </ul>
+
+        <!-- Links à direita -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Dropdown com links principais -->
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-th"></i> Navegação
+                </a>
+                <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownAdmin">
+                    <li><a class="dropdown-item" href="{% url 'gestao_escolar' %}"><i class="fas fa-school"></i> Gestão Escolar</a></li>
+                    <li><a class="dropdown-item" href="{% url 'transporte' %}"><i class="fas fa-bus"></i> Transporte</a></li>
+                    <li><a class="dropdown-item" href="{% url 'financeiro' %}"><i class="fas fa-wallet"></i> Financeiro</a></li>
+                    <li><a class="dropdown-item" href="{% url 'contabilidade' %}"><i class="fas fa-calculator"></i> Contabilidade</a></li>
+                    <li><a class="dropdown-item" href="{% url 'soe' %}"><i class="fas fa-users"></i> SOE</a></li>
+                    <li><a class="dropdown-item" href="{% url 'pedagogico' %}"><i class="fas fa-book"></i> Pedagógico</a></li>
+                    <li><a class="dropdown-item" href="{% url 'legislacao' %}"><i class="fas fa-gavel"></i> Legislação</a></li>
+                </ul>
+            </li>
+
+            <!-- Link de Logout -->
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="{% url 'logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> SAIR
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

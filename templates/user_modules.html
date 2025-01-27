@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
+            <h2 class="h5 mb-0 flex-grow-1">Módulos Permitidos para {{ user.first_name }}</h2>
+            <span class="badge bg-light text-primary px-3 py-2">Usuário: {{ user.username }}</span>
+        </div>
+        <div class="card-body">
+            {% if error_message %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {{ error_message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% else %}
+                <p class="mb-4 text-secondary">
+                    Abaixo estão os módulos que você tem acesso. Clique para acessar mais detalhes.
+                </p>
+
+                <ul class="list-group">
+                    {% for permission in user_modules %}
+                    {% with permission.module.slug as slug %}
+                    {% url slug as resolved_url %}
+                    {% if resolved_url %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center border-0">
+                        <a href="{{ resolved_url }}" class="text-decoration-none text-dark font-weight-bold">
+                            {{ permission.module.name }}
+                        </a>
+                        <span class="badge bg-success">Acesso Permitido</span>
+                    </li>
+                    {% else %}
+                    <li class="list-group-item text-muted">Módulo {{ permission.module.name }} não configurado</li>
+                    {% endif %}
+                    {% endwith %}
+                    {% endfor %}
+                </ul>
+                
+
+
+            {% endif %}
+        </div>
+        <div class="card-footer text-end bg-light">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i> Voltar ao Dashboard
+            </a>
+        </div>
+    </div>
+</div>

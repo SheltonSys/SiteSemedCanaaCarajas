@@ -1,0 +1,44 @@
+{% extends 'banco_curriculos/base.html' %}
+
+{% block title %}Home - Banco de Currículos{% endblock %}
+
+{% block content %}
+<section class="hero-section text-center py-5 bg-primary text-white">
+    <h1>Bem-vindo ao Banco de Currículos SEMED</h1>
+    <p>Conectando talentos a oportunidades de sucesso em Canaã dos Carajás.</p>
+</section>
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Principais Funcionalidades</h2>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Explorar Vagas</h5>
+                        <p>Descubra as melhores oportunidades disponíveis.</p>
+                        <a href="{% url 'vagas' %}" class="btn btn-primary">Explorar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Cadastrar Currículo</h5>
+                        <p>Conecte-se com empresas e desenvolva sua carreira.</p>
+                        <a href="{% url 'curriculos' %}" class="btn btn-success">Cadastrar</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Gerenciar Currículos</h5>
+                        <p>Atualize e mantenha seus currículos organizados.</p>
+                        <a href="#" class="btn btn-warning">Gerenciar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

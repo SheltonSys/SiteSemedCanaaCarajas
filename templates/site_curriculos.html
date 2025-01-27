@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+{%load static%}
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Currículos - SEMED Canaã dos Carajás</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+        }
+
+        .navbar {
+            background: #152238;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .hero-section {
+            background: linear-gradient(to bottom, #1e3c72, #2a5298);
+            color: white;
+            padding: 60px 15px;
+            text-align: center;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+        }
+
+        .search-bar {
+            margin-top: -40px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-section {
+            background: #e9ecef;
+            padding: 50px 15px;
+        }
+
+        .feedback-section {
+            padding: 50px 15px;
+            background: #f8f9fa;
+        }
+
+        .education-section {
+            padding: 50px 15px;
+            background: #e9ecef;
+        }
+
+        .education-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            text-align: center;
+        }
+
+        footer {
+            background: #152238;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .partner-logo {
+            width: 150px;
+            margin: 10px;
+        }
+
+        .partner-section {
+            text-align: center;
+            padding: 50px 15px;
+            background: #f8f9fa;
+        }
+
+        .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+
+
+        .hero-section {
+            overflow: hidden;
+        }
+
+        .hero-section img {
+            transition: transform 0.3s ease;
+        }
+
+        .hero-section img:hover {
+            transform: scale(1.05);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.4);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><a class="navbar-brand" href="#">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo Banco de Currículos"
+                        style="height: 40px; margin-right: 10px;">
+                    Currículos
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item"><a class="nav-link" href="{% url 'site_curriculos' %}">Home</a></li>
+                        <!-- <li class="nav-item"><a class="nav-link" href="{% url 'vagas' %}">Vagas</a></li> -->
+                        <li class="nav-item"><a class="nav-link" href="{% url 'login_curriculo' %}">Login</a></li>
+                        <!-- <li class="nav-item"><a class="nav-link" href="#curriculos">Currículos</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-light btn-sm ms-2" href="#">Registrar</a>
+                    </li> -->
+
+                    </ul>
+
+
+                </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section py-5 bg-primary text-white text-center position-relative"
+        style="background: linear-gradient(135deg, #007bff, #0056b3);">
+        <div class="container">
+            <div class="row align-items-center">
+                <!-- Texto de Boas-vindas -->
+                <div class="col-md-8 mb-4 mb-md-0 text-md-start">
+                    <h1 class="display-4 fw-bold">Bem-vindo ao Banco de Currículos SEMED</h1>
+                    <p class="lead mb-3">Conectando talentos a oportunidades de sucesso em Canaã dos Carajás.</p>
+                    <p class="mb-4">Encontre profissionais qualificados e promova o desenvolvimento educacional e social
+                        do
+                        município.</p>
+                    <!-- Botões Responsivos -->
+                    <div
+                        class="d-flex flex-column flex-md-row gap-3 justify-content-center justify-content-md-start text-center text-md-start">
+                        <a href="{% url 'registrar_novo_curriculo' %}"
+                            class="btn btn-light btn-lg px-4 py-3 fw-bold shadow-lg"
+                            style="transition: transform 0.3s; font-size: 1.2rem;">
+                            <i class="fas fa-plus-circle me-2"></i>Cadastrar Currículo
+                        </a>
+
+
+                        <!-- <a href="{% url 'pesquisar_curriculos' %}" class="btn btn-outline-light btn-lg px-4 py-3 fw-bold shadow-lg"
+                            style="transition: transform 0.3s; font-size: 1.2rem;">
+                            <i class="fas fa-search me-2"></i>Pesquisar Currículos
+                        </a> -->
+                    </div>
+
+                </div>
+                <!-- Imagem de Suporte -->
+                <div class="col-md-4 text-center">
+                    <img src="{% static 'assets/dist/img/banco-curriculos.jpg' %}" alt="Banco de Currículos"
+                        class="img-fluid rounded-circle shadow-lg" style="max-width: 320px; animation: fadeIn 1.5s;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row">
+            <!-- Card 1 -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-lg border-0">
+                    <div class="card-body">
+                        <i class="fas fa-book-reader fa-3x mb-3 text-primary"></i>
+                        <h5 class="card-title fw-bold text-primary">Recursos Educacionais</h5>
+                        <p class="text-muted">
+                            Explore materiais didáticos e ferramentas para enriquecer o processo de ensino e
+                            aprendizagem.
+                        </p>
+                        <a href="#" class="btn btn-outline-primary fw-bold px-4 py-2">
+                            <i class="fas fa-arrow-right me-2"></i> Descubra
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Card 2 -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-lg">
+                    <div class="card-body">
+                        <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
+                        <h5 class="card-title fw-bold">Cadastrar Currículo</h5>
+                        <p class="text-muted">
+                            Insira e gerencie seus currículos para aproveitar as melhores oportunidades profissionais.
+                        </p>
+                        <a href="{% url 'registrar_novo_curriculo' %}" class="btn btn-primary fw-bold px-4 py-2">
+                            <i class="fas fa-plus-circle me-2"></i> Cadastrar
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Card 3 -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center shadow-lg border-0">
+                    <div class="card-body">
+                        <i class="fas fa-lightbulb fa-3x mb-3 text-info"></i>
+                        <h5 class="card-title fw-bold">Inspiração para o Futuro</h5>
+                        <p class="text-muted">
+                            Explore ideias inovadoras e inspire-se a construir um futuro melhor por meio da educação.
+                        </p>
+                        <button class="btn btn-outline-info fw-bold px-4 py-2">
+                            <i class="fas fa-info-circle me-2"></i> Saiba Mais
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+        </div>
+    </div>
+
+    <!-- Education Section -->
+    <section class="education-section text-center">
+        <div class="container">
+            <h2>Programas de Formação</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="education-card">
+                        <h5>Capacitação Docente</h5>
+                        <p>Workshops e treinamentos para profissionais da educação.</p>
+                        <a href="#" class="btn btn-primary">Saiba Mais</a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="education-card">
+                        <h5>Desenvolvimento de Liderança</h5>
+                        <p>Programas para formação de líderes na área educacional.</p>
+                        <a href="#" class="btn btn-primary">Saiba Mais</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Partners Section -->
+    <!-- Informações Destacadas Section -->
+    <section class="highlighted-info-section py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center">Informações Destacadas</h2>
+            <p class="text-muted text-center">Fique por dentro das atualizações mais importantes.</p>
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-graduation-cap fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Cursos em Andamento</h5>
+                            <p class="card-text">Acesse nossa lista de cursos disponíveis e inscreva-se para desenvolver
+                                suas habilidades.</p>
+                            <a href="#" class="btn btn-primary">Ver Cursos</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 2 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-chart-line fa-3x mb-3 text-success"></i>
+                            <h5 class="card-title">Estatísticas do Sistema</h5>
+                            <p class="card-text">Explore os dados de impacto do Banco de Currículos na comunidade.</p>
+                            <a href="#" class="btn btn-success">Explorar Dados</a>
+                        </div>
+                    </div>
+                </div>
+                <!-- Card 3 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-bullhorn fa-3x mb-3 text-warning"></i>
+                            <h5 class="card-title">Anúncios Recentes</h5>
+                            <p class="card-text">Confira as novidades e comunicados importantes da SEMED Canaã dos
+                                Carajás.</p>
+                            <a href="#" class="btn btn-warning">Ver Anúncios</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Acordeão Section -->
+    <section class="accordion-section text-center py-5 bg-light">
+        <div class="container">
+            <h2>Informações Relevantes</h2>
+            <p class="text-muted">Descubra mais sobre nossas iniciativas e serviços.</p>
+            <div class="accordion" id="infoAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                            <strong>Vagas em Destaque</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne"
+                        data-bs-parent="#infoAccordion">
+                        <div class="accordion-body">
+                            Confira as oportunidades mais procuradas e inscreva-se agora mesmo!
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                            <strong>Capacitação Profissional</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo"
+                        data-bs-parent="#infoAccordion">
+                        <div class="accordion-body">
+                            Participe de cursos e workshops voltados para o desenvolvimento de suas habilidades.
+                        </div>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                            <strong>Conquistas Recentes</strong>
+                        </button>
+                    </h2>
+                    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree"
+                        data-bs-parent="#infoAccordion">
+                        <div class="accordion-body">
+                            Celebramos os sucessos de nossos usuários e parcerias que mudaram vidas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Bar Section -->
+    <section class="progress-bar-section py-5 bg-white">
+        <div class="container text-center">
+            <h2>Estatísticas em Destaque</h2>
+            <p class="text-muted">Veja o impacto do Banco de Currículos na comunidade.</p>
+            <div class="row">
+                <div class="col-md-4">
+                    <p><strong>Currículos Cadastrados</strong></p>
+                    <div class="progress">
+                        <div class="progress-bar bg-primary" role="progressbar" style="width: 85%" aria-valuenow="85"
+                            aria-valuemin="0" aria-valuemax="100">85%</div>
+                    </div>
+                    <small>1.005 currículos cadastrados</small>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Empresas Ativas</strong></p>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: 70%" aria-valuenow="70"
+                            aria-valuemin="0" aria-valuemax="100">70%</div>
+                    </div>
+                    <small>8,765 empresas conectadas</small>
+                </div>
+                <div class="col-md-4">
+                    <p><strong>Vagas Disponíveis</strong></p>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" role="progressbar" style="width: 90%" aria-valuenow="90"
+                            aria-valuemin="0" aria-valuemax="100">90%</div>
+                    </div>
+                    <small>22 vagas abertas</small>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer class="footer-bg py-5">
+        <div class="container">
+            <!-- Linhas principais -->
+            <div class="row">
+                <!-- Destaques -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                            profissionalizante</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                            dos Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                            Vice-diretor de unidade escolar</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">18 de outubro de 2023</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                            Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                            Fundamental</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">1 de março de 2023</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Temas Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                    <div class="d-flex flex-wrap align-items-baseline">
+                        <span class="badge bg-primary m-1">Educação <span
+                                class="badge bg-light text-dark ms-1">243</span></span>
+                        <span class="badge bg-primary m-1">Destaque <span
+                                class="badge bg-light text-dark ms-1">234</span></span>
+                        <span class="badge bg-primary m-1">Ensino Superior <span
+                                class="badge bg-light text-dark ms-1">58</span></span>
+                        <span class="badge bg-primary m-1">Polo Educacional <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Ensino Infantil <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Jovens e Adultos <span
+                                class="badge bg-light text-dark ms-1">37</span></span>
+                        <span class="badge bg-primary m-1">Cultura <span
+                                class="badge bg-light text-dark ms-1">36</span></span>
+                        <span class="badge bg-primary m-1">Ensino Integral <span
+                                class="badge bg-light text-dark ms-1">27</span></span>
+                        <span class="badge bg-primary m-1">Governo <span
+                                class="badge bg-light text-dark ms-1">26</span></span>
+                        <span class="badge bg-primary m-1">Esportes <span
+                                class="badge bg-light text-dark ms-1">19</span></span>
+                        <span class="badge bg-primary m-1">Saúde Escolar <span
+                                class="badge bg-light text-dark ms-1">15</span></span>
+                        <span class="badge bg-primary m-1">Inclusão Digital <span
+                                class="badge bg-light text-dark ms-1">12</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Linha inferior -->
+            <hr class="border-secondary">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 150px; height: 150px; object-fit: contain;">
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="col-md-4 mb-4 mb-md-0 text-center">
+                    <p style="text-align: justify;">
+                        <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                        14:00 às 18:00 (expediente interno).
+                    </p>
+                    <p style="text-align: justify;">
+                        <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                            class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                    </p>
+                </div>
+                <!-- Redes Sociais -->
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                    <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-facebook fa-2x"></i>
+                    </a>
+                    <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-instagram fa-2x"></i>
+                    </a>
+                    <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                        target="_blank">
+                        <i class="fab fa-youtube fa-2x"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const progressBars = document.querySelectorAll('.progress-bar');
+    
+            const animateProgressBars = () => {
+                progressBars.forEach(bar => {
+                    const targetValue = bar.getAttribute('aria-valuenow'); // Valor final do progresso
+                    let currentValue = 0; // Começa do zero
+                    const interval = setInterval(() => {
+                        if (currentValue < targetValue) {
+                            currentValue++;
+                            bar.style.width = `${currentValue}%`;
+                            bar.textContent = `${currentValue}%`; // Atualiza o texto dentro da barra
+                        } else {
+                            clearInterval(interval); // Para a animação ao atingir o valor final
+                        }
+                    }, 30); // Controla a velocidade do incremento
+                });
+            };
+    
+            // Detecta quando a seção com as barras entra em foco
+            const section = document.querySelector('.progress-bar-section');
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateProgressBars(); // Chama a animação
+                        observer.unobserve(section); // Para de observar após a primeira execução
+                    }
+                });
+            });
+    
+            observer.observe(section);
+        });
+    </script>
+    
+    
+
+</body>
+
+</html>

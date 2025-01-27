@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1><i class="fas fa-calendar-alt"></i> Gestão de Eventos</h1>
+    <p>Gerencie os eventos institucionais com facilidade e eficiência.</p>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+        <a href="#" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar Evento</a>
+        <a href="#" class="btn btn-secondary"><i class="fas fa-edit"></i> Editar Evento</a>
+        <a href="#" class="btn btn-danger"><i class="fas fa-trash"></i> Remover Evento</a>
+    </div>
+
+    <div class="mt-5">
+        <h2>Eventos Recentes</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Data</th>
+                    <th>Local</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Seminário Educacional</td>
+                    <td>20/12/2024</td>
+                    <td>Auditório Principal</td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
+                        <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Formação Continuada</td>
+                    <td>15/01/2025</td>
+                    <td>Sala de Treinamento</td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
+                        <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

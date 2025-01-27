@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h1>Galeria de Imagens</h1>
+    <div class="row">
+        {% for imagem in imagens %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ imagem.imagem.url }}" class="card-img-top" alt="{{ imagem.titulo }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ imagem.titulo }}</h5>
+                    <p class="card-text">{{ imagem.descricao }}</p>
+                    <p class="text-muted">Adicionado em {{ imagem.data_criacao|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Detalhes da escola EMEIF Magalhães Barata">
+    <title>EMEIF Magalhães Barata - SEMED Canaã dos Carajás</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+
+        .navbar {
+            background-color: #007bff;
+        }
+
+        .hero-section {
+            background: linear-gradient(to right, rgba(0, 123, 255, 0.8), rgba(0, 56, 142, 0.8)),
+            url('{% static "assets/dist/img/magalhaes_barata.jpg" %}');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-section h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+        }
+
+        footer a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .gallery-section .card img {
+            height: 180px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .gallery-section .card {
+            transition: transform 0.3s;
+        }
+
+        .gallery-section .card:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED">
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'index' %}">Início</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1>EMEIF Magalhães Barata</h1>
+            <p>Inspirando mentes criativas e inovadoras.</p>
+        </div>
+    </section>
+
+    <!-- Galeria de Imagens -->
+    <section class="gallery-section py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center text-primary mb-4">Galeria de Imagens</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="{% static 'assets/dist/img/magalhaes_1.jpg' %}" alt="Imagem 1" class="card-img-top">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="{% static 'assets/dist/img/magalhaes_2.jpg' %}" alt="Imagem 2" class="card-img-top">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="{% static 'assets/dist/img/magalhaes_3.jpg' %}" alt="Imagem 3" class="card-img-top">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sobre a Escola -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center text-primary mb-4">Sobre a Escola</h2>
+            <p>
+                A EMEIF Magalhães Barata é referência em inovação e criatividade, oferecendo uma educação que transforma
+                vidas e forma cidadãos preparados para o futuro.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 bg-dark text-white">
+        <div class="container text-center">
+            <p>SEMED Canaã dos Carajás &copy; 2024. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

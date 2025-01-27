@@ -1,0 +1,577 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Candidato - SEMED Canaã dos Carajás</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #0d2a4d;
+            color: white;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #0056b3, #007bff);
+            color: white;
+            padding: 50px 15px;
+            text-align: center;
+            border-bottom: 5px solid #00458a;
+        }
+
+        .hero-section h1 {
+            font-size: 2.8rem;
+            font-weight: bold;
+        }
+
+        .hero-section p {
+            font-size: 1.2rem;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .stats-section {
+            background: #ffffff;
+            padding: 50px 15px;
+            margin-bottom: 30px;
+        }
+
+        .stats-section .stat {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat i {
+            font-size: 3rem;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .stat h5 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .stat p {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .footer {
+            background: #0d2a4d;
+            color: white;
+            padding: 20px 15px;
+            text-align: center;
+            margin-top: auto;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+
+        .footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .footer .social-icons a {
+            margin: 0 10px;
+            font-size: 1.5rem;
+        }
+
+        .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                    style="height: 40px; margin-right: 10px;">
+                Currículos SEMED
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'site_curriculos' %}">Home</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout_candidato' %}">Sair</a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section"
+        style="background: linear-gradient(135deg, #0056b3, #007bff); color: white; padding: 50px 15px; text-align: center; border-bottom: 5px solid #00458a;">
+        <div class="container">
+            <h1>Bem-vindo, {{ candidato.nome_completo }}!</h1>
+            <p class="lead" style="font-size: 1.5rem; margin-top: 15px;">
+                <strong>CPF:</strong> <span style="color: #ffcc00; font-size: 1.3rem; font-weight: bold;">{{ candidato.cpf }}</span>
+            </p>
+            <p class="lead" style="margin-top: 20px;">Gerencie seus currículos e aproveite as melhores oportunidades
+                disponíveis.</p>
+        </div>
+    </section>
+
+
+    <!-- Main Content -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <!-- Card 1 -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Cadastrar Novo Currículo</h5>
+                    <p class="card-text">Adicione um novo currículo ao sistema para se candidatar às vagas disponíveis.
+                    </p>
+                    <a href="{% url 'cadastrar_diretor' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Adicionar Currículo
+                    </a>
+                </div>
+            </div>
+
+            <!-- Card 2: Imprimir Currículo -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-print fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Imprimir Currículo</h5>
+                    <p class="card-text">Gere e imprima o seu currículo atualizado com todas as suas informações.</p>
+                    <button id="btnImprimir" class="btn btn-primary">
+                        <i class="fas fa-file-pdf me-2"></i>Imprimir Currículo
+                    </button>
+                </div>
+            </div>
+
+
+
+
+            <!-- Card 3 -->
+            <div class="col-md-4 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-edit fa-3x mb-3 text-warning"></i>
+                    <h5 class="card-title">Editar Perfil</h5>
+                    <p class="card-text">Atualize suas informações e mantenha seu perfil sempre atualizado.</p>
+                    <a href="#" class="btn btn-warning disabled" aria-disabled="true">
+                        <i class="fas fa-user-edit me-2"></i>Editar Perfil
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- Card: Visualizar Currículo -->
+            <div class="col-md-12 mb-4">
+                <div class="card text-center p-4">
+                    <i class="fas fa-eye fa-3x mb-3 text-info"></i>
+                    <h5 class="card-title">Visualizar Currículo</h5>
+                    <p class="card-text">Veja os detalhes do seu currículo cadastrado no sistema.</p>
+                    <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#visualizarCurriculoModal">
+                        <i class="fas fa-eye me-2"></i>Visualizar Currículo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal: Detalhes do Currículo -->
+            <div class="modal fade" id="visualizarCurriculoModal" tabindex="-1"
+                aria-labelledby="visualizarCurriculoModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content shadow-lg">
+                        <!-- Cabeçalho da Modal -->
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title fw-bold" id="visualizarCurriculoModalLabel">
+                                <i class="fas fa-file-alt me-2"></i>Detalhes do Currículo
+                            </h5>
+                            <button type="button" class="btn-close text-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
+                        </div>
+                        <!-- Corpo da Modal -->
+                        <div class="modal-body">
+                            <div class="alert alert-warning text-center" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>DADOS PARA EDIÇÃO INDISPONÍVEIS NO MOMENTO</strong>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <p class="text-muted">
+                                    Por favor, entre em contato com o suporte técnico para mais informações ou tente
+                                    novamente mais tarde.
+                                </p>
+                            </div>
+                        </div>
+                        <!-- Rodapé da Modal -->
+                        <div class="modal-footer d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="fas fa-times me-2"></i>Fechar
+                            </button>
+                            <a href="mailto:suporte@semed.com" class="btn btn-primary">
+                                <i class="fas fa-envelope me-2"></i>Contato Suporte
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Dependências do Bootstrap -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+        </div>
+    </div>
+
+    <!-- Stats Section -->
+    <div class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 stat">
+                    <i class="fas fa-users"></i>
+                    <h5 id="candidatos">Carregando...</h5>
+                    <p>Inscritos no sistema.</p>
+                </div>
+                <div class="col-md-4 stat">
+                    <i class="fas fa-briefcase"></i>
+                    <h5 id="vagas">Carregando...</h5>
+                    <p>Atualmente disponíveis.</p>
+                </div>
+                <div class="col-md-4 stat">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h5 id="empresas">Carregando...</h5>
+                    <p>Conectadas ao sistema.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="footer-bg py-5">
+        <div class="container">
+            <!-- Linhas principais -->
+            <div class="row">
+                <!-- Destaques -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                            profissionalizante</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                            dos Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                            Vice-diretor de unidade escolar</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">18 de outubro de 2023</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                            Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                            Fundamental</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">1 de março de 2023</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Temas Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                    <div class="d-flex flex-wrap align-items-baseline">
+                        <span class="badge bg-primary m-1">Educação <span
+                                class="badge bg-light text-dark ms-1">243</span></span>
+                        <span class="badge bg-primary m-1">Destaque <span
+                                class="badge bg-light text-dark ms-1">234</span></span>
+                        <span class="badge bg-primary m-1">Ensino Superior <span
+                                class="badge bg-light text-dark ms-1">58</span></span>
+                        <span class="badge bg-primary m-1">Polo Educacional <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Ensino Infantil <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Jovens e Adultos <span
+                                class="badge bg-light text-dark ms-1">37</span></span>
+                        <span class="badge bg-primary m-1">Cultura <span
+                                class="badge bg-light text-dark ms-1">36</span></span>
+                        <span class="badge bg-primary m-1">Ensino Integral <span
+                                class="badge bg-light text-dark ms-1">27</span></span>
+                        <span class="badge bg-primary m-1">Governo <span
+                                class="badge bg-light text-dark ms-1">26</span></span>
+                        <span class="badge bg-primary m-1">Esportes <span
+                                class="badge bg-light text-dark ms-1">19</span></span>
+                        <span class="badge bg-primary m-1">Saúde Escolar <span
+                                class="badge bg-light text-dark ms-1">15</span></span>
+                        <span class="badge bg-primary m-1">Inclusão Digital <span
+                                class="badge bg-light text-dark ms-1">12</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Linha inferior -->
+            <hr class="border-secondary">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 150px; height: 150px; object-fit: contain;">
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="col-md-4 mb-4 mb-md-0 text-center">
+                    <p style="text-align: justify;">
+                        <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                        14:00 às 18:00 (expediente interno).
+                    </p>
+                    <p style="text-align: justify;">
+                        <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                            class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                    </p>
+                </div>
+                <!-- Redes Sociais -->
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                    <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-facebook fa-2x"></i>
+                    </a>
+                    <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-instagram fa-2x"></i>
+                    </a>
+                    <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                        target="_blank">
+                        <i class="fab fa-youtube fa-2x"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script>
+        // Dados simulados (substituir com fetch de uma API ou backend)
+        const statsData = {
+            candidatos: 524,
+            vagas: 0,
+            empresas: 2,
+        };
+
+        // Função para atualizar os valores na página
+        function updateStats() {
+            // Atualiza os valores dinamicamente
+            document.getElementById('candidatos').innerText = `${statsData.candidatos}+ Candidatos`;
+            document.getElementById('vagas').innerText = `${statsData.vagas}+ Vagas`;
+            document.getElementById('empresas').innerText = `${statsData.empresas}+ Empresas`;
+        }
+
+        // Executa a função ao carregar a página
+        document.addEventListener('DOMContentLoaded', updateStats);
+    </script>
+
+    <!-- VERIFICAÇÃO DE CPF CANDIDATO IMPRESSÃO CURRÍCULO -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const btnImprimir = document.getElementById('btnImprimir');
+
+            btnImprimir.addEventListener('click', () => {
+                const cpf = "{{ candidato.cpf }}"; // Substituir pela variável correta do template
+
+                fetch(`/banco-curriculos/imprimir-curriculo/${cpf}/`)
+                    .then(response => {
+                        if (!response.ok) {
+                            // Caso o CPF não seja encontrado, exibir o alerta
+                            return response.text().then(html => {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(html, 'text/html');
+                                const alerta = doc.querySelector('#alertModalBody').textContent.trim();
+
+                                // Exibir a mensagem no modal
+                                const alertModalBody = document.getElementById('alertModalBody');
+                                alertModalBody.textContent = alerta;
+
+                                // Abrir o modal
+                                const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+                                alertModal.show();
+                            });
+                        } else {
+                            // Abrir o PDF diretamente no navegador
+                            window.open(`/banco-curriculos/imprimir-curriculo/${cpf}/`, '_blank');
+                        }
+                    })
+                    .catch(error => console.error('Erro:', error));
+            });
+        });
+    </script>
+    <!-- FIM VERIFICAÇÃO DE CPF CANDIDATO IMPRESSÃO CURRÍCULO -->
+
+
+
+
+</body>
+
+</html>

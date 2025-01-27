@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Gerenciamento de Permissões de Usuários">
+    <meta name="author" content="SemedSIEDGE Development Team">
+    <meta name="keywords" content="AdminLTE, Gerenciamento, Permissões, Usuários">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>Gerenciamento de Permissões</title>
+
+    <link rel="icon" href="{% static 'assets/img/favicon.ico' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=fallback">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+
+    <style>
+        .permissions-card {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background: #f7f9fb;
+            padding: 20px;
+        }
+
+        .permissions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .permissions-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .permissions-table th,
+        .permissions-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .btn-permissions {
+            margin: 0 5px;
+            font-size: 0.85rem;
+        }
+
+        .user-actions {
+            text-align: center;
+        }
+        .btn-access {
+    cursor: pointer;
+}
+
+    </style>
+</head>
+
+<body class="hold-transition sidebar-mini">
+    <div class="wrapper">
+        {% include "navbar.html" %}
+        {% include "sidebar.html" %}
+
+        <div class="content-wrapper">
+            <div class="content">
+                <div class="container-fluid">
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="permissions-card">
+                                <div class="permissions-header">
+                                    <h2>Gerenciamento de Permissões</h2>
+                                    <div>
+                                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#addGroupModal">
+                                            <i class="fas fa-users"></i> Adicionar Grupo
+                                        </button>
+                                        <button class="btn btn-info btn-sm" data-toggle="modal" data-target="#addPermissionModal">
+                                            <i class="fas fa-key"></i> Adicionar Permissão
+                                        </button>
+                                    </div>
+                                </div>
+                                
+
+                                <table class="table table-hover permissions-table">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Usuário</th>
+                                            <th>Email</th>
+                                            <th>Tipo</th>
+                                            <th>Permissões</th>
+                                            <th>Grupos</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for user in users %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ user.first_name }} {{ user.last_name }}</td>
+                                            <td>{{ user.email }}</td>
+                                            <td>
+                                                {% if user.is_superuser %}
+                                                <span class="badge badge-danger">Administrador</span>
+                                                {% elif user.is_staff %}
+                                                <span class="badge badge-primary">Técnico</span>
+                                                {% else %}
+                                                <span class="badge badge-secondary">Usuário</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% with user.user_permissions.all|slice:":1" as visible_permissions %}
+                                                {% for permission in visible_permissions %}
+                                                <span class="badge badge-info">{{ permission.name }}</span>
+                                                {% endfor %}
+                                                {% endwith %}
+                                                {% if user.user_permissions.count > 1 %}
+                                                <div class="dropdown d-inline">
+                                                    <button class="btn btn-link dropdown-toggle" type="button" id="permissionsDropdown{{ user.id }}" data-toggle="dropdown" aria-expanded="false">
+                                                        +{{ user.user_permissions.count|add:"-1" }} mais
+                                                    </button>
+                                                    <div class="dropdown-menu" aria-labelledby="permissionsDropdown{{ user.id }}">
+                                                        {% for permission in user.user_permissions.all|slice:"1:" %}
+                                                        <span class="dropdown-item">{{ permission.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </td>
+
+
+                                            <td>
+                                                {% with user.groups.all|slice:":1" as visible_groups %}
+                                                {% for group in visible_groups %}
+                                                <span class="badge badge-success">{{ group.name }}</span>
+                                                {% endfor %}
+                                                {% endwith %}
+                                                
+                                                {% if user.groups.count > 1 %}
+                                                <div class="dropdown d-inline">
+                                                    <button class="btn btn-link dropdown-toggle btn-sm" type="button" id="groupsDropdown{{ user.id }}" data-toggle="dropdown" aria-expanded="false">
+                                                        +{{ user.groups.count|add:"-1" }} mais
+                                                    </button>
+                                                    <div class="dropdown-menu" aria-labelledby="groupsDropdown{{ user.id }}">
+                                                        {% for group in user.groups.all|slice:"1:" %}
+                                                        <span class="dropdown-item">{{ group.name }}</span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if user.groups.count == 0 %}
+                                                <span class="text-muted">Sem grupos</span>
+                                                {% endif %}
+                                            </td>
+                                            
+                                            <td class="user-actions">
+                                                <button class="btn btn-warning btn-permissions btn-sm" data-toggle="modal" data-target="#editPermissionsModal{{ user.id }}">
+                                                    <i class="fas fa-edit"></i> Permitir
+                                                </button>
+
+                                                <button 
+                                                class="btn btn-success btn-sm btn-access" 
+                                                data-user-id="{{ user.id }}">
+                                                Acessar
+                                            </button>
+
+                                            
+                                             
+
+                                                
+                                                
+                                                
+
+                                            </td>
+                                        </tr>
+                                
+                                        <!-- Modal para cada usuário -->
+                                        <div class="modal fade" id="editPermissionsModal{{ user.id }}" tabindex="-1" aria-labelledby="editPermissionsModalLabel{{ user.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="editPermissionsModalLabel{{ user.id }}">Editar Permissões e Grupos</h5>
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                    </div>
+                                                    <form method="POST" action="{% url 'edit_permissions' user.id %}">
+                                                        {% csrf_token %}
+                                                        <div class="modal-body">
+                                                            <div class="form-group">
+                                                                <label for="permissions{{ user.id }}">Permissões</label>
+                                                                <select class="form-control" id="permissions{{ user.id }}" name="permissions" multiple>
+                                                                    {% for permission in permissions %}
+                                                                    <option value="{{ permission.id }}" {% if permission in user.user_permissions.all %}selected{% endif %}>
+                                                                        {{ permission.name }}
+                                                                    </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="groups{{ user.id }}">Grupos</label>
+                                                                <select class="form-control" id="groups{{ user.id }}" name="groups" multiple>
+                                                                    {% for group in groups %}
+                                                                    <option value="{{ group.id }}" {% if group in user.groups.all %}selected{% endif %}>
+                                                                        {{ group.name }}
+                                                                    </option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                                                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modals -->
+        <div class="modal fade" id="addGroupModal" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addGroupModalLabel">Adicionar Novo Grupo</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="POST" action="{% url 'add_group' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="group_name">Nome do Grupo</label>
+                                <input type="text" class="form-control" id="group_name" name="group_name" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar Grupo</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="modal fade" id="addPermissionModal" tabindex="-1" aria-labelledby="addPermissionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addPermissionModalLabel">Adicionar Nova Permissão</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="POST" action="{% url 'add_permission' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="permission_name">Nome da Permissão</label>
+                                <input type="text" class="form-control" id="permission_name" name="permission_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="permission_codename">Codename</label>
+                                <input type="text" class="form-control" id="permission_codename" name="permission_codename" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Adicionar Permissão</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        
+
+
+
+
+
+        <div class="modal fade" id="editPermissionsModal" tabindex="-1" aria-labelledby="editPermissionsModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editPermissionsModalLabel">Editar Permissões e Grupos</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form method="POST" action="{% url 'edit_permissions' user.id %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <!-- Campo de Permissões para Usuário -->
+                            <div class="form-group">
+                                <label for="permissions">Permissões do Usuário</label>
+                                <select class="form-control" id="permissions" name="permissions" multiple>
+                                    {% for permission in permissions %}
+                                    <option value="{{ permission.id }}" 
+                                        {% if permission in user.user_permissions.all %}selected{% endif %}>
+                                        {{ permission.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Campo de Grupos -->
+                            <div class="form-group">
+                                <label for="groups">Grupos do Usuário</label>
+                                <select class="form-control" id="groups" name="groups" multiple>
+                                    {% for group in groups %}
+                                    <option value="{{ group.id }}" 
+                                        {% if group in user.groups.all %}selected{% endif %}>
+                                        {{ group.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <!-- Campo para Atribuir Permissões a Grupos -->
+                            <div class="form-group">
+                                <label for="group_permissions">Permissões para Grupos</label>
+                                <select class="form-control" id="group_permissions" name="group_permissions" multiple>
+                                    {% for group in groups %}
+                                    <optgroup label="Grupo: {{ group.name }}">
+                                        {% for permission in permissions %}
+                                        <option value="{{ group.id }}-{{ permission.id }}" 
+                                            {% if permission in group.permissions.all %}selected{% endif %}>
+                                            {{ permission.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+            const accessButtons = document.querySelectorAll('.btn-access');
+            accessButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const userId = this.getAttribute('data-user-id');
+                    if (!userId) {
+                        console.error('ID de usuário inválido.');
+                        return;
+                    }
+                    const url = `/acessar_modulos/${userId}/`;
+                    window.location.href = url;
+                });
+            });
+        });
+
+        </script>
+        
+        
+        
+        
+
+
+
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+    <script src="{% static 'js/custom.js' %}"></script>
+
+</body>
+
+</html>

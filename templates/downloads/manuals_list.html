@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 20px;">
+    <div class="container-fluid">
+        <!-- Card for Manuals -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title font-weight-bold">
+                    <i class="fas fa-book"></i> Manuais Disponíveis para Download
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- List of Manuals -->
+                <ul class="list-group">
+                    {% for manual in manuals %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>{{ manual }}</span>
+                            <a href="{% url 'download_manual' manual %}" class="btn btn-success btn-sm">
+                                <i class="fas fa-download"></i> Baixar
+                            </a>
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item text-center text-muted">
+                            Nenhum manual disponível no momento.
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

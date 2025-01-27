@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 0; min-height: calc(100vh - 56px);">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col text-center">
+                    <h1 class="font-weight-bold text-primary">Indicadores do Setor Pedagógico</h1>
+                    <p class="text-muted">Acompanhe os principais indicadores pedagógicos do sistema.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Cards de Indicadores -->
+            <div class="row">
+                <!-- Indicador 1 -->
+                <div class="col-md-3">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-primary text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Taxa de Aprovação</h6>
+                                    <h3 class="font-weight-bold">85%</h3>
+                                </div>
+                                <i class="fas fa-check-circle fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicador 2 -->
+                <div class="col-md-3">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-success text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Média de Desempenho</h6>
+                                    <h3 class="font-weight-bold">7.5</h3>
+                                </div>
+                                <i class="fas fa-chart-line fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicador 3 -->
+                <div class="col-md-3">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-warning text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Acompanhamento Especial</h6>
+                                    <h3 class="font-weight-bold">12%</h3>
+                                </div>
+                                <i class="fas fa-users fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicador 4 -->
+                <div class="col-md-3">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-info text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title font-weight-bold">Frequência Média</h6>
+                                    <h3 class="font-weight-bold">92%</h3>
+                                </div>
+                                <i class="fas fa-calendar-check fa-3x"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row mt-4">
+                <!-- Gráfico de Pizza -->
+                <div class="col-md-6">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="font-weight-bold"><i class="fas fa-chart-pie"></i> Distribuição de Desempenho</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="pieChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Linhas -->
+                <div class="col-md-6">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="font-weight-bold"><i class="fas fa-chart-line"></i> Evolução Anual da Média</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="lineChart" style="height: 300px;"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Resumo -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="font-weight-bold"><i class="fas fa-table"></i> Resumo de Indicadores</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Indicador</th>
+                                        <th>Valor</th>
+                                        <th>Meta</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Taxa de Aprovação</td>
+                                        <td>85%</td>
+                                        <td>90%</td>
+                                        <td class="text-warning">Abaixo da Meta</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Média de Desempenho</td>
+                                        <td>7.5</td>
+                                        <td>8.0</td>
+                                        <td class="text-warning">Próximo da Meta</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Frequência Média</td>
+                                        <td>92%</td>
+                                        <td>95%</td>
+                                        <td class="text-success">Meta Alcançada</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Scripts para Gráficos -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Gráfico de Pizza
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        new Chart(pieCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Aprovados', 'Reprovados', 'Especial'],
+                datasets: [{
+                    data: [85, 5, 10],
+                    backgroundColor: ['#007bff', '#dc3545', '#ffc107'],
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Linhas
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: ['2019', '2020', '2021', '2022', '2023'],
+                datasets: [{
+                    label: 'Média Anual',
+                    data: [6.8, 7.0, 7.3, 7.4, 7.5],
+                    borderColor: '#28a745',
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

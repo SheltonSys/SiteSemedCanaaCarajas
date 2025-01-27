@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Cadastro de Conteúdo</h1>
+    <p>Aqui você pode adicionar novos conteúdos ao site institucional.</p>
+    
+    <form method="post" action="">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="titulo" class="form-label">Título</label>
+            <input type="text" class="form-control" id="titulo" name="titulo" placeholder="Digite o título do conteúdo">
+        </div>
+        <div class="mb-3">
+            <label for="descricao" class="form-label">Descrição</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="4" placeholder="Escreva a descrição do conteúdo"></textarea>
+        </div>
+        <div class="mb-3">
+            <label for="imagem" class="form-label">Imagem</label>
+            <input type="file" class="form-control" id="imagem" name="imagem">
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
+{% endblock %}

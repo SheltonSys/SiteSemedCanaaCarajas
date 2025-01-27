@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1><i class="fas fa-cogs"></i> Configurações do Site</h1>
+    <p>Configure as opções gerais do site institucional.</p>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <form>
+                <div class="mb-3">
+                    <label for="siteTitle" class="form-label">Título do Site</label>
+                    <input type="text" class="form-control" id="siteTitle" placeholder="Digite o título do site">
+                </div>
+                <div class="mb-3">
+                    <label for="siteDescription" class="form-label">Descrição do Site</label>
+                    <textarea class="form-control" id="siteDescription" rows="3" placeholder="Digite a descrição do site"></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="siteLogo" class="form-label">Logo do Site</label>
+                    <input type="file" class="form-control" id="siteLogo">
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar Configurações</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

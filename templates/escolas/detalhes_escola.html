@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{%load static%}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6">
+            {% if escola.imagem %}
+            <img src="{{ escola.imagem.url }}" class="img-fluid rounded shadow" alt="{{ escola.nome }}">
+            {% else %}
+            <img src="{% static 'assets/dist/img/default_image.jpg' %}" class="img-fluid rounded shadow"
+                alt="Imagem padrão">
+            {% endif %}
+
+        </div>
+        <div class="col-md-6">
+            <h1 class="text-primary">{{ escola.nome }}</h1>
+            <p class="text-muted">{{ escola.descricao }}</p>
+            <h5 class="text-dark">Endereço:</h5>
+            <p>{{ escola.endereco }}</p>
+            <a href="{% url 'escolas' %}" class="btn btn-secondary mt-3">
+                <i class="fas fa-arrow-left"></i> Voltar para Escolas
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

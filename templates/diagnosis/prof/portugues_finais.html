@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}Língua Portuguesa - Professores Anos Finais{% endblock %}
+
+{% block extra_head %}
+<link rel="icon" type="image/x-icon" href="{% static 'img/logocanaa2.ico' %}">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+<link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/dist/css/stylePortugues.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 0; flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-12">
+                    <h1 class="m-0">Língua Portuguesa Anos Finais - Professores</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="padding: 0; overflow-y: auto; flex: 1;">
+        <div class="container-fluid">
+            <!-- Cards -->
+            <div class="row">
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-success">
+                        <div class="inner">
+                            <h3>{{ total_corretas }}</h3>
+                            <p>Acertos</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-danger">
+                        <div class="inner">
+                            <h3>{{ total_erradas }}</h3>
+                            <p>Erros</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-times-circle"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-info">
+                        <div class="inner">
+                            <h3>{{ percentual_acertos }}%</h3>
+                            <p>Percentual de Acertos</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-6">
+                    <div class="small-box bg-warning">
+                        <div class="inner">
+                            <h3>{{ percentual_erros }}%</h3>
+                            <p>Percentual de Erros</p>
+                        </div>
+                        <div class="icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Formulário de Upload -->
+            <form method="post" enctype="multipart/form-data" action="{% url 'diagnosis_prof_portugues_finais' %}">
+                {% csrf_token %}
+                <div class="form-group d-flex align-items-center">
+                    <label for="planilha" class="mr-2">Upload da Planilha:</label>
+                    <input type="file" class="form-control mr-2" name="planilha" id="planilha" required style="width: auto;">
+                    <button type="submit" class="btn btn-primary" name="upload_planilha">Upload</button>
+                </div>
+            </form>
+
+            {% if uploaded_file_url %}
+            <p>Planilha carregada com sucesso! <a href="{{ uploaded_file_url }}">Baixar planilha</a></p>
+            {% endif %}
+
+            <!-- Tabela -->
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Habilidade</th>
+                            {% for turma in turmas %}
+                            <th>{{ turma }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for habilidade in habilidades %}
+                        <tr>
+                            <td>{{ habilidade.item }}</td>
+                            <td>{{ habilidade.habilidade }}</td>
+                            {% for turma in turmas %}
+                            <td>{{ habilidade.turmas|get_item:turma }}</td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+{% endblock %}
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabela = document.querySelector('table tbody');
+    
+        function carregarDados() {
+            fetch("{% url 'carregar_habilidades' 'final' %}")
+                .then(response => response.json())
+                .then(data => {
+                    tabela.innerHTML = ''; // Limpar a tabela antes de carregar os dados
+    
+                    data.habilidades.forEach(habilidade => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${habilidade.item}</td>
+                            <td>${habilidade.habilidade}</td>
+                            <td>${habilidade.turmas['401'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['403'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['404'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['406'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['408'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['409'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['410'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['413'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['414'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['415'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['417'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['421'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['423'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['426'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['428'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['429'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['430'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['432'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['433'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['434'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['435'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['436'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['437'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['438'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['439'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['441'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['442'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['447'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['451'] == 1 ? 'Sim' : 'Não'}</td>
+                            <td>${habilidade.turmas['471'] == 1 ? 'Sim' : 'Não'}</td>
+                        `;
+                        tabela.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Erro ao carregar os dados:', error));
+        }
+    
+        // Carregar os dados ao carregar a página
+        carregarDados();
+    
+        // Adicionar evento ao botão "Carregar Dados"
+        document.querySelector('#carregarBtn').addEventListener('click', carregarDados);
+    });
+    </script>

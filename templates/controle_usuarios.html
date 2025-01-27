@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="flex: 1; display: flex; flex-direction: column; padding: 0; margin: 0;">
+    <!-- Header -->
+    <div class="content-header" style="padding: 10px 20px; background-color: #f4f6f9; border-bottom: 1px solid #ddd;">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-6">
+                    <h1 class="m-0">Controle de Usuários</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Controle de Usuários</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .btn-group .btn {
+    transition: all 0.3s ease;
+}
+
+.btn-group .btn:hover {
+    transform: scale(1.05);
+    opacity: 0.9;
+}
+
+.btn-warning {
+    background-color: #ffc107;
+    border: none;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border: none;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+    </style>
+
+    <!-- Main Content -->
+    <section class="content" style="flex: 1; padding: 10px 20px;">
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Gerencie usuários do sistema</h3>
+                    <button class="btn btn-primary btn-sm ml-auto" data-toggle="modal" data-target="#addUserModal">
+                        Adicionar Usuário
+                    </button>
+                </div>
+                
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nome</th>
+                                    <th>Sobrenome</th>
+                                    <th>Email</th>
+                                    <th>Superuser</th>
+                                    <th>Ativo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for usuario in usuarios %}
+                                <tr>
+                                    <td>{{ usuario.id }}</td>
+                                    <td>{{ usuario.first_name }}</td>
+                                    <td>{{ usuario.last_name }}</td>
+                                    <td>{{ usuario.email }}</td>
+                                    <td>
+                                        {% if usuario.is_superuser %}
+                                        <span class="badge badge-success">Sim</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if usuario.is_active %}
+                                        <span class="badge badge-success">Sim</span>
+                                        {% else %}
+                                        <span class="badge badge-danger">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="#" class="btn btn-sm btn-warning text-white" style="font-weight: bold; border-radius: 5px;">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </a>
+                                            <a href="#" class="btn btn-sm btn-danger text-white" style="font-weight: bold; border-radius: 5px;">
+                                                <i class="fas fa-trash-alt"></i> Excluir
+                                            </a>
+                                            <a href="{% url 'configure_user_modules' user.id %}" class="btn btn-sm btn-primary text-white" 
+                                               style="font-weight: bold; border-radius: 5px;">
+                                                <i class="fas fa-cogs"></i> Módulos
+                                            </a>
+                                        </div>
+                                        
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center">Nenhum usuário encontrado</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addUserModal" tabindex="-1" role="dialog" aria-labelledby="addUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addUserModalLabel">Adicionar Novo Usuário</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addUserForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="first_name">Nome</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="last_name">Sobrenome</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="username">Nome de Usuário</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="password">Senha</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="is_active">Usuário Ativo</label>
+                            <select class="form-control" id="is_active" name="is_active">
+                                <option value="True">Sim</option>
+                                <option value="False">Não</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="isSuperuser" name="is_superuser">
+                        <label class="form-check-label" for="isSuperuser">Superusuário</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveButton" onclick="validarFormulario()">Salvar</button>
+                </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+<script>
+    function processandoBotao() {
+        // Seleciona o botão
+        const saveButton = document.getElementById('saveButton');
+        
+        // Altera o texto do botão para indicar processamento
+        saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+        
+        // Desativa o botão para evitar múltiplos envios
+        saveButton.disabled = true;
+
+        // Envia o formulário
+        const form = saveButton.closest('form');
+        if (form) {
+            form.submit();
+        }
+    }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function validarFormulario() {
+    // Obter os valores dos campos
+    const form = document.getElementById('addUserForm');
+    const formData = new FormData(form);
+    const saveButton = document.getElementById('saveButton');
+
+    // Verificar se os campos obrigatórios estão preenchidos
+    if (!formData.get('username') || !formData.get('email') || !formData.get('password')) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Campos obrigatórios',
+            text: 'Por favor, preencha todos os campos antes de salvar.',
+        });
+        return; // Impede o envio
+    }
+
+    // Adicionar efeito de "processando" no botão
+    saveButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+    saveButton.disabled = true;
+
+    // Enviar o formulário via AJAX
+    fetch("{% url 'adicionar_usuario' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+        },
+        body: formData,
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Exibir mensagem de sucesso
+            Swal.fire({
+                icon: 'success',
+                title: 'Sucesso!',
+                text: data.message,
+                confirmButtonText: 'OK',
+            }).then(() => {
+                // Fecha a modal e recarrega a página
+                $('#addUserModal').modal('hide');
+                window.location.reload();
+            });
+        } else {
+            // Exibir mensagem de erro
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro!',
+                text: data.message,
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro!',
+            text: 'Ocorreu um erro ao tentar salvar o usuário.',
+        });
+    })
+    .finally(() => {
+        // Restaurar o estado do botão após a operação
+        saveButton.innerHTML = 'Salvar';
+        saveButton.disabled = false;
+    });
+}
+
+</script>
+
+
+
+
+{% endblock %}
+
+
+

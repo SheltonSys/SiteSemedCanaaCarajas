@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Currículo - {{ curriculo.nome_completo }}</title>
+    <style>
+        body {
+            font-family: "Roboto", Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .curriculo-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007BFF;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: #007BFF;
+            margin-bottom: 10px;
+        }
+
+        .header h2 {
+            font-size: 1.2rem;
+            color: #6c757d;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #007BFF;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-label {
+            font-weight: bold;
+            min-width: 150px;
+            color: #495057;
+        }
+
+        .info-value {
+            flex-grow: 1;
+            color: #212529;
+        }
+
+        .highlight {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .footer a {
+            color: #007BFF;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .button-print {
+            display: block;
+            text-align: right;
+            margin-bottom: 15px;
+        }
+
+        .button-print button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .button-print button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="curriculo-container">
+        <!-- Print Button -->
+        <div class="button-print">
+            <button onclick="window.print()">Imprimir Currículo</button>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <h1>{{ curriculo.nome_completo }}</h1>
+            <h2>{{ curriculo.area_atuacao }}</h2>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="section">
+            <div class="section-title">Informações Pessoais</div>
+            <div class="info-row"><span class="info-label">CPF:</span><span class="info-value">{{ curriculo.cpf }}</span></div>
+            <div class="info-row"><span class="info-label">RG:</span><span class="info-value">{{ curriculo.rg }}</span></div>
+            <div class="info-row"><span class="info-label">Data de Nascimento:</span><span class="info-value">{{ curriculo.data_nascimento }}</span></div>
+            <div class="info-row"><span class="info-label">Estado Civil:</span><span class="info-value">{{ curriculo.estado_civil }}</span></div>
+            <div class="info-row"><span class="info-label">Gênero:</span><span class="info-value">{{ curriculo.genero }}</span></div>
+            <div class="info-row"><span class="info-label">Telefone:</span><span class="info-value">{{ curriculo.telefone }}</span></div>
+            <div class="info-row"><span class="info-label">Email:</span><span class="info-value">{{ curriculo.email }}</span></div>
+            <div class="info-row"><span class="info-label">Endereço:</span><span class="info-value">{{ curriculo.endereco }}, {{ curriculo.bairro }}, {{ curriculo.cidade }} - {{ curriculo.cep }}</span></div>
+        </div>
+
+        <!-- Academic Information -->
+        <div class="section">
+            <div class="section-title">Formação Acadêmica</div>
+            <div class="info-row"><span class="info-label">Nível Educacional:</span><span class="info-value">{{ curriculo.nivel_educacional }}</span></div>
+            <div class="info-row"><span class="info-label">Instituição:</span><span class="info-value">{{ curriculo.instituicao }}</span></div>
+            <div class="info-row"><span class="info-label">Curso:</span><span class="info-value">{{ curriculo.curso }}</span></div>
+            <div class="info-row"><span class="info-label">Ano de Conclusão:</span><span class="info-value">{{ curriculo.ano_conclusao }}</span></div>
+        </div>
+
+        <!-- Professional Experience -->
+        <div class="section">
+            <div class="section-title">Experiência Profissional</div>
+            <div class="info-row"><span class="info-label">Empresa:</span><span class="info-value">{{ curriculo.empresa }}</span></div>
+            <div class="info-row"><span class="info-label">Cargo:</span><span class="info-value">{{ curriculo.cargo }}</span></div>
+            <div class="info-row"><span class="info-label">Período:</span><span class="info-value">{{ curriculo.data_inicio }} a {% if curriculo.data_fim %}{{ curriculo.data_fim }}{% else %}Atualmente{% endif %}</span></div>
+            <div class="info-row"><span class="info-label">Descrição:</span><span class="info-value">{{ curriculo.descricao_experiencia }}</span></div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="section">
+            <div class="section-title">Informações Adicionais</div>
+            <div class="info-row"><span class="info-label">Cursos Complementares:</span><span class="info-value">{{ curriculo.cursos_complementares }}</span></div>
+            <div class="info-row"><span class="info-label">Status:</span>
+                <span class="info-value">
+                    {% if curriculo.status == 'aprovado' %}
+                    <span class="highlight">Aprovado</span>
+                    {% elif curriculo.status == 'pendente' %}
+                    Pendente
+                    {% else %}
+                    Não Definido
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Gerado pela plataforma da <a href="#">SEMED Canaã dos Carajás</a></p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="flex: 1; display: flex; flex-direction: column; padding: 0; margin: 0; background-color: #f8f9fa;">
+    <!-- Header -->
+    <div class="content-header" style="padding: 10px 20px; background-color: #343a40; color: white;">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h1 class="m-0 font-weight-bold"><i class="fas fa-user-shield"></i> Definir Permissões</h1>
+                </div>
+                <div class="col-sm-6 text-sm-right">
+                    <ol class="breadcrumb float-sm-right" style="background: transparent; margin-bottom: 0;">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboardadmin' %}" style="color: #f8f9fa;">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item active" style="color: #dcdcdc;">Definir Permissões</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="flex: 1; padding: 20px;">
+        <div class="container-fluid" style="max-width: 100%; height: calc(100% - 20px);">
+            <div class="card shadow-lg" style="height: 100%; border: none;">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="card-title m-0 font-weight-bold">
+                        <i class="fas fa-user-cog"></i> Gerencie as permissões dos usuários
+                    </h3>
+                </div>
+                <div class="card-body" style="height: auto; padding: 20px;">
+                    <p class="text-muted">Adicione, remova ou atualize permissões para diferentes grupos de usuários.</p>
+                    <div class="d-flex justify-content-end mb-3">
+                        <button class="btn btn-success shadow-sm" data-toggle="modal" data-target="#addPermissionModal">
+                            <i class="fas fa-plus-circle"></i> Adicionar Permissão
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Usuário</th>
+                                    <th>Email</th>
+                                    <th>Tipo</th>
+                                    <th>Permissões</th>
+                                    <th>Grupos</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <i class="fas fa-user text-primary"></i>
+                                        {{ user.first_name }} {{ user.last_name }}
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        {% if user.is_superuser %}
+                                        <span class="badge badge-danger">Administrador</span>
+                                        {% elif user.is_staff %}
+                                        <span class="badge badge-primary">Técnico</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">Usuário</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% with user.user_permissions.all|slice:":2" as visible_permissions %}
+                                        {% for permission in visible_permissions %}
+                                        <span class="badge badge-info">{{ permission.name }}</span>
+                                        {% endfor %}
+                                        {% endwith %}
+                                        {% if user.user_permissions.count > 2 %}
+                                        <small class="text-muted">+{{ user.user_permissions.count|add:"-2" }} mais</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% with user.groups.all|slice:":2" as visible_groups %}
+                                        {% for group in visible_groups %}
+                                        <span class="badge badge-success">{{ group.name }}</span>
+                                        {% endfor %}
+                                        {% endwith %}
+                                        {% if user.groups.count > 2 %}
+                                        <small class="text-muted">+{{ user.groups.count|add:"-2" }} mais</small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <button class="btn btn-warning btn-sm shadow-sm" data-toggle="modal"
+                                            data-target="#editPermissionsModal{{ user.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm shadow-sm" data-toggle="modal"
+                                            data-target="#deleteUserModal{{ user.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Custom Styles -->
+<style>
+    .content-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .table th, .table td {
+        vertical-align: middle !important;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+    }
+</style>
+{% endblock %}

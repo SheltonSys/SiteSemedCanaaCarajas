@@ -1,0 +1,333 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 20px;">
+    <h1 class="text-primary">Cadastro de Demandas</h1>
+    <p class="text-muted">Aqui você pode gerenciar os tipos de demandas disponíveis no sistema.</p>
+
+    {% if messages %}
+<div class="container mt-3">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<script>
+    // Fechamento automático após 3 segundos
+    document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                alert.classList.remove('show'); // Remove a classe para ocultar
+                alert.classList.add('fade'); // Adiciona o efeito de fade-out
+                setTimeout(() => alert.remove(), 150); // Remove o elemento do DOM
+            });
+        }, 3000); // Tempo em milissegundos
+    });
+</script>
+
+
+    <!-- Formulário de Cadastro -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Formulário de Cadastro de Demandas</h5>
+        </div>
+        <div class="card-body">
+
+
+            <form id="formCadastro" method="POST" action="{% url 'criar_demanda' %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-3">
+                        <label for="dataEntrega" class="form-label">Data de Entrega</label>
+                        <input type="date" class="form-control" id="dataEntrega" name="data_entrega" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="descricao" class="form-label">Descrição</label>
+                        <input type="text" class="form-control" id="descricao" name="descricao" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <label for="responsavel" class="form-label">Responsável</label>
+                        <input type="text" class="form-control" id="responsavel" name="responsavel" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="destinatario" class="form-label">Destinatário</label>
+                        <input type="text" class="form-control" id="destinatario" name="destinatario" required>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="prioridade" class="form-label">Prioridade</label>
+                        <select class="form-control" id="prioridade" name="prioridade" required>
+                            <option value="">Selecione</option>
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Imediata">Imediata</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-control" id="status" name="status" required>
+                            <option value="">Selecione</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em andamento">Em andamento</option>
+                            <option value="Finalizado">Finalizado</option>
+                            <option value="Cancelado">Cancelado</option>
+                            <option value="Aguardando">Aguardando</option>
+                            <option value="Atrasado">Atrasado</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </div>
+            </form>
+
+
+
+        </div>
+    </div>
+
+
+    <!-- Tabela de Registros -->
+    <!-- <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Registros Cadastrados</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Data de Cadastro</th>
+                            <th>Data de Entrega</th>
+                            <th>Descrição</th>
+                            <th>Responsável</th>
+                            <th>Destinatário</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+    
+                    <tbody id="tabelaRegistros">
+                        {% if demandas %}
+                            {% for demanda in demandas %}
+                            <tr>
+                                <td>{{ demanda.id }}</td>
+                                <td>{{ demanda.data_cadastro }}</td>
+                                <td>{{ demanda.data_entrega }}</td>
+                                <td>{{ demanda.descricao }}</td>
+                                <td>{{ demanda.responsavel }}</td>
+                                <td>{{ demanda.destinatario }}</td>
+                                <td>{{ demanda.prioridade }}</td>
+                                <td>
+                                    <span class="status-badge {{ demanda.status|slugify }}">
+                                        {{ demanda.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                
+                                    <a href="{% url 'editar_demanda' demanda.id %}" class="btn btn-sm btn-warning" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{% url 'excluir_demanda' demanda.id %}" method="POST" style="display:inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir esta demanda?')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center">Nenhuma demanda cadastrada.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+    </div> -->
+    
+
+
+
+</div>
+{% endblock %}
+
+
+
+
+{% if form.errors %}
+<div class="alert alert-danger">
+    <ul>
+        {% for field, errors in form.errors.items %}
+        <li>{{ field }}: {{ errors|join:", " }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+
+<style>
+    /* Remove espaçamento entre sidebar e content */
+    .content-wrapper {
+        margin-left: 0;
+        padding: 0;
+        background-color: #f8f9fa;
+        min-height: calc(100vh - 56px);
+        /* Ajuste de altura para incluir o header */
+    }
+
+    /* Formatação da tabela */
+    .table-hover tbody tr:hover {
+        background-color: #f2f2f2;
+    }
+
+    .card {
+        border-radius: 8px;
+    }
+
+    /* Botão de salvar */
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    /* Cabeçalhos */
+    .thead-light th {
+        background-color: #e9ecef;
+    }
+
+    /* Estilo base para as badges */
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        display: inline-block;
+        text-align: center;
+        color: white;
+        text-transform: capitalize;
+    }
+
+    /* Cores para cada status */
+    .pendente {
+        background-color: #ffc107; /* Amarelo */
+    }
+
+    .em-andamento {
+        background-color: #17a2b8; /* Azul claro */
+    }
+
+    .finalizado {
+        background-color: #28a745; /* Verde */
+    }
+
+    .cancelado {
+        background-color: #dc3545; /* Vermelho */
+    }
+
+    .aguardando {
+        background-color: #6c757d; /* Cinza */
+    }
+
+    .atrasado {
+        background-color: #fd7e14; /* Laranja */
+    }
+
+    .status-badge {
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-weight: bold;
+        font-size: 0.9rem;
+        display: inline-block;
+        color: white;
+        text-transform: capitalize;
+    }
+
+    .pendente { background-color: #ffc107; }
+    .em-andamento { background-color: #17a2b8; }
+    .finalizado { background-color: #28a745; }
+    .cancelado { background-color: #dc3545; }
+
+</style>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tabelaRegistros = document.getElementById("tabelaRegistros");
+
+        // Função para carregar dados da tabela
+        function carregarDados() {
+            fetch("{% url 'listar_demandas' %}") // Substitua por sua URL que retorna as demandas
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Erro ao carregar os dados.");
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    tabelaRegistros.innerHTML = ""; // Limpa os dados existentes
+                    if (data.length === 0) {
+                        tabelaRegistros.innerHTML = `
+                            <tr>
+                                <td colspan="9" class="text-center">Nenhuma demanda cadastrada.</td>
+                            </tr>`;
+                    } else {
+                        data.forEach(demanda => {
+                            tabelaRegistros.innerHTML += `
+                                <tr>
+                                    <td>${demanda.id}</td>
+                                    <td>${demanda.data_cadastro}</td>
+                                    <td>${demanda.data_entrega}</td>
+                                    <td>${demanda.descricao}</td>
+                                    <td>${demanda.responsavel}</td>
+                                    <td>${demanda.destinatario}</td>
+                                    <td>${demanda.prioridade}</td>
+                                    <td>${demanda.status}</td>
+                                    <td>
+                                        <!-- Botão Editar -->
+                                        <a href="/editar-demanda/${demanda.id}" class="btn btn-sm btn-warning" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <!-- Botão Excluir -->
+                                        <form action="/excluir-demanda/${demanda.id}" method="POST" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir esta demanda?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>`;
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+
+        // Carrega os dados inicialmente
+        carregarDados();
+
+        // Atualiza a tabela automaticamente a cada 10 segundos
+        setInterval(carregarDados, 10000);
+    });
+</script>

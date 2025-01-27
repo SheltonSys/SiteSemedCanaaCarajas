@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom" style="margin: 0; padding: 10px;">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1 class="m-0"><i class="fas fa-user-check"></i> Acompanhamento Individual</h1>
+                </div>
+                <div class="col-sm-6 text-right">
+                    <ol class="breadcrumb float-sm-right" style="margin: 0;">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Acompanhamento Individual</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="flex: 1; padding: 20px;">
+        <div class="container-fluid">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title font-weight-bold"><i class="fas fa-user-check"></i> Informações dos Alunos</h5>
+                </div>
+                <div class="card-body">
+                    <p>Visualize e registre informações sobre alunos que necessitam de suporte especial.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="min-height: 100vh; margin: 0; padding: 0;">
+
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom" style="margin-left: 0;">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0"><i class="fas fa-database"></i> Gestão de Dados</h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Gestão de Dados</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="padding: 10px;">
+        <div class="container-fluid">
+            <!-- Welcome Message -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h3 class="font-weight-bold text-primary">Bem-vindo à Gestão de Dados</h3>
+                            <p class="text-muted">Aqui você pode visualizar, filtrar e gerenciar os dados das escolas e alunos de forma eficiente.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title m-0"><i class="fas fa-filter"></i> Filtros</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" action="{% url 'gestao_dados' %}">
+                                <div class="form-row">
+                                    <div class="form-group col-md-3">
+                                        <label for="escola" class="font-weight-bold">Escola</label>
+                                        <select id="escola" name="escola" class="form-control">
+                                            <option value="">Selecione</option>
+                                            {% for escola in escolas %}
+                                                <option value="{{ escola }}" {% if escola == escola_selecionada %}selected{% endif %}>{{ escola }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label for="bairro" class="font-weight-bold">Bairro</label>
+                                        <select id="bairro" name="bairro" class="form-control">
+                                            <option value="">Selecione</option>
+                                            {% for bairro in bairros %}
+                                                <option value="{{ bairro }}" {% if bairro == bairro_selecionado %}selected{% endif %}>{{ bairro }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label for="turno" class="font-weight-bold">Turno</label>
+                                        <select id="turno" name="turno" class="form-control">
+                                            <option value="">Selecione</option>
+                                            <option value="Matutino" {% if turno_selecionado == 'Matutino' %}selected{% endif %}>Matutino</option>
+                                            <option value="Vespertino" {% if turno_selecionado == 'Vespertino' %}selected{% endif %}>Vespertino</option>
+                                            <option value="Noturno" {% if turno_selecionado == 'Noturno' %}selected{% endif %}>Noturno</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-3">
+                                        <label for="sexo" class="font-weight-bold">Sexo</label>
+                                        <select id="sexo" name="sexo" class="form-control">
+                                            <option value="">Selecione</option>
+                                            <option value="M" {% if sexo_selecionado == 'M' %}selected{% endif %}>Masculino</option>
+                                            <option value="F" {% if sexo_selecionado == 'F' %}selected{% endif %}>Feminino</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group text-right">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Table Section -->
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title m-0"><i class="fas fa-table"></i> Dados das Escolas</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-striped" style="font-size: 14px;">
+                                    <thead>
+                                        <tr>
+                                            <th>Matrícula</th>
+                                            <th>Nome</th>
+                                            <th>Escola</th>
+                                            <th>Bairro</th>
+                                            <th>Turno</th>
+                                            <th>Sexo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for aluno in alunos %}
+                                            <tr>
+                                                <td>{{ aluno.numero_matricula }}</td>
+                                                <td>{{ aluno.nome_completo }}</td>
+                                                <td>{{ aluno.escola }}</td>
+                                                <td>{{ aluno.bairro }}</td>
+                                                <td>{{ aluno.turno }}</td>
+                                                <td>{{ aluno.sexo }}</td>
+                                            </tr>
+                                        {% empty %}
+                                            <tr>
+                                                <td colspan="6" class="text-center">Nenhum dado encontrado.</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

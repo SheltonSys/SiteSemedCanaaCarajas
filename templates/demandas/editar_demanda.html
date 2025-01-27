@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 20px;">
+    <h1 class="text-primary">Editar Demanda</h1>
+    <p class="text-muted">Atualize as informações da demanda.</p>
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Formulário de Edição</h5>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{% url 'editar_demanda' demanda.id %}">
+                {% csrf_token %}
+                <!-- Exibição personalizada dos campos do formulário -->
+                <div class="mb-3">
+                    <label for="id_status" class="form-label">Status</label>
+                    <select name="status" id="id_status" class="form-select status-badge {{ demanda.status|slugify }}" required>
+                        {% for key, value in form.fields.status.choices %}
+                        <option value="{{ key }}" {% if demanda.status == key %}selected{% endif %}>
+                            {{ value }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Outros campos -->
+                {{ form.as_p|safe }}
+
+                <div class="row mt-3">
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-success">Salvar Alterações</button>
+                        <a href="{% url 'criar_demanda' %}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<style>
+    /* Estilo base para as badges */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: white;
+    text-transform: capitalize;
+}
+
+/* Cores específicas para cada status */
+.pendente {
+    background-color: #ffc107; /* Amarelo */
+}
+
+.em-andamento {
+    background-color: #17a2b8; /* Azul claro */
+}
+
+.finalizado {
+    background-color: #28a745; /* Verde */
+}
+
+.cancelado {
+    background-color: #dc3545; /* Vermelho */
+}
+
+.aguardando {
+    background-color: #6c757d; /* Cinza */
+}
+
+.atrasado {
+    background-color: #fd7e14; /* Laranja */
+}
+
+</style>

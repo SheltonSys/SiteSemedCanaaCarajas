@@ -1,0 +1,50 @@
+
+<h2 class="text-center mb-4 text-primary display-4 fw-bold">Adicionar Formação Acadêmica</h2>
+<p class="text-center text-muted mb-5 fs-5">
+    Adicione formações acadêmicas para o diretor <strong>{{ diretor.nome_completo }}</strong>.
+</p>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="nivel" class="form-label fw-bold text-uppercase">
+                <i class="fas fa-graduation-cap text-primary me-2"></i> Nível Educacional
+                <span class="text-danger">*</span>
+            </label>
+            <select name="nivel" class="form-select border-2 shadow-sm" required>
+                <option value="GraduacaoC">Graduação Completa</option>
+                <option value="GraduacaoI">Graduação Incompleta</option>
+                <!-- Adicione outras opções conforme necessário -->
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="instituicao" class="form-label fw-bold text-uppercase">
+                <i class="fas fa-university text-primary me-2"></i> Instituição
+                <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="instituicao" class="form-control border-2 shadow-sm" required>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label for="curso" class="form-label fw-bold text-uppercase">
+                <i class="fas fa-book text-primary me-2"></i> Curso
+                <span class="text-danger">*</span>
+            </label>
+            <input type="text" name="curso" class="form-control border-2 shadow-sm" required>
+        </div>
+        <div class="col-md-6">
+            <label for="ano_conclusao" class="form-label fw-bold text-uppercase">
+                <i class="fas fa-calendar-check text-primary me-2"></i> Ano de Conclusão
+                <span class="text-danger">*</span>
+            </label>
+            <input type="date" name="ano_conclusao" class="form-control border-2 shadow-sm" required>
+        </div>
+    </div>
+    <div class="d-grid">
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save me-2"></i>Salvar Formação
+        </button>
+    </div>
+</form>

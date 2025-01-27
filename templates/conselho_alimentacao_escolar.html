@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conselho de Alimentação Escolar - SEMED Canaã dos Carajás">
+    <title>Conselho de Alimentação Escolar - SEMED</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+    body {
+        font-family: 'Arial', sans-serif;
+    }
+    /* Remove barra de rolagem para navegadores baseados em Webkit (Chrome, Edge, Safari) */
+    body::-webkit-scrollbar {
+            display: none;
+        }
+    p {
+            text-align: justify;
+        }
+    .navbar {
+        background-color: #007bff;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .navbar-brand img {
+        height: 50px;
+    }
+    .navbar-nav .nav-link:hover {
+        color: #ffd700;
+    }
+    .hero-section {
+        background: linear-gradient(to right, rgba(0, 123, 255, 0.8), rgba(0, 56, 142, 0.8)),
+        url("{% static 'assets/dist/img/alimentacaoEscolar.jpeg' %}");
+        background-size: cover;
+        background-position: center;
+        height: 450px;
+        color: white;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: bold;
+    }
+    .hero-section p {
+        font-size: 1.2rem;
+        margin-top: 10px;
+    }
+    .footer-link {
+        text-decoration: none;
+        color: #ffd700;
+    }
+    .footer-link:hover {
+        text-decoration: underline;
+        color: #fff;
+    }
+    .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+    </style>
+</head>
+<body>
+
+ <!-- Navbar -->
+ <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+        <a class="navbar-brand" href="#" aria-label="SEMED Canaã dos Carajás">
+            <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED">
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link active" aria-current="page"
+                        href="{% url 'index' %}">Início</a></li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Institucional
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                        <li><a class="dropdown-item" href="{% url 'apresentacao' %}">Sobre a
+                                Semed</a></li>
+                        <li><a class="dropdown-item" href="{% url 'organograma' %}">Organograma</a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarConhecaRede" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Conheça a Rede
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarConhecaRede">
+                        <li><a class="dropdown-item" href="{% url 'escola' %}">Escolas</a></li>
+                        <li><a class="dropdown-item" href="{% url 'centro_viver_conviver' %}">Centro Viver e
+                                Conviver</a></li>
+                        <li><a class="dropdown-item" href="{% url 'centro_formacao' %}"> Centro de Formação</a></li>
+                        <li><a class="dropdown-item" href="{% url 'diretoria_ensino_superior' %}"> Diretoria de
+                                Ensino Superior</a></li>
+                        <li><a class="dropdown-item" href="{% url 'centro_midias_educacionais' %}"> Centro de Mídias
+                                Educacionais</a></li>
+                    </ul>
+                </li>
+
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarEventos" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Eventos
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarEventos">
+                        <li><a class="dropdown-item" href="{% url 'agenda' %}">Agenda</a></li>
+                        <li><a class="dropdown-item" href="{% url 'inscricoes' %}">Inscrições</a></li>
+                        <li><a class="dropdown-item" href="{% url 'certificado' %}">Emita seu Certificado</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarServices" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Serviços
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarServices">
+                        <li><a class="dropdown-item" href="{% url 'repositorio' %}">Repositório</a></li>
+                        <li><a class="dropdown-item" href="{% url 'curriculo_ensino' %}">Currículo de Ensino</a>
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'programas_projetos' %}">Programas e Projetos em
+                                Rede</a></li>
+                        <li><a class="dropdown-item" href="{% url 'calendario_escolar' %}">Calendário Escolar</a>
+                        </li>
+                        <li><a class="dropdown-item" href="{% url 'portal_aluno' %}">Portal do Aluno</a></li>
+                        <li><a class="dropdown-item" href="https://canaa.algtec.com.br/auth" target="_blank" class="btn btn-light btn-sm">SYNAPTIC</a></li>
+                        <li><a class="dropdown-item"
+                                href="https://sistema.semedcanaadoscarajas.pa.gov.br/documentos-public/todos"
+                                target="_blank">Consulta Pública</a></li>
+                    </ul>
+                </li>
+
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarSocial" role="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                        Participação Social
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="navbarSocial">
+                        <li><a class="dropdown-item" href="{% url 'conselho_municipal_educacao' %}">Conselho
+                                Municipal de Educação</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cacs_fundeb' %}">CACS-FUNDEB</a></li>
+                        <li><a class="dropdown-item" href="{% url 'conselho_alimentacao_escolar' %}">Conselho de
+                                Alimentação Escolar</a></li>
+                        <li><a class="dropdown-item" href="{% url 'forum_municipal_educacao' %}">Fórum Municipal de
+                                Educação</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'transparencia_index' %}">Transparência</a>
+                </li>
+                
+                <li class="nav-item"><a class="nav-link" href="{% url 'fale_conosco' %}">Fale Conosco</a></li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}" target="_blank">ADM</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1>Conselho de Alimentação Escolar</h1>
+        <p style="text-align: center;">Promovendo a qualidade na alimentação escolar para o desenvolvimento dos alunos.</p>
+    </div>
+</section>
+
+<!-- Sobre o Conselho de Alimentação Escolar -->
+<section id="sobre-conselho" class="py-5">
+    <div class="container">
+        <h2 class="text-center text-primary mb-4">O que é o Conselho de Alimentação Escolar?</h2>
+        <p>
+            O Conselho de Alimentação Escolar (CAE) é um órgão essencial que promove a gestão participativa e o controle social sobre os recursos destinados à alimentação escolar, garantindo uma nutrição de qualidade para todos os alunos da rede pública.
+        </p>
+        <p>
+            Entre suas principais funções estão:
+        </p>
+        <ul>
+            <li style="text-align: justify;">Monitorar a aplicação dos recursos destinados à alimentação escolar;</li>
+            <li style="text-align: justify;">Garantir que os alimentos adquiridos atendam aos padrões de qualidade e segurança alimentar;</li>
+            <li style="text-align: justify;">Contribuir para a formulação de políticas públicas relacionadas à alimentação dos estudantes.</li>
+        </ul>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer-bg py-5">
+    <div class="container">
+        <!-- Linhas principais -->
+        <div class="row">
+            <!-- Destaques -->
+            <div class="col-md-4 mb-4">
+                <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-4 d-flex align-items-start">
+                        <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                            style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                class="text-white text-decoration-none" target="_blank">
+                                <p style="text-align: justify; color: #ffffff;">
+                                    <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                </p>
+                            </a>
+                            <small class="d-block text-muted;">27 de novembro de 2024</small>
+                        </div>
+                    </li>
+                    <li class="mb-4 d-flex align-items-start">
+                        <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                            class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                class="text-white text-decoration-none" target="_blank">
+                                <p style="text-align: justify; color: #ffffff;">
+                                    <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                        profissionalizante</strong>
+                                </p>
+                            </a>
+                            <small class="d-block text-muted;">27 de novembro de 2024</small>
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start">
+                        <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                            class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                class="text-white text-decoration-none" target="_blank">
+                                <p style="text-align: justify; color: #ffffff;">
+                                    <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                        dos Carajás</strong>
+                                </p>
+                            </a>
+                            <small class="d-block text-muted;">27 de novembro de 2024</small>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- Mais Acessados -->
+            <div class="col-md-4 mb-4">
+                <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                <ul class="list-unstyled">
+                    <li class="mb-4 d-flex align-items-start">
+                        <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                            class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                class="text-white text-decoration-none" target="_blank">
+                                <p style="text-align: justify;">
+                                    <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                        Vice-diretor de unidade escolar</strong>
+                                </p>
+                            </a>
+                            <small class="d-block text-muted">18 de outubro de 2023</small>
+                        </div>
+                    </li>
+                    <li class="mb-4 d-flex align-items-start">
+                        <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                            class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                class="text-white text-decoration-none" target="_blank">
+                                <p style="text-align: justify;">
+                                    <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                        Carajás</strong>
+                                </p>
+                            </a>
+                            <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                        </div>
+                    </li>
+                    <li class="d-flex align-items-start">
+                        <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                            class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                        <div>
+                            <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                class="text-white text-decoration-none" target="_blank">
+                                <p style="text-align: justify;">
+                                    <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                        Fundamental</strong>
+                                </p>
+                            </a>
+                            <small class="d-block text-muted">1 de março de 2023</small>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <!-- Temas Mais Acessados -->
+            <div class="col-md-4 mb-4">
+                <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                <div class="d-flex flex-wrap align-items-baseline">
+                    <span class="badge bg-primary m-1">Educação <span
+                            class="badge bg-light text-dark ms-1">243</span></span>
+                    <span class="badge bg-primary m-1">Destaque <span
+                            class="badge bg-light text-dark ms-1">234</span></span>
+                    <span class="badge bg-primary m-1">Ensino Superior <span
+                            class="badge bg-light text-dark ms-1">58</span></span>
+                    <span class="badge bg-primary m-1">Polo Educacional <span
+                            class="badge bg-light text-dark ms-1">42</span></span>
+                    <span class="badge bg-primary m-1">Ensino Infantil <span
+                            class="badge bg-light text-dark ms-1">42</span></span>
+                    <span class="badge bg-primary m-1">Jovens e Adultos <span
+                            class="badge bg-light text-dark ms-1">37</span></span>
+                    <span class="badge bg-primary m-1">Cultura <span
+                            class="badge bg-light text-dark ms-1">36</span></span>
+                    <span class="badge bg-primary m-1">Ensino Integral <span
+                            class="badge bg-light text-dark ms-1">27</span></span>
+                    <span class="badge bg-primary m-1">Governo <span
+                            class="badge bg-light text-dark ms-1">26</span></span>
+                    <span class="badge bg-primary m-1">Esportes <span
+                            class="badge bg-light text-dark ms-1">19</span></span>
+                    <span class="badge bg-primary m-1">Saúde Escolar <span
+                            class="badge bg-light text-dark ms-1">15</span></span>
+                    <span class="badge bg-primary m-1">Inclusão Digital <span
+                            class="badge bg-light text-dark ms-1">12</span></span>
+                </div>
+            </div>
+        </div>
+        <!-- Linha inferior -->
+        <hr class="border-secondary">
+        <div class="row align-items-center">
+            <!-- Logo -->
+            <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                    style="width: 150px; height: 150px; object-fit: contain;">
+            </div>
+
+            <!-- Informações de Contato -->
+            <div class="col-md-4 mb-4 mb-md-0 text-center">
+                <p style="text-align: justify;">
+                    <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                    14:00 às 18:00 (expediente interno).
+                </p>
+                <p style="text-align: justify;">
+                    <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                        class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                </p>
+            </div>
+            <!-- Redes Sociais -->
+            <div class="col-md-4 text-center text-md-end">
+                <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                    style="text-decoration: none;">
+                    <i class="fab fa-facebook fa-2x"></i>
+                </a>
+                <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                    style="text-decoration: none;">
+                    <i class="fab fa-instagram fa-2x"></i>
+                </a>
+                <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                    target="_blank">
+                    <i class="fab fa-youtube fa-2x"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Painel ADM SEPPEC</h1>
+            <p class="text-muted">Bem-vindo(a) {{ user.first_name }}! Explore os principais indicadores e módulos disponíveis.</p>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-school fa-3x text-primary mb-3"></i>
+                        <h5 class="card-title font-weight-bold">Escolas</h5>
+                        <p class="card-text text-muted">Número total de escolas: <strong>{{ total_escolas }}</strong></p>
+                        <a href="{% url 'escolas' %}" class="btn btn-primary btn-sm">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-users fa-3x text-success mb-3"></i>
+                        <h5 class="card-title font-weight-bold">Membros</h5>
+                        <p class="card-text text-muted">Total de membros cadastrados: <strong>{{ total_membros }}</strong></p>
+                        <a href="{% url 'conselho_membros' %}" class="btn btn-success btn-sm">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-file-alt fa-3x text-warning mb-3"></i>
+                        <h5 class="card-title font-weight-bold">Certidões Emitidas</h5>
+                        <p class="card-text text-muted">Total emitido: <strong>{{ total_certidoes }}</strong></p>
+                        <a href="{% url 'emissao_certidoes' %}" class="btn btn-warning btn-sm">Ver Detalhes</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulos Permitidos -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">
+                    <i class="fas fa-cogs"></i> Módulos Permitidos
+                </h2>
+            </div>
+            <div class="card-body bg-light">
+                <ul class="list-group list-group-flush">
+                    {% for permission in user_modules %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-folder-open text-primary fa-lg me-3"></i>
+                            <a href="{% url 'nome_da_view_modulo' permission.module.slug %}" class="text-decoration-none text-dark font-weight-bold hover-underline-animation">
+                                {{ permission.module.name }}
+                            </a>
+                        </div>
+                        <span class="badge bg-success rounded-pill px-3 py-2">Acesso Permitido</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center bg-warning text-dark font-italic">
+                        <i class="fas fa-exclamation-circle fa-lg"></i> Sem módulos permitidos
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+    .content-wrapper {
+        margin-left: 0; /* Remove margem do sidebar */
+        padding: 20px; /* Ajuste de padding */
+    }
+
+    .hover-underline-animation {
+        position: relative;
+        display: inline-block;
+    }
+
+    .hover-underline-animation::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        transform: scaleX(0);
+        height: 3px;
+        bottom: -3px;
+        left: 0;
+        background-color: #007bff;
+        transform-origin: bottom right;
+        transition: transform 0.25s ease-out;
+    }
+
+    .hover-underline-animation:hover::after {
+        transform: scaleX(1);
+        transform-origin: bottom left;
+    }
+
+    .btn {
+        font-size: 1rem;
+    }
+
+    .card-title {
+        font-weight: bold;
+    }
+
+    .card-text {
+        font-size: 0.9rem;
+    }
+</style>

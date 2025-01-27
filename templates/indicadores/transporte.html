@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="min-height: calc(100vh - 56px); margin-left: 0;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <h1 class="m-0 font-weight-bold text-primary"><i class="fas fa-bus"></i> Dashboard de Transporte Escolar</h1>
+                </div>
+                <div class="col-md-6 text-md-left text-left">
+                    <ol class="breadcrumb float-md-left bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard Geral</a></li>
+                        <li class="breadcrumb-item active">Transporte Escolar</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="padding-left: 0; padding-right: 0;">
+        <div class="container-fluid">
+            <!-- Cards Section -->
+            <div class="row">
+                <!-- Card 1 -->
+                <div class="col-lg-3 col-sm-6 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body bg-info text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Total de Alunos</h5>
+                                    <h3 class="card-text font-weight-bold">{{ total_alunos|default:"0" }}</h3>
+                                </div>
+                                <i class="fas fa-user-graduate fa-3x"></i>
+                            </div>
+                        </div>
+                        <a href="#" class="card-footer bg-light text-info font-weight-bold shadow-sm">Ver Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="col-lg-3 col-sm-6 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body bg-success text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Total de Escolas</h5>
+                                    <h3 class="card-text font-weight-bold">{{ total_escolas|default:"0" }}</h3>
+                                </div>
+                                <i class="fas fa-school fa-3x"></i>
+                            </div>
+                        </div>
+                        <a href="#" class="card-footer bg-light text-success font-weight-bold shadow-sm">Ver Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="col-lg-3 col-sm-6 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body bg-warning text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Alunos Ensino Médio</h5>
+                                    <h3 class="card-text font-weight-bold">{{ alunos_ensino_medio|default:"0" }}</h3>
+                                </div>
+                                <i class="fas fa-users fa-3x"></i>
+                            </div>
+                        </div>
+                        <a href="#" class="card-footer bg-light text-warning font-weight-bold shadow-sm">Ver Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="col-lg-3 col-sm-6 mb-4">
+                    <div class="card shadow border-0">
+                        <div class="card-body bg-danger text-white rounded">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">Alunos Ensino Fundamental</h5>
+                                    <h3 class="card-text font-weight-bold">{{ alunos_ensino_fundamental|default:"0" }}</h3>
+                                </div>
+                                <i class="fas fa-users fa-3x"></i>
+                            </div>
+                        </div>
+                        <a href="#" class="card-footer bg-light text-danger font-weight-bold shadow-sm">Ver Detalhes <i class="fas fa-arrow-circle-right"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações detalhadas -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card shadow border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="card-title"><i class="fas fa-info-circle"></i> Informações Detalhadas</h3>
+                        </div>
+                        <div class="card-body">
+                            <p>Abaixo estão algumas informações detalhadas sobre o transporte escolar:</p>
+                            <ul>
+                                <li><strong>Escolas Cadastradas:</strong> {{ total_escolas }}</li>
+                                <li><strong>Alunos Ensino Fundamental:</strong> {{ alunos_ensino_fundamental }}</li>
+                                <li><strong>Alunos Ensino Médio:</strong> {{ alunos_ensino_medio }}</li>
+                                <li><strong>Total de Alunos:</strong> {{ total_alunos }}</li>
+                            </ul>
+                            <p>Consulte as abas de navegação para visualizar mais detalhes.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Informações Detalhadas sobre Indicadores Educacionais -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow border-0">
+            <div class="card-header bg-secondary text-white">
+                <h3 class="card-title"><i class="fas fa-chart-line"></i> Indicadores Educacionais</h3>
+            </div>
+            <div class="card-body">
+                <p>Abaixo estão alguns indicadores educacionais detalhados:</p>
+                <ul>
+                    <li><strong>Taxa de Aprovação (Ensino Fundamental):</strong> {{ taxa_aprovacao_fundamental }}%</li>
+                    <li><strong>Taxa de Aprovação (Ensino Médio):</strong> {{ taxa_aprovacao_medio }}%</li>
+                    <li><strong>Média de Alunos por Turma:</strong> {{ media_alunos_turma }}</li>
+                    <li><strong>Taxa de Abandono Escolar:</strong> {{ taxa_abandono }}%</li>
+                    <li><strong>Total de Professores:</strong> {{ total_professores }}</li>
+                    <li><strong>Escolas com Infraestrutura Adequada:</strong> {{ escolas_infraestrutura }}/{{ total_escolas }}</li>
+                </ul>
+                <p>Esses indicadores refletem o desempenho e a qualidade do sistema educacional municipal. Para análises mais detalhadas, utilize os relatórios específicos disponíveis no sistema.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Indicadores Específicos da Educação em Canaã dos Carajás -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card shadow border-0">
+            <div class="card-header bg-success text-white">
+                <h3 class="card-title"><i class="fas fa-graduation-cap"></i> Indicadores da Educação em Canaã dos Carajás</h3>
+            </div>
+            <div class="card-body">
+                <p>Abaixo estão os indicadores específicos relacionados à educação no município:</p>
+                <ul>
+                    <li><strong>Taxa de Alfabetização (6 a 14 anos):</strong> {{ taxa_alfabetizacao }}%</li>
+                    <li><strong>Total de Creches Ativas:</strong> {{ total_creches }}</li>
+                    <li><strong>Alunos em Creches:</strong> {{ alunos_creches }}</li>
+                    <li><strong>Média de Idade dos Estudantes:</strong> {{ media_idade }} anos</li>
+                    <li><strong>Investimento em Educação (2024):</strong> R$ {{ investimento_educacao|floatformat:2 }}</li>
+                    <li><strong>Escolas com Transporte Escolar:</strong> {{ escolas_com_transporte }}/{{ total_escolas }}</li>
+                    <li><strong>Taxa de Inclusão Digital:</strong> {{ taxa_inclusao_digital }}%</li>
+                </ul>
+                <p>Esses indicadores são atualizados periodicamente para refletir o progresso e os desafios enfrentados no setor educacional de Canaã dos Carajás.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+        </div>
+    </section>
+</div>
+{% endblock %}

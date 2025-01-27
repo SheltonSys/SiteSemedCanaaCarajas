@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-wrapper" style="margin: 0; padding: 20px;">
+    <h1 class="text-primary mb-4">Relatórios de Demandas</h1>
+    <p class="text-muted mb-4">Visualize, filtre e exporte relatórios detalhados sobre as demandas do sistema.</p>
+
+    <!-- Filtros para Relatórios -->
+    <div class="card shadow mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Filtros para Relatórios</h5>
+        </div>
+        <div class="card-body">
+
+
+            <form method="GET" action="{% url 'relatorios_demandas' %}">
+                <div class="row">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-control" id="status" name="status">
+                            <option value="">Todos</option>
+                            <option value="Pendente">Pendente</option>
+                            <option value="Em andamento">Em andamento</option>
+                            <option value="Finalizado">Finalizado</option>
+                            <option value="Cancelado">Cancelado</option>
+                            <option value="Aguardando">Aguardando</option>
+                            <option value="Atrasado">Atrasado</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="prioridade" class="form-label">Prioridade</label>
+                        <select class="form-control" id="prioridade" name="prioridade">
+                            <option value="">Todas</option>
+                            <option value="Baixa">Baixa</option>
+                            <option value="Média">Média</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                            <option value="Imediata">Imediata</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date_range" class="form-label">Período</label>
+                        <input type="date" class="form-control" id="date_start" name="date_start">
+                        <input type="date" class="form-control mt-2" id="date_end" name="date_end">
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-primary">Filtrar</button>
+                        <button type="reset" class="btn btn-secondary">Limpar</button>
+                    </div>
+                </div>
+            </form>
+
+            
+        </div>
+    </div>
+
+    <div class="text-end mb-4">
+        <a href="{% url 'relatorio_pdf' %}" class="btn btn-danger">
+            <i class="fas fa-file-pdf"></i> Exportar para PDF
+        </a>
+    </div>
+    
+
+    <!-- Cards de Resumo -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Demandas</h5>
+                    <h2 class="card-text">{{ total_demandas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Concluídas</h5>
+                    <h2 class="card-text">{{ concluidas }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Em Andamento</h5>
+                    <h2 class="card-text">{{ em_andamento }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Pendentes</h5>
+                    <h2 class="card-text">{{ pendentes }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Relatórios -->
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h5 class="card-title mb-0">Relatórios Detalhados</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Data de Cadastro</th>
+                            <th>Data de Entrega</th>
+                            <th>Descrição</th>
+                            <th>Responsável</th>
+                            <th>Destinatário</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for demanda in demandas %}
+                        <tr>
+                            <td>{{ demanda.id }}</td>
+                            <td>{{ demanda.data_cadastro }}</td>
+                            <td>{{ demanda.data_entrega }}</td>
+                            <td>{{ demanda.descricao }}</td>
+                            <td>{{ demanda.responsavel }}</td>
+                            <td>{{ demanda.destinatario }}</td>
+                            <td>{{ demanda.prioridade }}</td>
+                            <td>{{ demanda.status }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">Nenhuma demanda encontrada.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

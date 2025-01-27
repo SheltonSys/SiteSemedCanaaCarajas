@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 text-primary fw-bold">Gestão de Escolas</h1>
+        <p class="lead text-secondary">Gerencie, visualize e explore as escolas cadastradas de forma dinâmica e eficiente.</p>
+    </div>
+
+    <!-- Barra de Ações -->
+    <div class="row mb-4">
+        <div class="col-lg-9">
+            <div class="input-group shadow-sm">
+                <input type="text" class="form-control" placeholder="Pesquisar escola..." aria-label="Pesquisar escola">
+                <button class="btn btn-primary" type="button">
+                    <i class="fas fa-search"></i> Pesquisar
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-3 text-lg-end text-center mt-lg-0 mt-3">
+            <a href="{% url 'adicionar_escola' %}" class="btn btn-success shadow-sm">
+                <i class="fas fa-plus-circle"></i> Nova Escola
+            </a>
+        </div>
+    </div>
+
+    <!-- Indicadores -->
+    <div class="row mb-5">
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold text-primary">Total de Escolas</h5>
+                    <p class="display-5 fw-bold">25</p>
+                    <i class="fas fa-school fa-3x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold text-primary">Escolas Urbanas</h5>
+                    <p class="display-5 fw-bold">15</p>
+                    <i class="fas fa-city fa-3x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold text-primary">Escolas Rurais</h5>
+                    <p class="display-5 fw-bold">10</p>
+                    <i class="fas fa-tractor fa-3x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold text-primary">Ensino Fundamental</h5>
+                    <p class="display-5 fw-bold">18</p>
+                    <i class="fas fa-book fa-3x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Escolas -->
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle table-striped">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col"><i class="fas fa-school"></i> Nome</th>
+                    <th scope="col"><i class="fas fa-map-marker-alt"></i> Localização</th>
+                    <th scope="col"><i class="fas fa-users"></i> Segmento</th>
+                    <th scope="col"><i class="fas fa-tasks"></i> Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>EMEIF Maria de Lourdes</td>
+                    <td>RUA CONSTELAÇÃO, Canaã dos Carajás</td>
+                    <td>Creche, Ensino Fundamental</td>
+                    <td>
+                        <a href="{% url 'detalhes_escola' 1 %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-info-circle"></i> Detalhes
+                        </a>
+                        <a href="{% url 'editar_escola' 1 %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <button class="btn btn-outline-danger btn-sm" onclick="confirmDeletion(1)">
+                            <i class="fas fa-trash-alt"></i> Excluir
+                        </button>
+                    </td>
+                </tr>
+                <!-- Repetir linhas para outras escolas -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Exclusão -->
+<script>
+    function confirmDeletion(id) {
+        if (confirm("Tem certeza que deseja excluir esta escola?")) {
+            // Lógica para exclusão aqui
+            alert("Escola ID " + id + " excluída!");
+        }
+    }
+</script>
+
+<!-- Custom Styles -->
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-outline-warning:hover {
+        background-color: #ffc107;
+        color: white;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}

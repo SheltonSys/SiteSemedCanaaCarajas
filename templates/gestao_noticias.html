@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1><i class="fas fa-newspaper"></i> Gestão de Notícias</h1>
+    <p>Gerencie as notícias publicadas no site institucional.</p>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+        <a href="#" class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar Notícia</a>
+        <a href="#" class="btn btn-secondary"><i class="fas fa-edit"></i> Editar Notícia</a>
+        <a href="#" class="btn btn-danger"><i class="fas fa-trash"></i> Remover Notícia</a>
+    </div>
+
+    <div class="mt-5">
+        <h2>Notícias Recentes</h2>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Título</th>
+                    <th>Autor</th>
+                    <th>Data</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Nova escola inaugurada</td>
+                    <td>João Silva</td>
+                    <td>15/12/2024</td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
+                        <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Concurso público aberto</td>
+                    <td>Maria Oliveira</td>
+                    <td>14/12/2024</td>
+                    <td>
+                        <a href="#" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
+                        <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

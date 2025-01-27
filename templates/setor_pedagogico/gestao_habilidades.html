@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-cogs"></i> Gestão de Habilidades
+                    </h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Gestão de Habilidades</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-edit"></i> Gerencie as Habilidades dos Alunos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        Aqui você pode visualizar, editar e atualizar as habilidades dos alunos. Use o formulário abaixo para fazer alterações.
+                    </p>
+                    <form action="{% url 'update_habilidades' %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="aluno" class="font-weight-bold">Aluno:</label>
+                                <select id="aluno" name="aluno" class="form-control" required>
+                                    <option value="" disabled selected>Selecione um aluno</option>
+                                    {% for aluno in alunos %}
+                                    <option value="{{ aluno.id }}">{{ aluno.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="habilidade" class="font-weight-bold">Habilidade:</label>
+                                <input type="text" id="habilidade" name="habilidade" class="form-control" placeholder="Digite a habilidade" required>
+                            </div>
+                        </div>
+                        <div class="form-group text-right">
+                            <button type="submit" class="btn btn-success shadow-sm">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                            <button type="reset" class="btn btn-secondary shadow-sm">
+                                <i class="fas fa-eraser"></i> Limpar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="card mt-4 shadow-lg border-0">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-list"></i> Lista de Habilidades Cadastradas
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Aluno</th>
+                                    <th>Habilidade</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for habilidade in habilidades %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ habilidade.aluno.nome }}</td>
+                                    <td>{{ habilidade.nome }}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-warning btn-sm shadow-sm" data-toggle="modal" data-target="#editHabilidadeModal{{ habilidade.id }}">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-danger btn-sm shadow-sm" data-toggle="modal" data-target="#deleteHabilidadeModal{{ habilidade.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Modals -->
+{% for habilidade in habilidades %}
+<div class="modal fade" id="editHabilidadeModal{{ habilidade.id }}" tabindex="-1" aria-labelledby="editHabilidadeModalLabel{{ habilidade.id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editHabilidadeModalLabel{{ habilidade.id }}">
+                    Editar Habilidade
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="{% url 'edit_habilidade' habilidade.id %}" method="post">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="habilidade_{{ habilidade.id }}" class="font-weight-bold">Habilidade:</label>
+                        <input type="text" id="habilidade_{{ habilidade.id }}" name="habilidade" class="form-control" value="{{ habilidade.nome }}" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

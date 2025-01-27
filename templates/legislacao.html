@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="content-header" style="background-color: #f4f6f9; padding: 20px;">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-8">
+                    <h1 class="m-0 text-primary font-weight-bold">
+                        <i class="fas fa-balance-scale"></i> Legislação e Normas Técnicas
+                    </h1>
+                    <p class="text-muted">Gerencie e acesse informações sobre legislação e normas técnicas aplicáveis.</p>
+                </div>
+                <div class="col-sm-4 text-right">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}">Dashboard</a></li>
+                        <li class="breadcrumb-item active">Legislação</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Overview -->
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body text-center bg-light">
+                            <i class="fas fa-book fa-3x text-primary mb-3"></i>
+                            <h5 class="card-title font-weight-bold">Documentos Ativos</h5>
+                            <p class="card-text text-muted">Total: <strong>{{ total_documentos }}</strong></p>
+                            <a href="{% url 'listar_documentos' %}" class="btn btn-primary btn-sm">Ver Documentos</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body text-center bg-light">
+                            <i class="fas fa-folder-open fa-3x text-warning mb-3"></i>
+                            <h5 class="card-title font-weight-bold">Categorias</h5>
+                            <p class="card-text text-muted">Total de categorias: <strong>{{ total_categorias }}</strong></p>
+                            <a href="{% url 'gerenciar_categorias' %}" class="btn btn-warning btn-sm">Gerenciar Categorias</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body text-center bg-light">
+                            <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                            <h5 class="card-title font-weight-bold">Atualizações Recentes</h5>
+                            <p class="card-text text-muted">Últimos 30 dias: <strong>{{ total_atualizacoes }}</strong></p>
+                            <a href="{% url 'relatorio_atualizacoes' %}" class="btn btn-success btn-sm">Ver Relatório</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Legislação -->
+            <div class="card shadow-lg border-0 mt-4">
+                <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">
+                        <i class="fas fa-scroll"></i> Legislação Cadastrada
+                    </h2>
+                    <a href="{% url 'adicionar_legislacao' %}" class="btn btn-success btn-sm shadow-sm">
+                        <i class="fas fa-plus-circle"></i> Adicionar Nova Legislação
+                    </a>
+                </div>
+                <div class="card-body bg-light">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Título</th>
+                                    <th>Categoria</th>
+                                    <th>Data de Publicação</th>
+                                    <th>Última Atualização</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for legislacao in legislacoes %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ legislacao.titulo }}</td>
+                                    <td>{{ legislacao.categoria }}</td>
+                                    <td>{{ legislacao.data_publicacao|date:"d/m/Y" }}</td>
+                                    <td>{{ legislacao.data_atualizacao|date:"d/m/Y" }}</td>
+                                    <td class="text-center">
+                                        <a href="{% url 'editar_legislacao' legislacao.id %}" class="btn btn-warning btn-sm shadow-sm">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <a href="{% url 'excluir_legislacao' legislacao.id %}" class="btn btn-danger btn-sm shadow-sm">
+                                            <i class="fas fa-trash"></i> Excluir
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">Nenhuma legislação cadastrada.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+<style>
+    .content-wrapper {
+        margin-left: 0; /* Remove espaço entre sidebar e conteúdo */
+        padding: 20px; /* Ajusta o padding */
+    }
+
+    .card-title {
+        font-weight: bold;
+    }
+
+    .btn {
+        font-size: 1rem;
+    }
+
+    .table thead th {
+        background-color: #343a40;
+        color: #fff;
+    }
+
+    .table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+</style>

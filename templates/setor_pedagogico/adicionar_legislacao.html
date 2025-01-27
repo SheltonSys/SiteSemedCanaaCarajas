@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <h1 class="text-primary font-weight-bold">Adicionar Legislação</h1>
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="card-title">
+                    <i class="fas fa-plus-circle"></i> Novo Registro de Legislação
+                </h5>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="text-right">
+                        <a href="{% url 'legislacao' %}" class="btn btn-secondary btn-sm shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success btn-sm shadow-sm">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .content-wrapper {
+        margin-left: 0; /* Remove espaço entre o sidebar e o content */
+        padding: 20px; /* Mantém o espaçamento interno */
+    }
+
+    .container-fluid {
+        margin: 0;
+        padding: 0;
+    }
+</style>
+{% endblock %}

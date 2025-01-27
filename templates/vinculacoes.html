@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="flex: 1; display: flex; flex-direction: column; padding: 0; margin: 0; background-color: #f8f9fa;">
+    <!-- Header -->
+    <div class="content-header" style="padding: 10px 20px; background-color: #343a40; color: white;">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-sm-6">
+                    <h1 class="m-0 font-weight-bold"><i class="fas fa-link"></i> Vinculações</h1>
+                </div>
+                <div class="col-sm-6 text-sm-right">
+                    <ol class="breadcrumb float-sm-right" style="background: transparent; margin-bottom: 0;">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboardadmin' %}" style="color: #f8f9fa;">Dashboard</a>
+                        </li>
+                        <li class="breadcrumb-item active" style="color: #dcdcdc;">Vinculações</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content py-4">
+        <div class="container-fluid" style="max-width: 100%; height: calc(100% - 20px);">
+            <div class="card shadow-lg border-0">
+
+
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h3 class="card-title m-0"><i class="fas fa-user-cog"></i> Gerencie Vinculações</h3>
+                    <button class="btn btn-success shadow-sm ml-auto" data-toggle="modal" data-target="#addVinculationModal">
+                        <i class="fas fa-plus-circle"></i> Adicionar Vinculação
+                    </button>
+                </div>
+                
+                
+
+
+                <div class="card-body" style="height: auto; padding: 20px;">
+                    <p class="text-muted mb-4">
+                        Crie ou edite vínculos entre usuários e setores. Certifique-se de configurar corretamente as permissões para cada usuário.
+                    </p>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Usuário</th>
+                                    <th>Email</th>
+                                    <th>Setor Vinculado</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vinculation in vinculations %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <i class="fas fa-user text-primary"></i>
+                                        {{ vinculation.user.first_name }} {{ vinculation.user.last_name }}
+                                    </td>
+                                    <td>{{ vinculation.user.email }}</td>
+                                    <td>{{ vinculation.sector }}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-warning btn-sm shadow-sm" data-toggle="modal"
+                                            data-target="#editVinculationModal{{ vinculation.id }}">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </button>
+                                        <button class="btn btn-danger btn-sm shadow-sm" data-toggle="modal"
+                                            data-target="#deleteVinculationModal{{ vinculation.id }}">
+                                            <i class="fas fa-trash"></i> Excluir
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Modal para edição de vinculações -->
+                                <div class="modal fade" id="editVinculationModal{{ vinculation.id }}" tabindex="-1"
+                                    aria-labelledby="editVinculationModalLabel{{ vinculation.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title" id="editVinculationModalLabel{{ vinculation.id }}">
+                                                    Editar Vinculação - {{ vinculation.user.first_name }}
+                                                </h5>
+                                                <button type="button" class="close text-white" data-dismiss="modal"
+                                                    aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form method="POST" action="{% url 'edit_vinculation' vinculation.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label for="sector{{ vinculation.id }}">Setor</label>
+                                                        <select class="form-control" id="sector{{ vinculation.id }}" name="sector">
+                                                            {% for sector in sectors %}
+                                                            <option value="{{ sector.id }}" 
+                                                                {% if sector == vinculation.sector %}selected{% endif %}>
+                                                                {{ sector.name }}
+                                                            </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-dismiss="modal">Cancelar</button>
+                                                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Custom Styles -->
+<style>
+    .content-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .table th, .table td {
+        vertical-align: middle !important;
+    }
+
+    .btn {
+        font-size: 0.9rem;
+    }
+
+    .modal-header {
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-footer {
+        border-top: 1px solid #dee2e6;
+    }
+
+    .breadcrumb a {
+        text-decoration: none;
+    }
+
+    .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}

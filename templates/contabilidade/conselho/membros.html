@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-friends"></i> Membros do Conselho
+                    </h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'conselho' %}" class="text-primary">Conselho</a></li>
+                        <li class="breadcrumb-item active">Membros</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+            <!-- Membros Table -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-table"></i> Membros do Conselho
+                    </h5>
+                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#cadastroMembroModal">
+                        <i class="fas fa-plus"></i> Cadastrar Novo Membro
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nome</th>
+                                    <th>Função</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for membro in membros_data %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ membro.nome }}</td>
+                                    <td>{{ membro.funcao }}</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detalhesMembroModal{{ forloop.counter }}">
+                                            <i class="fas fa-eye"></i> Detalhes
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- Modal para Detalhes -->
+                                <div class="modal fade" id="detalhesMembroModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="detalhesMembroModalLabel{{ forloop.counter }}" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-primary text-white">
+                                                <h5 class="modal-title" id="detalhesMembroModalLabel{{ forloop.counter }}">Detalhes do Membro</h5>
+                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Código INEP:</strong> {{ membro.inep }}</p>
+                                                <p><strong>Nome da Escola:</strong> {{ membro.escola }}</p>
+                                                <p><strong>Data de Abertura:</strong> {{ membro.data_abertura }}</p>
+                                                <p><strong>Data de Vencimento:</strong> {{ membro.data_vencimento }}</p>
+                                                <p><strong>Nome:</strong> {{ membro.nome }}</p>
+                                                <p><strong>Função:</strong> {{ membro.funcao }}</p>
+                                                <p><strong>Endereço:</strong> {{ membro.endereco }}</p>
+                                                <p><strong>Bairro:</strong> {{ membro.bairro }}</p>
+                                                <p><strong>Telefone:</strong> {{ membro.telefone }}</p>
+                                                <p><strong>E-mail:</strong> {{ membro.email }}</p>
+                                                <p><strong>CEP:</strong> {{ membro.cep }}</p>
+                                                <p><strong>CPF:</strong> {{ membro.cpf }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Modal para Cadastro -->
+<div class="modal fade" id="cadastroMembroModal" tabindex="-1" aria-labelledby="cadastroMembroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h5 class="modal-title" id="cadastroMembroModalLabel">Cadastrar Novo Membro</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{% url 'cadastrar_membro' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="inep">Código INEP:</label>
+                            <input type="text" class="form-control" id="inep" name="inep" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="escola">Nome da Escola:</label>
+                            <input type="text" class="form-control" id="escola" name="escola" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="data_abertura">Data de Abertura:</label>
+                            <input type="date" class="form-control" id="data_abertura" name="data_abertura" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="data_vencimento">Data de Vencimento:</label>
+                            <input type="date" class="form-control" id="data_vencimento" name="data_vencimento" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="nome">Nome:</label>
+                            <input type="text" class="form-control" id="nome" name="nome" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="funcao">Função:</label>
+                            <select class="form-control" id="funcao" name="funcao" required>
+                                <option value="Conselho Fiscal - Efetivo">Conselho Fiscal - Efetivo</option>
+                                <option value="Conselho Fiscal - Suplente">Conselho Fiscal - Suplente</option>
+                                <option value="Conselho Deliberativo">Conselho Deliberativo</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="endereco">Endereço:</label>
+                            <input type="text" class="form-control" id="endereco" name="endereco" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="bairro">Bairro:</label>
+                            <input type="text" class="form-control" id="bairro" name="bairro" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="telefone">Telefone:</label>
+                            <input type="text" class="form-control" id="telefone" name="telefone" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="email">E-mail:</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="cep">CEP:</label>
+                            <input type="text" class="form-control" id="cep" name="cep" required>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cpf">CPF:</label>
+                            <input type="text" class="form-control" id="cpf" name="cpf" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Salvar</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

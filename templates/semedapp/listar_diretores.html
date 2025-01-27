@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-primary display-4">Gestão de Currículos</h1>
+        <p class="text-muted fs-5">
+            Administre os dados dos currículos cadastrados na
+            <span class="text-primary fw-bold">SEMED Canaã dos Carajás</span>.
+        </p>
+    </div>
+
+    <!-- Search and Filter -->
+    <!-- Search and Filter -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-lg-6 col-md-8 mb-3">
+            <div class="input-group shadow">
+                <input type="text" id="searchInput" class="form-control form-control-lg"
+                    placeholder="Pesquise por Nome ou CPF" aria-label="Search">
+                <button class="btn btn-primary btn-lg" id="searchButton" type="button">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <select id="filterSelect" class="form-select form-select-lg shadow">
+                <option value="" selected>Filtrar por Cidade</option>
+                <option value="Canaã dos Carajás">Canaã dos Carajás</option>
+                <option value="Outro Lugar">Outro Lugar</option>
+            </select>
+        </div>
+    </div>
+
+
+    <!-- Statistics Section -->
+    <div class="row text-center mb-5 g-4">
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg hover-card">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold text-dark">Total de Currículos</h5>
+                    <p class="card-text display-5 fw-bold text-primary">{{ total_curriculos }}</p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg hover-card">
+                <div class="card-body">
+                    <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
+                    <h5 class="card-title fw-bold text-dark">Formação Acadêmica</h5>
+                    <p class="card-text display-5 fw-bold text-success">80%</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg hover-card">
+                <div class="card-body">
+                    <i class="fas fa-city fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title fw-bold text-dark">Cidades Atendidas</h5>
+                    <p class="card-text display-5 fw-bold text-warning">10</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <!-- Download Options -->
+    <div class="d-flex justify-content-end mb-4">
+        <div class="btn-group">
+            <a href="{% url 'exportar_excel' %}" class="btn btn-outline-success">
+                <i class="fas fa-file-excel"></i> Excel
+            </a>
+            <a href="{% url 'exportar_pdf' %}" class="btn btn-outline-danger">
+                <i class="fas fa-file-pdf"></i> PDF
+            </a>
+            <a href="{% url 'exportar_xls' %}" class="btn btn-outline-primary">
+                <i class="fas fa-file-alt"></i> XLS
+            </a>
+            <a href="{% url 'exportar_csv' %}" class="btn btn-outline-info">
+                <i class="fas fa-file-csv"></i> CSV
+            </a>
+        </div>
+    </div>
+
+
+    <!-- Table Section -->
+    <div class="card border-0 shadow-lg mb-5">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title fw-bold mb-0">Lista de Currículo</h5>
+                <a href="{% url 'cadastrar_diretor' %}" class="btn btn-primary btn-lg shadow">
+                    <i class="fas fa-plus-circle me-2"></i> Novo Currículo
+                </a>
+            </div>
+
+            <table class="table table-hover align-middle">
+                <thead class="table-primary">
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th style="text-align: center;">CPF</th>
+                        <th style="text-align: center;">RG</th>
+                        <th>Email</th>
+                        <th style="text-align: center;">Telefone</th>
+                        <th>Endereço</th>
+                        <th>Bairro</th>
+                        <th>Cidade</th>
+                        <th style="text-align: center;">Nascimento</th>
+                        <th style="text-align: center;">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for diretor in diretores %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ diretor.nome_completo }}</td>
+                        <td>{{ diretor.cpf }}</td>
+                        <td>{{ diretor.rg }}</td>
+                        <td>{{ diretor.email }}</td>
+                        <td>{{ diretor.telefone }}</td>
+                        <td>{{ diretor.endereco }}</td>
+                        <td>{{ diretor.bairro }}</td>
+                        <td>{{ diretor.cidade }}</td>
+                        <td>{{ diretor.data_nascimento|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'visualizar_diretor' diretor.id %}" class="btn btn-outline-primary btn-sm"
+                                title="Visualizar">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'editar_diretor' diretor.id %}" class="btn btn-outline-warning btn-sm"
+                                title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'excluir_diretor' diretor.id %}" class="btn btn-outline-danger btn-sm"
+                                title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                            <a href="{% url 'imprimir_curriculo' diretor.cpf %}"
+                                class="btn btn-outline-secondary btn-sm" title="Imprimir Currículo" target="_blank">
+                                <i class="fas fa-print"></i>
+                            </a>
+
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="11" class="text-center text-muted">Nenhum currículo encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    .hover-card:hover {
+        transform: translateY(-10px);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .hover-card {
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .table thead th {
+        color: #495057;
+        font-weight: 600;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .btn-sm {
+        width: 40px;
+        height: 40px;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .card-title {
+        color: #333;
+    }
+
+    .btn-lg {
+        font-size: 1rem;
+        padding: 10px 20px;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-10px);
+        transition: transform 0.3s ease-in-out;
+    }
+
+    .hover-card {
+        transition: transform 0.3s ease-in-out;
+    }
+</style>
+{% endblock %}
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const searchInput = document.getElementById("searchInput");
+        const searchButton = document.getElementById("searchButton");
+        const filterSelect = document.getElementById("filterSelect");
+        const rows = document.querySelectorAll("table tbody tr");
+
+        // Função para filtrar a tabela
+        function filterTable() {
+            const searchText = searchInput.value.toLowerCase().trim();
+            const filterValue = filterSelect.value.toLowerCase().trim();
+
+            rows.forEach(row => {
+                // Obtém os valores das colunas
+                const name = row.querySelector("td:nth-child(2)")?.textContent.toLowerCase().trim() || "";
+                const cpf = row.querySelector("td:nth-child(3)")?.textContent.toLowerCase().trim() || "";
+                const city = row.querySelector("td:nth-child(9)")?.textContent.toLowerCase().trim() || "";
+
+                // Verifica se a linha corresponde à busca ou ao filtro
+                const matchesSearch = searchText === "" || name.includes(searchText) || cpf.includes(searchText);
+                const matchesFilter = filterValue === "" || city === filterValue;
+
+                // Mostra ou oculta a linha
+                row.style.display = matchesSearch && matchesFilter ? "" : "none";
+            });
+        }
+
+        // Adiciona eventos de busca e filtro
+        searchButton.addEventListener("click", filterTable);
+        searchInput.addEventListener("input", filterTable);
+        filterSelect.addEventListener("change", filterTable);
+    });
+
+
+</script>
+
+
+{% if alerta %}
+<div class="modal fade" id="alertModal" tabindex="-1" aria-labelledby="alertModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="alertModalLabel">Atenção</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                {{ alerta }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <a href="{% url 'cadastrar_diretor' %}" class="btn btn-primary">Cadastrar Novo Currículo</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const alertModal = new bootstrap.Modal(document.getElementById('alertModal'));
+        alertModal.show();
+    });
+</script>
+{% endif %}

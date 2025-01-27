@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 0; min-height: calc(100vh - 56px);">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-3">
+                <div class="col text-center">
+                    <h1 class="font-weight-bold text-primary">Relatórios Pedagógicos</h1>
+                    <p class="text-muted">Acompanhe e acesse relatórios pedagógicos detalhados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content">
+        <div class="container-fluid">
+            <!-- Filtros -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="font-weight-bold"><i class="fas fa-filter"></i> Filtros de Relatórios</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="GET" action="{% url 'relatorios' %}">
+                                <div class="form-row">
+                                    <div class="form-group col-md-4">
+                                        <label for="escola">Escola</label>
+                                        <select class="form-control" id="escola" name="escola">
+                                            <option value="">Selecione</option>
+                                            {% for escola in escolas %}
+                                            <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label for="ano_letivo">Ano Letivo</label>
+                                        <select class="form-control" id="ano_letivo" name="ano_letivo">
+                                            <option value="">Selecione</option>
+                                            {% for ano in anos_letivos %}
+                                            <option value="{{ ano }}">{{ ano }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label for="tipo_relatorio">Tipo de Relatório</label>
+                                        <select class="form-control" id="tipo_relatorio" name="tipo_relatorio">
+                                            <option value="">Selecione</option>
+                                            <option value="aprovacao">Taxa de Aprovação</option>
+                                            <option value="frequencia">Frequência</option>
+                                            <option value="desempenho">Desempenho</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Buscar Relatórios
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Relatórios Disponíveis -->
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-success text-white rounded">
+                            <h5 class="card-title"><i class="fas fa-file-alt"></i> Taxa de Aprovação</h5>
+                            <p class="card-text">Relatório detalhado sobre a aprovação dos alunos.</p>
+                            <a href="{% url 'download_relatorio' 'aprovacao' %}" class="btn btn-light btn-block text-success">
+                                <i class="fas fa-download"></i> Baixar Relatório
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-warning text-white rounded">
+                            <h5 class="card-title"><i class="fas fa-chart-line"></i> Relatório de Frequência</h5>
+                            <p class="card-text">Acompanhe a frequência dos alunos durante o ano.</p>
+                            <a href="{% url 'download_relatorio' 'frequencia' %}" class="btn btn-light btn-block text-warning">
+                                <i class="fas fa-download"></i> Baixar Relatório
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-body bg-info text-white rounded">
+                            <h5 class="card-title"><i class="fas fa-tasks"></i> Relatório de Desempenho</h5>
+                            <p class="card-text">Análise de desempenho dos alunos nas avaliações.</p>
+                            <a href="{% url 'download_relatorio' 'desempenho' %}" class="btn btn-light btn-block text-info">
+                                <i class="fas fa-download"></i> Baixar Relatório
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabela de Relatórios -->
+            <div class="row mt-4">
+                <div class="col-md-12">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="font-weight-bold"><i class="fas fa-table"></i> Relatórios Recentes</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Relatório</th>
+                                        <th>Escola</th>
+                                        <th>Ano</th>
+                                        <th>Data de Geração</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for relatorio in relatorios %}
+                                    <tr>
+                                        <td>{{ relatorio.tipo }}</td>
+                                        <td>{{ relatorio.escola.nome }}</td>
+                                        <td>{{ relatorio.ano }}</td>
+                                        <td>{{ relatorio.data_geracao }}</td>
+                                        <td>
+                                            <a href="{{ relatorio.url }}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-download"></i> Baixar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

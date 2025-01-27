@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Currículo - Banco de Currículos</title>
+    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            background: url("{% static 'assets/dist/img/imagemCanaa555.webp' %}") no-repeat center center fixed;
+            background-size: cover;
+        }
+        .register-box {
+            margin: 2% auto;
+            width: 500px;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        .card {
+            border-radius: 10px;
+            padding: 15px;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <div class="card">
+            <div class="card-header text-center">
+                <h3><b>Cadastrar Currículo</b></h3>
+            </div>
+            <div class="card-body">
+                <form action="{% url 'adicionar_curriculo' %}" method="post" enctype="multipart/form-data" onsubmit="showSuccessMessage(event)">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="nome_completo">Nome Completo</label>
+                        <input type="text" name="nome_completo" id="nome_completo" class="form-control" placeholder="Digite seu nome completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" name="email" id="email" class="form-control" placeholder="Digite seu e-mail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cpf">CPF</label>
+                        <input type="text" name="cpf" id="cpf" class="form-control" placeholder="Digite seu CPF" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="arquivo_curriculo">Anexar Currículo (PDF)</label>
+                        <input type="file" name="arquivo_curriculo" id="arquivo_curriculo" class="form-control" accept=".pdf" required>
+                    </div>
+                    <div class="form-group text-center">
+                        <button type="submit" class="btn btn-primary btn-block">Cadastrar</button>
+                    </div>
+                </form>
+                <div class="text-center mt-3">
+                    <a href="{% url 'area_candidato' %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-arrow-left"></i> Voltar para Área do Candidato
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSuccessMessage(event) {
+            event.preventDefault();
+            Swal.fire({
+                icon: 'success',
+                title: 'Currículo enviado com sucesso!',
+                text: 'Seu currículo foi cadastrado com sucesso.',
+                showConfirmButton: false,
+                timer: 2000
+            }).then(() => {
+                event.target.submit();
+            });
+        }
+    </script>
+
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+</body>
+</html>

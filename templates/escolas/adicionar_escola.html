@@ -1,0 +1,599 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-5 px-4">
+    <div class="card shadow-lg">
+        <div class="card-header bg-primary text-white text-center">
+            <h2 class="mb-0">Cadastro de Escola</h2>
+        </div>
+        <div class="card-body p-4">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <!-- Abas -->
+                <ul class="nav nav-tabs mb-4" id="schoolTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="dados-unidade-tab" data-bs-toggle="tab"
+                            data-bs-target="#dados-unidade" type="button" role="tab" aria-controls="dados-unidade"
+                            aria-selected="true">
+                            Dados da Unidade
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="censo-tab" data-bs-toggle="tab" data-bs-target="#censo"
+                            type="button" role="tab" aria-controls="censo" aria-selected="false">
+                            Censo
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="quantitativo-tab" data-bs-toggle="tab"
+                            data-bs-target="#quantitativo" type="button" role="tab" aria-controls="quantitativo"
+                            aria-selected="false">
+                            Quantitativo
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="pedagogico-tab" data-bs-toggle="tab" data-bs-target="#pedagogico"
+                            type="button" role="tab" aria-controls="pedagogico" aria-selected="false">
+                            Pedagógico
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="localizacao-tab" data-bs-toggle="tab" data-bs-target="#localizacao"
+                            type="button" role="tab" aria-controls="localizacao" aria-selected="false">
+                            Localização
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Conteúdo das Abas -->
+                <div class="tab-content" id="schoolTabsContent">
+                    <!-- Aba Dados da Unidade -->
+                    <div class="tab-pane fade show active" id="dados-unidade" role="tabpanel"
+                        aria-labelledby="dados-unidade-tab">
+                        <h4 class="text-primary mb-4"><i class="fas fa-school"></i> Dados da Unidade</h4>
+                        <div class="row g-4">
+                            <!-- Nome -->
+                            <div class="col-md-4">
+                                <label for="nome" class="form-label fw-bold">
+                                    <i class="fas fa-signature"></i> Nome
+                                </label>
+                                <input type="text" name="nome" id="nome" class="form-control"
+                                    placeholder="EMEB LUÍS CARLOS PRESTES" required>
+                            </div>
+
+                            <!-- Tipo -->
+                            <div class="col-md-4">
+                                <label for="tipo" class="form-label fw-bold">
+                                    <i class="fas fa-layer-group"></i> Tipo
+                                </label>
+                                <input type="text" name="tipo" id="tipo" class="form-control" placeholder="ESCOLA"
+                                    required>
+                            </div>
+
+                            <!-- Habilitado -->
+                            <div class="col-md-4">
+                                <label for="habilitado" class="form-label fw-bold">
+                                    <i class="fas fa-check-circle"></i> Habilitado
+                                </label>
+                                <select name="habilitado" id="habilitado" class="form-control">
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+
+                            <!-- Segmento -->
+                            <div class="col-md-4">
+                                <label for="segmento" class="form-label fw-bold">
+                                    <i class="fas fa-stream"></i> Segmento
+                                </label>
+                                <input type="text" name="segmento" id="segmento" class="form-control"
+                                    placeholder="Creche, Educação Infantil...">
+                            </div>
+
+                            <!-- Zona -->
+                            <div class="col-md-4">
+                                <label for="zona" class="form-label fw-bold">
+                                    <i class="fas fa-map-marker-alt"></i> Zona
+                                </label>
+                                <input type="text" name="zona" id="zona" class="form-control" placeholder="Rural">
+                            </div>
+
+                            <!-- Local de Funcionamento -->
+                            <div class="col-md-4">
+                                <label for="local-funcionamento" class="form-label fw-bold">
+                                    <i class="fas fa-building"></i> Local de Funcionamento
+                                </label>
+                                <input type="text" name="local_funcionamento" id="local-funcionamento"
+                                    class="form-control" placeholder="Prédio escolar">
+                            </div>
+
+                            <!-- Forma de Ocupação do Prédio -->
+                            <div class="col-md-4">
+                                <label for="ocupacao-predio" class="form-label fw-bold">
+                                    <i class="fas fa-home"></i> Forma de Ocupação do Prédio
+                                </label>
+                                <input type="text" name="ocupacao_predio" id="ocupacao-predio" class="form-control"
+                                    placeholder="Próprio">
+                            </div>
+
+                            <!-- Prédio Compartilhado -->
+                            <div class="col-md-4">
+                                <label for="compartilhado" class="form-label fw-bold">
+                                    <i class="fas fa-exchange-alt"></i> Prédio Compartilhado
+                                </label>
+                                <select name="compartilhado" id="compartilhado" class="form-control">
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+
+                            <!-- Código da Escola Compartilhada -->
+                            <div class="col-md-4">
+                                <label for="codigo-compartilhado" class="form-label fw-bold">
+                                    <i class="fas fa-code"></i> Código da Escola Compartilhada
+                                </label>
+                                <input type="text" name="codigo_compartilhado" id="codigo-compartilhado"
+                                    class="form-control" placeholder="--">
+                            </div>
+
+                            <!-- Modalidade de Ensino -->
+                            <div class="col-md-4">
+                                <label for="modalidade-ensino" class="form-label fw-bold">
+                                    <i class="fas fa-graduation-cap"></i> Modalidade de Ensino
+                                </label>
+                                <input type="text" name="modalidade_ensino" id="modalidade-ensino" class="form-control"
+                                    placeholder="Educação de jovens e adultos">
+                            </div>
+
+                            <!-- Código INEP -->
+                            <div class="col-md-4">
+                                <label for="codigo-inep" class="form-label fw-bold">
+                                    <i class="fas fa-barcode"></i> Código INEP
+                                </label>
+                                <input type="text" name="codigo_inep" id="codigo-inep" class="form-control"
+                                    placeholder="15170594">
+                            </div>
+
+                            <!-- CEP -->
+                            <div class="col-md-4">
+                                <label for="cep" class="form-label fw-bold">
+                                    <i class="fas fa-map-pin"></i> CEP
+                                </label>
+                                <input type="text" name="cep" id="cep" class="form-control" placeholder="68356055">
+                            </div>
+
+                            <!-- Endereço -->
+                            <div class="col-md-4">
+                                <label for="endereco" class="form-label fw-bold">
+                                    <i class="fas fa-road"></i> Endereço
+                                </label>
+                                <input type="text" name="endereco" id="endereco" class="form-control"
+                                    placeholder="RUA CONSTELAÇÃO">
+                            </div>
+
+                            <!-- Bairro -->
+                            <div class="col-md-4">
+                                <label for="bairro" class="form-label fw-bold">
+                                    <i class="fas fa-city"></i> Bairro
+                                </label>
+                                <input type="text" name="bairro" id="bairro" class="form-control"
+                                    placeholder="VILA NOVA JERUSALÉM">
+                            </div>
+
+                            <!-- E-mail -->
+                            <div class="col-md-4">
+                                <label for="email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope"></i> E-mail
+                                </label>
+                                <input type="email" name="email" id="email" class="form-control"
+                                    placeholder="emeb.luisprestes@semedcanaadoscarajas.pa.gov.br">
+                            </div>
+
+                            <!-- Telefone -->
+                            <div class="col-md-4">
+                                <label for="telefone" class="form-label fw-bold">
+                                    <i class="fas fa-phone"></i> Telefone
+                                </label>
+                                <input type="text" name="telefone" id="telefone" class="form-control"
+                                    placeholder="(94) 992372793">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Aba Censo -->
+                    <div class="tab-pane fade" id="censo" role="tabpanel" aria-labelledby="censo-tab">
+                        <h4 class="text-primary mb-4">
+                            <i class="fas fa-database"></i> Dados do Censo
+                        </h4>
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            <!-- Água Potável e Abastecimento -->
+                            <div class="col">
+                                <label for="agua-potavel" class="form-label fw-bold">
+                                    <i class="fas fa-water"></i> Fornece Água Potável
+                                </label>
+                                <select name="agua_potavel" id="agua-potavel" class="form-control">
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="abastecimento" class="form-label fw-bold">
+                                    <i class="fas fa-faucet"></i> Abastecimento de Água
+                                </label>
+                                <input type="text" name="abastecimento" id="abastecimento" class="form-control"
+                                    placeholder="Poço artesiano">
+                            </div>
+
+                            <!-- Energia e Esgotamento -->
+                            <div class="col">
+                                <label for="energia" class="form-label fw-bold">
+                                    <i class="fas fa-bolt"></i> Fonte de Energia Elétrica
+                                </label>
+                                <input type="text" name="energia" id="energia" class="form-control"
+                                    placeholder="Rede pública">
+                            </div>
+                            <div class="col">
+                                <label for="esgotamento" class="form-label fw-bold">
+                                    <i class="fas fa-toilet"></i> Esgotamento Sanitário
+                                </label>
+                                <input type="text" name="esgotamento" id="esgotamento" class="form-control"
+                                    placeholder="Fossa rudimentar/comum">
+                            </div>
+
+                            <!-- Lixo e Tratamento -->
+                            <div class="col">
+                                <label for="destinacao-lixo" class="form-label fw-bold">
+                                    <i class="fas fa-trash-alt"></i> Destinação do Lixo
+                                </label>
+                                <input type="text" name="destinacao_lixo" id="destinacao-lixo" class="form-control"
+                                    placeholder="--">
+                            </div>
+                            <div class="col">
+                                <label for="tratamento-lixo" class="form-label fw-bold">
+                                    <i class="fas fa-recycle"></i> Tratamento de Resíduos
+                                </label>
+                                <input type="text" name="tratamento_lixo" id="tratamento-lixo" class="form-control"
+                                    placeholder="--">
+                            </div>
+
+                            <!-- Dependências Físicas -->
+                            <div class="col">
+                                <label for="dependencias" class="form-label fw-bold">
+                                    <i class="fas fa-door-open"></i> Dependências Físicas Existentes
+                                </label>
+                                <input type="text" name="dependencias" id="dependencias" class="form-control"
+                                    placeholder="Sala de Secretaria">
+                            </div>
+                            <div class="col">
+                                <label for="acessibilidade" class="form-label fw-bold">
+                                    <i class="fas fa-wheelchair"></i> Recursos de Acessibilidade
+                                </label>
+                                <input type="text" name="acessibilidade" id="acessibilidade" class="form-control"
+                                    placeholder="Rampas">
+                            </div>
+
+                            <!-- Salas de Aula -->
+                            <div class="col">
+                                <label for="salas-dentro" class="form-label fw-bold">
+                                    <i class="fas fa-chalkboard-teacher"></i> Salas de Aula no Prédio Escolar
+                                </label>
+                                <input type="number" name="salas_dentro" id="salas-dentro" class="form-control"
+                                    placeholder="--">
+                            </div>
+                            <div class="col">
+                                <label for="salas-fora" class="form-label fw-bold">
+                                    <i class="fas fa-school"></i> Salas de Aula Fora do Prédio Escolar
+                                </label>
+                                <input type="number" name="salas_fora" id="salas-fora" class="form-control"
+                                    placeholder="--">
+                            </div>
+
+                            <!-- Internet e Equipamentos -->
+                            <div class="col">
+                                <label for="internet" class="form-label fw-bold">
+                                    <i class="fas fa-wifi"></i> Acesso à Internet
+                                </label>
+                                <select name="internet" id="internet" class="form-control">
+                                    <option value="Sim">Sim</option>
+                                    <option value="Não">Não</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <label for="equipamentos" class="form-label fw-bold">
+                                    <i class="fas fa-desktop"></i> Equipamentos para Acesso
+                                </label>
+                                <input type="text" name="equipamentos" id="equipamentos" class="form-control"
+                                    placeholder="--">
+                            </div>
+
+                            <!-- Órgãos Colegiados -->
+                            <div class="col">
+                                <label for="colegiados" class="form-label fw-bold">
+                                    <i class="fas fa-users"></i> Órgãos Colegiados em Funcionamento
+                                </label>
+                                <input type="text" name="colegiados" id="colegiados" class="form-control"
+                                    placeholder="Conselho escolar">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Aba Quantitativo -->
+                    <div class="tab-pane fade" id="quantitativo" role="tabpanel" aria-labelledby="quantitativo-tab">
+                        <h4 class="text-primary mb-4">
+                            <i class="fas fa-chart-bar"></i> Quantitativo
+                        </h4>
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            <!-- Salas / Turmas -->
+                            <div class="col">
+                                <label for="salas" class="form-label fw-bold">
+                                    <i class="fas fa-chalkboard-teacher"></i> Quantidade de Salas de Aula
+                                </label>
+                                <input type="number" name="salas" id="salas" class="form-control"
+                                    placeholder="Digite a quantidade" required>
+                            </div>
+                            <div class="col">
+                                <label for="turmas" class="form-label fw-bold">
+                                    <i class="fas fa-users-class"></i> Quantidade de Turmas
+                                </label>
+                                <input type="number" name="turmas" id="turmas" class="form-control"
+                                    placeholder="Digite a quantidade">
+                            </div>
+
+                            <!-- Docentes e Discentes -->
+                            <div class="col">
+                                <label for="professores" class="form-label fw-bold">
+                                    <i class="fas fa-user-graduate"></i> Quantidade de Professores
+                                </label>
+                                <input type="number" name="professores" id="professores" class="form-control"
+                                    placeholder="Digite a quantidade">
+                            </div>
+                            <div class="col">
+                                <label for="alunos" class="form-label fw-bold">
+                                    <i class="fas fa-user-friends"></i> Quantidade de Alunos
+                                </label>
+                                <input type="number" name="alunos" id="alunos" class="form-control"
+                                    placeholder="Digite a quantidade">
+                            </div>
+                            <div class="col">
+                                <label for="capacidade-alunos" class="form-label fw-bold">
+                                    <i class="fas fa-user-check"></i> Capacidade de Alunos
+                                </label>
+                                <input type="number" name="capacidade_alunos" id="capacidade-alunos"
+                                    class="form-control" placeholder="Digite a capacidade">
+                            </div>
+
+                            <!-- Pessoal de Apoio -->
+                            <div class="col">
+                                <label for="secretaria" class="form-label fw-bold">
+                                    <i class="fas fa-briefcase"></i> Secretaria
+                                </label>
+                                <input type="number" name="secretaria" id="secretaria" class="form-control"
+                                    placeholder="Digite a quantidade">
+                            </div>
+                            <div class="col">
+                                <label for="servicos-gerais" class="form-label fw-bold">
+                                    <i class="fas fa-broom"></i> Serviços Gerais
+                                </label>
+                                <input type="number" name="servicos_gerais" id="servicos-gerais" class="form-control"
+                                    placeholder="Digite a quantidade">
+                            </div>
+                            <div class="col">
+                                <label for="merendeira" class="form-label fw-bold">
+                                    <i class="fas fa-utensils"></i> Merendeira
+                                </label>
+                                <input type="number" name="merendeira" id="merendeira" class="form-control"
+                                    placeholder="Digite a quantidade">
+                            </div>
+                            <div class="col">
+                                <label for="controladores-acesso" class="form-label fw-bold">
+                                    <i class="fas fa-lock"></i> Controladores de Acesso
+                                </label>
+                                <input type="number" name="controladores_acesso" id="controladores-acesso"
+                                    class="form-control" placeholder="Digite a quantidade">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Aba Pedagógico -->
+                    <div class="tab-pane fade" id="pedagogico" role="tabpanel" aria-labelledby="pedagogico-tab">
+                        <h4 class="text-primary mb-4">
+                            <i class="fas fa-chalkboard-teacher"></i> Pedagógico
+                        </h4>
+                        <div class="row row-cols-1 row-cols-md-3 g-4">
+                            <!-- Diretor -->
+                            <div class="col">
+                                <label for="diretor" class="form-label fw-bold">
+                                    <i class="fas fa-user-tie"></i> Diretor
+                                </label>
+                                <input type="text" name="diretor" id="diretor" class="form-control"
+                                    placeholder="ALEXANDRO VERAS PACHECO">
+                            </div>
+                            <div class="col">
+                                <label for="diretor-telefone" class="form-label fw-bold">
+                                    <i class="fas fa-phone-alt"></i> Telefone do Diretor
+                                </label>
+                                <input type="text" name="diretor_telefone" id="diretor-telefone" class="form-control"
+                                    placeholder="Digite o telefone">
+                            </div>
+                            <div class="col">
+                                <label for="diretor-email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope"></i> E-mail do Diretor
+                                </label>
+                                <input type="email" name="diretor_email" id="diretor-email" class="form-control"
+                                    placeholder="Digite o e-mail">
+                            </div>
+
+                            <!-- Presidente do Conselho Escolar -->
+                            <div class="col">
+                                <label for="presidente" class="form-label fw-bold">
+                                    <i class="fas fa-gavel"></i> Presidente do Conselho Escolar
+                                </label>
+                                <input type="text" name="presidente" id="presidente" class="form-control"
+                                    placeholder="Digite o nome">
+                            </div>
+                            <div class="col">
+                                <label for="presidente-telefone" class="form-label fw-bold">
+                                    <i class="fas fa-phone-alt"></i> Telefone do Presidente
+                                </label>
+                                <input type="text" name="presidente_telefone" id="presidente-telefone"
+                                    class="form-control" placeholder="Digite o telefone">
+                            </div>
+                            <div class="col">
+                                <label for="presidente-email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope"></i> E-mail do Presidente
+                                </label>
+                                <input type="email" name="presidente_email" id="presidente-email" class="form-control"
+                                    placeholder="Digite o e-mail">
+                            </div>
+
+                            <!-- Vice Diretor -->
+                            <div class="col">
+                                <label for="vice-diretor" class="form-label fw-bold">
+                                    <i class="fas fa-user-tie"></i> Vice Diretor
+                                </label>
+                                <input type="text" name="vice_diretor" id="vice-diretor" class="form-control"
+                                    placeholder="Digite o nome">
+                            </div>
+                            <div class="col">
+                                <label for="vice-diretor-telefone" class="form-label fw-bold">
+                                    <i class="fas fa-phone-alt"></i> Telefone do Vice Diretor
+                                </label>
+                                <input type="text" name="vice_diretor_telefone" id="vice-diretor-telefone"
+                                    class="form-control" placeholder="Digite o telefone">
+                            </div>
+                            <div class="col">
+                                <label for="vice-diretor-email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope"></i> E-mail do Vice Diretor
+                                </label>
+                                <input type="email" name="vice_diretor_email" id="vice-diretor-email"
+                                    class="form-control" placeholder="Digite o e-mail">
+                            </div>
+
+                            <!-- Coordenador Pedagógico -->
+                            <div class="col">
+                                <label for="coordenador-pedagogico" class="form-label fw-bold">
+                                    <i class="fas fa-user-graduate"></i> Coordenador Pedagógico
+                                </label>
+                                <input type="text" name="coordenador_pedagogico" id="coordenador-pedagogico"
+                                    class="form-control" placeholder="Digite o nome">
+                            </div>
+                            <div class="col">
+                                <label for="coordenador-pedagogico-telefone" class="form-label fw-bold">
+                                    <i class="fas fa-phone-alt"></i> Telefone do Coordenador
+                                </label>
+                                <input type="text" name="coordenador_pedagogico_telefone"
+                                    id="coordenador-pedagogico-telefone" class="form-control"
+                                    placeholder="Digite o telefone">
+                            </div>
+                            <div class="col">
+                                <label for="coordenador-pedagogico-email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope"></i> E-mail do Coordenador
+                                </label>
+                                <input type="email" name="coordenador_pedagogico_email"
+                                    id="coordenador-pedagogico-email" class="form-control"
+                                    placeholder="Digite o e-mail">
+                            </div>
+
+                            <!-- Secretário Escolar -->
+                            <div class="col">
+                                <label for="secretario-escolar" class="form-label fw-bold">
+                                    <i class="fas fa-user"></i> Secretário Escolar
+                                </label>
+                                <input type="text" name="secretario_escolar" id="secretario-escolar"
+                                    class="form-control" placeholder="Digite o nome">
+                            </div>
+                            <div class="col">
+                                <label for="secretario-escolar-telefone" class="form-label fw-bold">
+                                    <i class="fas fa-phone-alt"></i> Telefone do Secretário
+                                </label>
+                                <input type="text" name="secretario_escolar_telefone" id="secretario-escolar-telefone"
+                                    class="form-control" placeholder="Digite o telefone">
+                            </div>
+                            <div class="col">
+                                <label for="secretario-escolar-email" class="form-label fw-bold">
+                                    <i class="fas fa-envelope"></i> E-mail do Secretário
+                                </label>
+                                <input type="email" name="secretario_escolar_email" id="secretario-escolar-email"
+                                    class="form-control" placeholder="Digite o e-mail">
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Aba Localização -->
+                    <div class="tab-pane fade" id="localizacao" role="tabpanel" aria-labelledby="localizacao-tab">
+                        <h4 class="text-primary mb-4">
+                            <i class="fas fa-map-marker-alt"></i> Localização
+                        </h4>
+                        <div class="row">
+                            <div class="col-12">
+                                <!-- Mapa Interativo -->
+                                <div id="map"
+                                    style="height: 400px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Script para Google Maps -->
+                    <script>
+                        function initMap() {
+                            // Coordenadas padrão (Canaã dos Carajás, PA)
+                            const defaultLocation = { lat: -6.49546, lng: -49.8728 };
+
+                            // Criando o mapa
+                            const map = new google.maps.Map(document.getElementById("map"), {
+                                zoom: 14,
+                                center: defaultLocation,
+                            });
+
+                            // Marcador padrão no mapa
+                            new google.maps.Marker({
+                                position: defaultLocation,
+                                map: map,
+                                title: "Localização Padrão - Canaã dos Carajás",
+                            });
+                        }
+                    </script>
+
+                    <!-- Inclusão da API do Google Maps -->
+                    <script async defer src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d50339.71550566911!2d-49.8634833024378!3d-6.559333511760149!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1spt-BR!2sbr!4v1737064074683!5m2!1spt-BR!2sbr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"">
+                    </script>
+
+<!-- <iframe src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d50339.71550566911!2d-49.8634833024378!3d-6.559333511760149!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1spt-BR!2sbr!4v1737064074683!5m2!1spt-BR!2sbr" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe> -->
+
+
+
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        <i class="fas fa-save"></i> Salvar Escola
+                    </button>
+                    <a href="{% url 'escolas' %}" class="btn btn-secondary btn-lg">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<style>
+    .btn-secondary {
+        background-color: #6c757d;
+        /* Cinza padrão do Bootstrap */
+        border: none;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        /* Escurece no hover */
+        color: white;
+    }
+</style>

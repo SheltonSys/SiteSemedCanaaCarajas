@@ -1,0 +1,915 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-hand-holding-usd"></i> PDDE
+                    </h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}"
+                                class="text-primary">Dashboard</a></li>
+                        <li class="breadcrumb-item active">PDDE</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+
+            <!-- Botões para Abertura de Formulários -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-plus-circle"></i> Ações PDDE
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <button class="btn btn-outline-primary m-2" data-toggle="modal" data-target="#formReceitaDespesa">
+                        <i class="fas fa-file-invoice"></i> Receita e Despesa
+                    </button>
+                    <button class="btn btn-outline-secondary m-2" data-toggle="modal"
+                        data-target="#formConciliacaoBancaria">
+                        <i class="fas fa-university"></i> Conciliação Bancária
+                    </button>
+                    <button class="btn btn-outline-success m-2" data-toggle="modal" data-target="#formPesquisaPreco">
+                        <i class="fas fa-search-dollar"></i> Pesquisa de Preço
+                    </button>
+                    <button class="btn btn-outline-warning m-2" data-toggle="modal" data-target="#formBensAdquiridos">
+                        <i class="fas fa-box"></i> Bens Adquiridos
+                    </button>
+                    <button class="btn btn-outline-info m-2" data-toggle="modal" data-target="#formTermoDoacao">
+                        <i class="fas fa-hand-holding"></i> Termo de Doação
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabela de Dados com Expandir/Recolher -->
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-table"></i> Dados do PDDE
+                    </h5>
+                    <button class="btn btn-light btn-sm" data-toggle="collapse" data-target="#tabelaPDDE"
+                        aria-expanded="false">
+                        Expandir
+                    </button>
+                </div>
+                <div class="card-body collapse" id="tabelaPDDE">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Ano</th>
+                                    <th>Escola</th>
+                                    <th>Status</th>
+                                    <th class="text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pdde in pdde_data %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ pdde.ano }}</td>
+                                    <td>{{ pdde.escola }}</td>
+                                    <td>
+                                        <span
+                                            class="badge {% if pdde.status == 'aprovado' %}badge-success{% else %}badge-warning{% endif %}">
+                                            {{ pdde.status|capfirst }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="{% url 'view_pdde' pdde.id %}" class="btn btn-info btn-sm shadow-sm">
+                                            <i class="fas fa-eye"></i> Visualizar
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">Nenhum registro encontrado.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Fim Tabela de Dados -->
+
+
+            <!-- Tabela Conciliação Bancária com Expandir/Recolher -->
+            <div class="content-wrapper" style="padding: 0; margin: 0;">
+                <div class="container-fluid">
+                    <!-- Conciliação Bancária -->
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div
+                            class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title font-weight-bold">
+                                <i class="fas fa-table"></i> Conciliação Bancária
+                            </h5>
+                            <button class="btn btn-light btn-sm" type="button" data-toggle="collapse"
+                                data-target="#tableConciliação" aria-expanded="false" aria-controls="tableConciliação">
+                                Expandir/Fechar
+                            </button>
+                        </div>
+                        <div class="collapse show" id="tableConciliação">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped w-100 m-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Data</th>
+                                                <th>Banco</th>
+                                                <th>Saldo</th>
+                                                <th class="text-center">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for conciliacao in conciliacao_data %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ conciliacao.data }}</td>
+                                                <td>{{ conciliacao.banco }}</td>
+                                                <td>{{ conciliacao.saldo }}</td>
+                                                <td class="text-center">
+                                                    <a href="{% url 'view_conciliacao' conciliacao.id %}"
+                                                        class="btn btn-info btn-sm shadow-sm">
+                                                        <i class="fas fa-eye"></i> Visualizar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Nenhum registro
+                                                    encontrado.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Fim Tabela Conciliação Bancária com Expandir/Recolher -->
+
+                    <!-- Tabela Pesquisa de Preço com Expandir/Recolher -->
+                    <!-- Pesquisa de Preço -->
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div
+                            class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title font-weight-bold">
+                                <i class="fas fa-search-dollar"></i> Pesquisa de Preço
+                            </h5>
+                            <button class="btn btn-light btn-sm" type="button" data-toggle="collapse"
+                                data-target="#tablePesquisaPreco" aria-expanded="false"
+                                aria-controls="tablePesquisaPreco">
+                                Expandir/Fechar
+                            </button>
+                        </div>
+                        <div class="collapse" id="tablePesquisaPreco">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped w-100 m-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Produto</th>
+                                                <th>Quantidade</th>
+                                                <th>Proponente</th>
+                                                <th class="text-center">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for pesquisa in pesquisa_preco_data %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ pesquisa.produto }}</td>
+                                                <td>{{ pesquisa.quantidade }}</td>
+                                                <td>{{ pesquisa.proponente }}</td>
+                                                <td class="text-center">
+                                                    <a href="{% url 'view_pesquisa_preco' pesquisa.id %}"
+                                                        class="btn btn-info btn-sm shadow-sm">
+                                                        <i class="fas fa-eye"></i> Visualizar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Nenhum registro
+                                                    encontrado.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Fim Tabela Pesquisa de Preço com Expandir/Recolher -->
+
+                    <!-- Tabela Bens Adquiridos com Expandir/Recolher -->
+                    <!-- Bens Adquiridos -->
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div
+                            class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title font-weight-bold">
+                                <i class="fas fa-box"></i> Bens Adquiridos
+                            </h5>
+                            <button class="btn btn-light btn-sm" type="button" data-toggle="collapse"
+                                data-target="#tableBensAdquiridos" aria-expanded="false"
+                                aria-controls="tableBensAdquiridos">
+                                Expandir/Fechar
+                            </button>
+                        </div>
+                        <div class="collapse" id="tableBensAdquiridos">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped w-100 m-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Bem</th>
+                                                <th>Fornecedor</th>
+                                                <th>Valor</th>
+                                                <th class="text-center">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for bens in bens_adquiridos_data %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ bens.bem }}</td>
+                                                <td>{{ bens.fornecedor }}</td>
+                                                <td>{{ bens.valor }}</td>
+                                                <td class="text-center">
+                                                    <a href="{% url 'view_bens_adquiridos' bens.id %}"
+                                                        class="btn btn-info btn-sm shadow-sm">
+                                                        <i class="fas fa-eye"></i> Visualizar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Nenhum registro
+                                                    encontrado.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Fim Tabela Bens Adquiridos com Expandir/Recolher -->
+
+                    <!-- Tabela Termo de Doação com Expandir/Recolher -->
+                    <!-- Termo de Doação -->
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div
+                            class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title font-weight-bold">
+                                <i class="fas fa-hand-holding"></i> Termo de Doação
+                            </h5>
+                            <button class="btn btn-light btn-sm" type="button" data-toggle="collapse"
+                                data-target="#tableTermoDoacao" aria-expanded="false" aria-controls="tableTermoDoacao">
+                                Expandir/Fechar
+                            </button>
+                        </div>
+                        <div class="collapse" id="tableTermoDoacao">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-striped w-100 m-0">
+                                        <thead class="thead-dark">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Item</th>
+                                                <th>Doador</th>
+                                                <th>Data</th>
+                                                <th class="text-center">Ações</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for doacao in termo_doacao_data %}
+                                            <tr>
+                                                <td>{{ forloop.counter }}</td>
+                                                <td>{{ doacao.item }}</td>
+                                                <td>{{ doacao.doador }}</td>
+                                                <td>{{ doacao.data }}</td>
+                                                <td class="text-center">
+                                                    <a href="{% url 'view_termo_doacao' doacao.id %}"
+                                                        class="btn btn-info btn-sm shadow-sm">
+                                                        <i class="fas fa-eye"></i> Visualizar
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            {% empty %}
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Nenhum registro
+                                                    encontrado.</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Fim Tabela Termo de Doação com Expandir/Recolher -->
+
+        </div>
+    </section>
+</div>
+
+<!-- Modais para os Formulários -->
+
+<!-- Receita e Despesa -->
+<!-- Modal: Receita e Despesa -->
+<div class="modal fade" id="formReceitaDespesa" tabindex="-1" aria-labelledby="formReceitaDespesaLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 85%;">
+        <div class="modal-content">
+            <!-- Cabeçalho da Modal -->
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="formReceitaDespesaLabel">Formulário de Receita e Despesa</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+
+            <!-- Corpo da Modal -->
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- BLOCO 1 - IDENTIFICAÇÃO -->
+                    <h5 class="font-weight-bold text-secondary">BLOCO 1 – IDENTIFICAÇÃO</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="programa">Programa/Ação:</label>
+                            <input type="text" id="programa" name="programa" class="form-control"
+                                value="FNDE-PDDE-Educação Básica" readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="exercicio">Exercício:</label>
+                            <input type="number" id="exercicio" name="exercicio" class="form-control" value="2024"
+                                readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="nome">Nome:</label>
+                            <input type="text" id="nome" name="nome" class="form-control"
+                                value="CONSELHO ESCOLAR EMEIF. ADELAIDE MOLINARI" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cnpj">Número do CNPJ:</label>
+                            <input type="text" id="cnpj" name="cnpj" class="form-control" value="22.246.439/0001-31"
+                                readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="endereco">Endereço:</label>
+                            <input type="text" id="endereco" name="endereco" class="form-control"
+                                value="AVENIDA DOS PIONEIROS - VILA PLANALTO, CANAÃ DOS CARAJÁS - PA" readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="municipio">Município:</label>
+                            <input type="text" id="municipio" name="municipio" class="form-control"
+                                value="Canaã dos Carajás" readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="uf">UF:</label>
+                            <input type="text" id="uf" name="uf" class="form-control" value="PA" readonly>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 2 - SÍNTESE DA EXECUÇÃO -->
+                    <h5 class="font-weight-bold text-secondary mt-4">BLOCO 2 – SÍNTESE DA EXECUÇÃO DA RECEITA E DA
+                        DESPESA (R$)</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-3">
+                            <label for="saldoAnterior">Saldo Reprogramado do Exercício Anterior:</label>
+                            <input type="text" id="saldoAnterior" name="saldoAnterior" class="form-control" value="0,00"
+                                readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="valorFNDE">Valor Creditado pelo FNDE no Exercício:</label>
+                            <input type="text" id="valorFNDE" name="valorFNDE" class="form-control" value="0,00"
+                                readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="recursosProprios">Recursos Próprios:</label>
+                            <input type="text" id="recursosProprios" name="recursosProprios" class="form-control"
+                                value="0,00" readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="rendimento">Rendimento de Aplicação Financeira:</label>
+                            <input type="text" id="rendimento" name="rendimento" class="form-control" value="0,00"
+                                readonly>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 3 - PAGAMENTOS EFETUADOS -->
+                    <h5 class="font-weight-bold text-secondary mt-4">BLOCO 3 – PAGAMENTOS EFETUADOS</h5>
+                    <div class="form-row">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Nome do Favorecido</th>
+                                        <th>CNPJ ou CPF</th>
+                                        <th>Tipo de Bens ou Serviços</th>
+                                        <th>Origem R$</th>
+                                        <th>Natureza</th>
+                                        <th>Documento (Tipo, Número, Data)</th>
+                                        <th>Pagamento (Nº Ch/OB, Data)</th>
+                                        <th>Valor (R$)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for pagamento in pagamentos %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ pagamento.nome_favorecido }}</td>
+                                        <td>{{ pagamento.cnpj_cpf }}</td>
+                                        <td>{{ pagamento.tipo_bem_servico }}</td>
+                                        <td>{{ pagamento.origem }}</td>
+                                        <td>{{ pagamento.natureza }}</td>
+                                        <td>{{ pagamento.documento }}</td>
+                                        <td>{{ pagamento.pagamento }}</td>
+                                        <td>{{ pagamento.valor }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="9" class="text-center text-muted">Nenhum pagamento registrado.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="8" class="text-right font-weight-bold">TOTAL:</td>
+                                        <td>{{ total_pagamentos }}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fim Receita e Despesa -->
+
+<!-- Conciliação Bancária -->
+<div class="modal fade" id="formConciliacaoBancaria" tabindex="-1" aria-labelledby="formConciliacaoBancariaLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl"> <!-- Modal ajustada para ser maior -->
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title" id="formConciliacaoBancariaLabel">Formulário de Conciliação Bancária</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- BLOCO 1 - IDENTIFICAÇÃO -->
+                    <div class="form-group">
+                        <h5 class="font-weight-bold">BLOCO 1 – IDENTIFICAÇÃO</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="programa">Programa/Ação</label>
+                                <input type="text" class="form-control" id="programa" name="programa"
+                                    value="PDDE - EDUCAÇÃO BASICA" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="exercicio">Exercício</label>
+                                <input type="text" class="form-control" id="exercicio" name="exercicio" value="2024"
+                                    readonly>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="nome">Nome</label>
+                                <input type="text" class="form-control" id="nome" name="nome"
+                                    value="CONSELHO ESCOLAR DO EMEIF. ADELAIDE MOLINARI" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="cnpj">N.º do CNPJ</label>
+                                <input type="text" class="form-control" id="cnpj" name="cnpj" value="22.246.439/0001-31"
+                                    readonly>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="endereco">Endereço</label>
+                                <input type="text" class="form-control" id="endereco" name="endereco"
+                                    value="AVENIDA DOS PIONEIROS - VILA PLANALTO" readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="municipio">Município</label>
+                                <input type="text" class="form-control" id="municipio" name="municipio"
+                                    value="CANAÃ DOS CARAJÁS" readonly>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="uf">UF</label>
+                                <input type="text" class="form-control" id="uf" name="uf" value="PA" readonly>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- BLOCO 2 - IDENTIFICAÇÃO BANCÁRIA E SALDO -->
+                    <div class="form-group">
+                        <h5 class="font-weight-bold">BLOCO 2 – IDENTIFICAÇÃO BANCÁRIA E SALDO</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="banco">Banco</label>
+                                <input type="text" class="form-control" id="banco" name="banco">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="codigo_agencia">Cód. da Agência</label>
+                                <input type="text" class="form-control" id="codigo_agencia" name="codigo_agencia">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="conta_corrente">Nº da Conta Corrente</label>
+                                <input type="text" class="form-control" id="conta_corrente" name="conta_corrente">
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="data_extrato">Data</label>
+                                <input type="date" class="form-control" id="data_extrato" name="data_extrato">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="saldo_extrato">Saldo do Extrato Bancário (R$)</label>
+                                <input type="text" class="form-control" id="saldo_extrato" name="saldo_extrato">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- BLOCO 3 - DEMONSTRAÇÃO CONTÁBIL / FINANCEIRA -->
+                    <div class="form-group">
+                        <h5 class="font-weight-bold">BLOCO 3 – DEMONSTRAÇÃO CONTÁBIL / FINANCEIRA</h5>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Histórico</th>
+                                    <th>Valor (R$)</th>
+                                    <th>Histórico</th>
+                                    <th>Valor (R$)</th>
+                                    <th>Histórico</th>
+                                    <th>Valor (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i in range_5 %}
+                                <tr>
+                                    <td><input type="text" class="form-control" name="historico_creditos_{{ i }}"></td>
+                                    <td><input type="text" class="form-control" name="valor_creditos_{{ i }}"></td>
+                                    <td><input type="text" class="form-control" name="historico_debitos_{{ i }}"></td>
+                                    <td><input type="text" class="form-control" name="valor_debitos_{{ i }}"></td>
+                                    <td><input type="text" class="form-control" name="historico_restos_{{ i }}"></td>
+                                    <td><input type="text" class="form-control" name="valor_restos_{{ i }}"></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+
+                        </table>
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <label for="total_cred_deb">Total (R$)</label>
+                                <input type="text" class="form-control" id="total_cred_deb" name="total_cred_deb">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- BLOCO 4 - AUTENTICAÇÃO -->
+                    <div class="form-group">
+                        <h5 class="font-weight-bold">BLOCO 4 - AUTENTICAÇÃO</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="local_data">Local e Data</label>
+                                <input type="text" class="form-control" id="local_data" name="local_data"
+                                    value="CANAÃ DOS CARAJÁS - PA">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="responsavel">Responsável</label>
+                                <input type="text" class="form-control" id="responsavel" name="responsavel"
+                                    value="FULANO DE TAL">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fim Conciliação Bancária -->
+
+<!-- Outros Modais -->
+<!-- Modal: Pesquisa de Preço -->
+<!-- Modal: Pesquisa de Preço -->
+<div class="modal fade" id="formPesquisaPreco" tabindex="-1" aria-labelledby="formPesquisaPrecoLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="formPesquisaPrecoLabel">Formulário de Pesquisa de Preço</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- BLOCO 1 -->
+                    <h5 class="text-uppercase">Bloco 1 – Identificação da Unidade Executora Própria (UEx)</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="razaoSocialUEx">Razão Social</label>
+                            <input type="text" id="razaoSocialUEx" name="razaoSocialUEx" class="form-control"
+                                value="CONSELHO ESCOLAR EMEIF. ADELAIDE MOLINARI" readonly>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="cnpjUEx">CNPJ</label>
+                            <input type="text" id="cnpjUEx" name="cnpjUEx" class="form-control"
+                                value="22.246.439/0001-31" readonly>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 2 -->
+                    <h5 class="text-uppercase mt-4">Bloco 2 – Identificação dos Proponentes</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="razaoSocialA">Razão Social do Proponente (A)</label>
+                            <input type="text" id="razaoSocialA" name="razaoSocialA" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="razaoSocialB">Razão Social do Proponente (B)</label>
+                            <input type="text" id="razaoSocialB" name="razaoSocialB" class="form-control">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="razaoSocialC">Razão Social do Proponente (C)</label>
+                            <input type="text" id="razaoSocialC" name="razaoSocialC" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="cnpjA">CNPJ do Proponente (A)</label>
+                            <input type="text" id="cnpjA" name="cnpjA" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="cnpjB">CNPJ do Proponente (B)</label>
+                            <input type="text" id="cnpjB" name="cnpjB" class="form-control">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="cnpjC">CNPJ do Proponente (C)</label>
+                            <input type="text" id="cnpjC" name="cnpjC" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 3 -->
+                    <h5 class="text-uppercase mt-4">Bloco 3 – Propostas</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-2">
+                            <label for="item">Item</label>
+                            <input type="text" id="item" name="item" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="descricao">Descrição dos Produtos e Serviços</label>
+                            <input type="text" id="descricao" name="descricao" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="unidade">Unid.</label>
+                            <input type="text" id="unidade" name="unidade" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="quantidade">Quant.</label>
+                            <input type="number" id="quantidade" name="quantidade" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="valorA">Valor Proponente (A)</label>
+                            <input type="number" step="0.01" id="valorA" name="valorA" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 5 -->
+                    <h5 class="text-uppercase mt-4">Bloco 5 – Apuração das Propostas</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="menorValor">Itens de Menor Valor</label>
+                            <input type="text" id="menorValor" name="menorValor" class="form-control">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="totalItensValor">Valor Total dos Itens de Valor</label>
+                            <input type="number" step="0.01" id="totalItensValor" name="totalItensValor"
+                                class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <!-- BLOCO 4 -->
+                    <h5 class="text-uppercase mt-4">Bloco 4 – Autenticação</h5>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="localData">Local e Data</label>
+                            <input type="text" id="localData" name="localData" class="form-control"
+                                value="CANAÃ DOS CARAJÁS-PA, 20/01/2024" readonly>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="nomeDirigente">Representante Legal da UEx</label>
+                            <input type="text" id="nomeDirigente" name="nomeDirigente" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="assinaturaDirigente">Assinatura</label>
+                            <input type="text" id="assinaturaDirigente" name="assinaturaDirigente" class="form-control">
+                        </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Fim Modal: Pesquisa de Preço -->
+
+<!-- Fim Modal: Pesquisa de Preço -->
+
+
+<!-- Modal: Bens Adquiridos -->
+<div class="modal fade" id="formBensAdquiridos" tabindex="-1" aria-labelledby="formBensAdquiridosLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="formBensAdquiridosLabel">Formulário de Bens Adquiridos</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="tipoDocumento">Tipo de Documento:</label>
+                            <input type="text" id="tipoDocumento" name="tipoDocumento" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="numeroDocumento">Número do Documento:</label>
+                            <input type="text" id="numeroDocumento" name="numeroDocumento" class="form-control"
+                                required>
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="dataDocumento">Data:</label>
+                            <input type="date" id="dataDocumento" name="dataDocumento" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label for="especificacao">Especificação do Bem:</label>
+                            <input type="text" id="especificacao" name="especificacao" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="quantidade">Quantidade:</label>
+                            <input type="number" id="quantidade" name="quantidade" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-2">
+                            <label for="valorUnitario">Valor Unitário:</label>
+                            <input type="number" step="0.01" id="valorUnitario" name="valorUnitario"
+                                class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-warning">Salvar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Fm Modal: Bens Adquiridos -->
+
+
+<!-- Modal: Termo de Doação -->
+<div class="modal fade" id="formTermoDoacao" tabindex="-1" aria-labelledby="formTermoDoacaoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="formTermoDoacaoLabel">Formulário de Termo de Doação</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="descricaoBem">Descrição do Bem:</label>
+                            <input type="text" id="descricaoBem" name="descricaoBem" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="notaFiscal">Nota Fiscal:</label>
+                            <input type="text" id="notaFiscal" name="notaFiscal" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="dataNotaFiscal">Data da Nota Fiscal:</label>
+                            <input type="date" id="dataNotaFiscal" name="dataNotaFiscal" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="quantidade">Quantidade:</label>
+                            <input type="number" id="quantidade" name="quantidade" class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="valorUnitario">Valor Unitário:</label>
+                            <input type="number" step="0.01" id="valorUnitario" name="valorUnitario"
+                                class="form-control" required>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <label for="valorTotal">Valor Total:</label>
+                            <input type="number" step="0.01" id="valorTotal" name="valorTotal" class="form-control"
+                                required>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button type="submit" class="btn btn-info">Salvar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Adiciona funcionalidade ao botão de expandir/recolher
+        const toggleButtons = document.querySelectorAll("[data-toggle='collapse']");
+
+        toggleButtons.forEach((button) => {
+            button.addEventListener("click", function () {
+                const targetId = this.getAttribute("data-target");
+                const targetElement = document.querySelector(targetId);
+
+                if (targetElement) {
+                    const isExpanded = targetElement.classList.contains("show");
+                    if (isExpanded) {
+                        targetElement.classList.remove("show");
+                        this.innerText = "Expandir";
+                    } else {
+                        targetElement.classList.add("show");
+                        this.innerText = "Fechar";
+                    }
+                }
+            });
+        });
+    });
+</script>
+
+
+<!-- Adicione os outros modais semelhantes para os demais formulários -->
+
+{% endblock %}
+
+
+<style>
+    .modal-xxl {
+        max-width: 90%;
+        /* Ajuste o valor conforme necessário */
+    }
+
+    .card-header .btn {
+    margin-left: auto; /* Empurra o botão para a direita */
+}
+
+</style>

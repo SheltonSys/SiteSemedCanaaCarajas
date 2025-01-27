@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Portal da Transparência - SEMED Canaã dos Carajás">
+    <title>Portal da Transparência</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            padding: 15px;
+        }
+
+        .navbar-brand img {
+            height: 50px;
+        }
+
+        .hero-section {
+            background: linear-gradient(to right, rgba(0, 123, 255, 0.8), rgba(0, 56, 142, 0.8)),
+                url('{% static "assets/dist/img/transparencia-banner3.jpg" %}');
+            background-size: cover;
+            background-position: center;
+            height: 300px;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .hero-section h1 {
+            font-size: 3rem;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+        }
+
+        .card {
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .chart-container {
+            position: relative;
+            margin: 20px auto;
+            height: 300px;
+            width: 80%;
+        }
+
+        .table {
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .btn {
+            border-radius: 5px;
+        }
+
+        .footer-links {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .footer-links a {
+            color: #17a2b8;
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+
+        .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#" aria-label="SEMED Canaã dos Carajás">
+                <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page"
+                            href="{% url 'index' %}">Início</a></li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Institucional
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'apresentacao' %}">Sobre a
+                                    Semed</a></li>
+                            <li><a class="dropdown-item" href="{% url 'organograma' %}">Organograma</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarConhecaRede" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Conheça a Rede
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarConhecaRede">
+                            <li><a class="dropdown-item" href="{% url 'escola' %}">Escolas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'centro_viver_conviver' %}">Centro Viver e
+                                    Conviver</a></li>
+                            <li><a class="dropdown-item" href="{% url 'centro_formacao' %}"> Centro de Formação</a></li>
+                            <li><a class="dropdown-item" href="{% url 'diretoria_ensino_superior' %}"> Diretoria de
+                                    Ensino Superior</a></li>
+                            <li><a class="dropdown-item" href="{% url 'centro_midias_educacionais' %}"> Centro de Mídias
+                                    Educacionais</a></li>
+                        </ul>
+                    </li>
+
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarEventos" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Eventos
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarEventos">
+                            <li><a class="dropdown-item" href="{% url 'agenda' %}">Agenda</a></li>
+                            <li><a class="dropdown-item" href="{% url 'inscricoes' %}">Inscrições</a></li>
+                            <li><a class="dropdown-item" href="{% url 'certificado' %}">Emita seu Certificado</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarServices" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Serviços
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarServices">
+                            <li><a class="dropdown-item" href="{% url 'repositorio' %}">Repositório</a></li>
+                            <li><a class="dropdown-item" href="{% url 'curriculo_ensino' %}">Currículo de Ensino</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'programas_projetos' %}">Programas e Projetos em
+                                    Rede</a></li>
+                            <li><a class="dropdown-item" href="{% url 'calendario_escolar' %}">Calendário Escolar</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'portal_aluno' %}">Portal do Aluno</a></li>
+                            <li><a class="dropdown-item" href="https://canaa.algtec.com.br/auth" target="_blank" class="btn btn-light btn-sm">SYNAPTIC</a></li>
+                            <li><a class="dropdown-item"
+                                    href="https://sistema.semedcanaadoscarajas.pa.gov.br/documentos-public/todos"
+                                    target="_blank">Consulta Pública</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarSocial" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Participação Social
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarSocial">
+                            <li><a class="dropdown-item" href="{% url 'conselho_municipal_educacao' %}">Conselho
+                                    Municipal de Educação</a></li>
+                            <li><a class="dropdown-item" href="{% url 'cacs_fundeb' %}">CACS-FUNDEB</a></li>
+                            <li><a class="dropdown-item" href="{% url 'conselho_alimentacao_escolar' %}">Conselho de
+                                    Alimentação Escolar</a></li>
+                            <li><a class="dropdown-item" href="{% url 'forum_municipal_educacao' %}">Fórum Municipal de
+                                    Educação</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'transparencia_index' %}">Transparência</a>
+                    </li>
+                    
+                    <li class="nav-item"><a class="nav-link" href="{% url 'fale_conosco' %}">Fale Conosco</a></li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}" target="_blank">ADM</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div>
+            <h1 class="fw-bold">Portal da Transparência</h1>
+            <p>Transparência e acesso a informações públicas da Secretaria de Educação.</p>
+        </div>
+    </section>
+
+    <!-- Estatísticas Gerais -->
+    <div class="container my-5">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <div class="card p-4 shadow">
+                    <i class="fas fa-money-bill-alt fa-3x text-success"></i>
+                    <h5 class="mt-3">Total de Gastos (Anual)</h5>
+                    <p class="display-6 fw-bold">R$ </p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 shadow">
+                    <i class="fas fa-user-tie fa-3x text-warning"></i>
+                    <h5 class="mt-3">Servidores Ativos</h5>
+                    <p class="display-6 fw-bold">2388</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card p-4 shadow">
+                    <i class="fas fa-utensils fa-3x text-info"></i>
+                    <h5 class="mt-3">Gastos com Alimentação</h5>
+                    <p class="display-6 fw-bold">R$ </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="container my-5">
+        <h2 class="text-center mb-4">Análises de Gastos e Indicadores</h2>
+        <div class="row">
+            <!-- Gráfico 1 -->
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h5 class="text-center">Gastos por Categoria</h5>
+                    <canvas id="gastosPorCategoria"></canvas>
+                </div>
+            </div>
+            <!-- Gráfico 2 -->
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h5 class="text-center">Evolução de Gastos</h5>
+                    <canvas id="evolucaoGastos"></canvas>
+                </div>
+            </div>
+            <!-- Gráfico 3 -->
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h5 class="text-center">Distribuição por Ano</h5>
+                    <canvas id="distribuicaoPorAno"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <!-- Gráfico 4 -->
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h5 class="text-center">Gastos por Mês</h5>
+                    <canvas id="gastosPorMes"></canvas>
+                </div>
+            </div>
+            <!-- Gráfico 5 -->
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h5 class="text-center">Distribuição de Funcionários</h5>
+                    <canvas id="distribuicaoFuncionarios"></canvas>
+                </div>
+            </div>
+            <!-- Gráfico 6 -->
+            <div class="col-md-4">
+                <div class="card shadow p-4">
+                    <h5 class="text-center">Indicadores de Eficiência</h5>
+                    <canvas id="indicadoresEficiencia"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Tabela Interativa -->
+    <div class="container my-5">
+        <h2 class="text-center">Detalhamento de Gastos</h2>
+        <table class="table table-striped table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th>Ano</th>
+                    <th>Categoria</th>
+                    <th>Valor (R$)</th>
+                    <th>Percentual</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>2025</td>
+                    <td>Folha de Pagamento</td>
+                    <td>R$</td>
+                    <td>70%</td>
+                </tr>
+                <tr>
+                    <td>2025</td>
+                    <td>Alimentação Escolar</td>
+                    <td>R$</td>
+                    <td>88.6%</td>
+                </tr>
+                <tr>
+                    <td>2025</td>
+                    <td>Bens e Consumo</td>
+                    <td>R$</td>
+                    <td>76.6%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-bg py-5">
+        <div class="container">
+            <!-- Linhas principais -->
+            <div class="row">
+                <!-- Destaques -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                            profissionalizante</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                            dos Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                            Vice-diretor de unidade escolar</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">18 de outubro de 2023</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                            Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                            Fundamental</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">1 de março de 2023</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Temas Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                    <div class="d-flex flex-wrap align-items-baseline">
+                        <span class="badge bg-primary m-1">Educação <span
+                                class="badge bg-light text-dark ms-1">243</span></span>
+                        <span class="badge bg-primary m-1">Destaque <span
+                                class="badge bg-light text-dark ms-1">234</span></span>
+                        <span class="badge bg-primary m-1">Ensino Superior <span
+                                class="badge bg-light text-dark ms-1">58</span></span>
+                        <span class="badge bg-primary m-1">Polo Educacional <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Ensino Infantil <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Jovens e Adultos <span
+                                class="badge bg-light text-dark ms-1">37</span></span>
+                        <span class="badge bg-primary m-1">Cultura <span
+                                class="badge bg-light text-dark ms-1">36</span></span>
+                        <span class="badge bg-primary m-1">Ensino Integral <span
+                                class="badge bg-light text-dark ms-1">27</span></span>
+                        <span class="badge bg-primary m-1">Governo <span
+                                class="badge bg-light text-dark ms-1">26</span></span>
+                        <span class="badge bg-primary m-1">Esportes <span
+                                class="badge bg-light text-dark ms-1">19</span></span>
+                        <span class="badge bg-primary m-1">Saúde Escolar <span
+                                class="badge bg-light text-dark ms-1">15</span></span>
+                        <span class="badge bg-primary m-1">Inclusão Digital <span
+                                class="badge bg-light text-dark ms-1">12</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Linha inferior -->
+            <hr class="border-secondary">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 150px; height: 150px; object-fit: contain;">
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="col-md-4 mb-4 mb-md-0 text-center">
+                    <p style="text-align: justify;">
+                        <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                        14:00 às 18:00 (expediente interno).
+                    </p>
+                    <p style="text-align: justify;">
+                        <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                            class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                    </p>
+                </div>
+                <!-- Redes Sociais -->
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                    <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-facebook fa-2x"></i>
+                    </a>
+                    <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-instagram fa-2x"></i>
+                    </a>
+                    <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                        target="_blank">
+                        <i class="fab fa-youtube fa-2x"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script>
+        // Gráfico 1: Gastos por Categoria (Barras Horizontais)
+        const ctx1 = document.getElementById('gastosPorCategoria').getContext('2d');
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: ['Folha de Pagamento', 'Alimentação', 'Bens e Consumo'],
+                datasets: [{
+                    label: 'Gastos por Categoria (R$)',
+                    data: [0, 0, 0],
+                    backgroundColor: ['#28a745', '#ffc107', '#17a2b8']
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Valor (R$)' } },
+                    y: { title: { display: true, text: 'Categoria' } }
+                }
+            }
+        });
+    
+        // Gráfico 2: Evolução de Gastos (Linha)
+        const ctx2 = document.getElementById('evolucaoGastos').getContext('2d');
+        new Chart(ctx2, {
+            type: 'line',
+            data: {
+                labels: ['2021', '2022', '2023', '2024', '2025'],
+                datasets: [{
+                    label: 'Gastos Anuais (R$)',
+                    data: [0, 0, 0, 0, 0],
+                    borderColor: '#007bff',
+                    tension: 0.4,
+                    fill: false
+                }]
+            }
+        });
+    
+        // Gráfico 3: Distribuição por Ano (Barras Verticais)
+        const ctx3 = document.getElementById('distribuicaoPorAno').getContext('2d');
+        new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: ['2021', '2022', '2023', '2024', '2025'],
+                datasets: [{
+                    label: 'Gastos por Ano (R$)',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: '#17a2b8'
+                }]
+            }
+        });
+    
+        // Gráfico 4: Gastos por Mês (Linha)
+        const ctx4 = document.getElementById('gastosPorMes').getContext('2d');
+        new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                datasets: [{
+                    label: 'Gastos Mensais (R$)',
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    borderColor: '#28a745',
+                    fill: true,
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    tension: 0.3
+                }]
+            }
+        });
+    
+        // Gráfico 5: Distribuição de Funcionários (Barras Empilhadas)
+const ctx5 = document.getElementById('distribuicaoFuncionarios').getContext('2d');
+new Chart(ctx5, {
+    type: 'bar',
+    data: {
+        labels: ['Administração', 'Docentes', 'Manutenção', 'Outros'],
+        datasets: [
+            {
+                label: 'Homens',
+                data: [0, 0, 0, 0],
+                backgroundColor: '#007bff'
+            },
+            {
+                label: 'Mulheres',
+                data: [0, 0, 0, 0],
+                backgroundColor: '#ffc107'
+            }
+        ]
+    },
+    options: {
+        plugins: {
+            legend: { display: true, position: 'top' }
+        },
+        responsive: true,
+        scales: {
+            x: { title: { display: true, text: 'Áreas' } },
+            y: { 
+                title: { display: true, text: 'Quantidade de Funcionários' },
+                stacked: true
+            },
+            x: { stacked: true }
+        }
+    }
+});
+
+    
+        // Gráfico 6: Indicadores de Eficiência (Barras Verticais)
+        const ctx6 = document.getElementById('indicadoresEficiencia').getContext('2d');
+        new Chart(ctx6, {
+            type: 'bar',
+            data: {
+                labels: ['Eficiência', 'Produtividade', 'Satisfação'],
+                datasets: [{
+                    label: 'Indicadores (%)',
+                    data: [0, 0, 0],
+                    backgroundColor: ['#007bff', '#28a745', '#ffc107']
+                }]
+            },
+            options: {
+                scales: {
+                    y: { min: 0, max: 100, title: { display: true, text: 'Percentual' } },
+                    x: { title: { display: true, text: 'Indicadores' } }
+                }
+            }
+        });
+    </script>
+    
+    
+    
+</body>
+
+</html>
