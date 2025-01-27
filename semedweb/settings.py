@@ -18,6 +18,7 @@ DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 # Hosts permitidos
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'portalteste.semedcanaadoscarajas.pa.gov.br', '56.124.22.237').split(',')
 
+
 # Application definition
 
 INSTALLED_APPS = [
