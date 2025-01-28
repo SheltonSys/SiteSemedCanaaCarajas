@@ -16,7 +16,10 @@ SECRET_KEY = 'django-insecure-zrvbu@igm3yi3k&l)8tt3=94!#tgo&1io_#s1=tl^apan#w=$0
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 # Hosts permitidos
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', 'portalteste.semedcanaadoscarajas.pa.gov.br', '56.124.22.237', '127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = os.getenv(
+    'DJANGO_ALLOWED_HOSTS',
+    'portalteste.semedcanaadoscarajas.pa.gov.br,56.124.22.237,127.0.0.1,localhost'
+).split(',')
 
 
 # Application definition
