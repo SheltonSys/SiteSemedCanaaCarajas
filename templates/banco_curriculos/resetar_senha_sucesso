@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Senha Redefinida</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <script>
+        Swal.fire({
+            icon: "success",
+            title: "Senha redefinida com sucesso!",
+            text: "Agora você pode fazer login com sua nova senha.",
+            confirmButtonText: "OK"
+        }).then(() => {
+            window.location.href = "{% url 'login_candidato' %}";
+        });
+    </script>
+</body>
+</html>

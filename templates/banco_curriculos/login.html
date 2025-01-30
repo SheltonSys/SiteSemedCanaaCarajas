@@ -1,13 +1,18 @@
 <!DOCTYPE html>
-{%load static%}
+{% load static %}
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Banco de Currículos</title>
+    
+    <!-- Bootstrap & FontAwesome -->
     <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+    
+    <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <style>
         body {
             background: url("{% static 'assets/dist/img/imagemCanaa555.webp' %}") no-repeat center center fixed;
@@ -40,12 +45,14 @@
             <div class="card-body">
                 {% if messages %}
                     {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }} mt-2" role="alert">
-                        {{ message }}
-                    </div>
+                        <div class="alert alert-{{ message.tags }} mt-2" role="alert">
+                            {{ message }}
+                        </div>
                     {% endfor %}
                 {% endif %}
+                
                 <p class="login-box-msg"><b>Conecte-se para gerenciar suas informações</b></p>
+                
                 <form action="{% url 'login_candidato' %}" method="post" onsubmit="startProcessing(event)">
                     {% csrf_token %}
                     <div class="input-group mb-3">
@@ -70,6 +77,11 @@
                         </div>
                     </div>
                 </form>
+
+                <!-- Botão para abrir a Modal -->
+                <div class="text-center mt-3">
+                    <a data-bs-toggle="modal" data-bs-target="#recuperarSenhaModal" class="btn btn-link">Esqueci minha senha</a>
+                </div>
                 
                 <div class="text-center mt-3">
                     <p>Não tem uma conta? <a href="{% url 'registrar_novo_curriculo' %}">Registre-se</a></p>
@@ -81,6 +93,38 @@
         </div>
     </div>
 
+    <!-- Modal de Recuperação de Senha -->
+    <!-- Modal de Recuperação de Senha -->
+<div class="modal fade" id="recuperarSenhaModal" tabindex="-1" aria-labelledby="recuperarSenhaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recuperarSenhaLabel">Recuperar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Digite seu e-mail para receber um link de recuperação de senha.</p>
+                <form id="recuperarSenhaForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Enviar Link</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Bootstrap & jQuery -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+
+    <!-- Scripts -->
     <script>
         function togglePasswordVisibility() {
             const passwordField = document.getElementById('password');
@@ -107,45 +151,58 @@
                 event.target.submit();
             }, 1000);
         }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            var recuperarSenhaBtn = document.querySelector('[data-bs-target="#recuperarSenhaModal"]');
+
+            if (recuperarSenhaBtn) {
+                recuperarSenhaBtn.addEventListener("click", function () {
+                    var modal = new bootstrap.Modal(document.getElementById("recuperarSenhaModal"));
+                    modal.show();
+                });
+            }
+
+            // Fechar mensagens automaticamente
+            const messages = document.querySelectorAll(".alert-success");
+            messages.forEach(function (message) {
+                setTimeout(function () {
+                    message.style.transition = "opacity 0.5s ease";
+                    message.style.opacity = "0";
+                    setTimeout(() => message.remove(), 500);
+                }, 5000);
+            });
+        });
     </script>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Seleciona todas as mensagens de sucesso
-        const messages = document.querySelectorAll(".alert-success");
+    document.getElementById("recuperarSenhaForm").addEventListener("submit", function (event) {
+    event.preventDefault();
 
-        messages.forEach(function (message) {
-            // Fecha automaticamente após 5 segundos
-            setTimeout(function () {
-                message.style.transition = "opacity 0.5s ease";
-                message.style.opacity = "0";
+    let formData = new FormData(this);
 
-                // Remove o elemento do DOM após a transição
-                setTimeout(function () {
-                    if (message.parentNode) {
-                        message.parentNode.removeChild(message);
-                    }
-                }, 500);
-            }, 5000);
-
-            // Adiciona evento de clique para fechar manualmente
-            message.addEventListener("click", function () {
-                message.style.transition = "opacity 0.5s ease";
-                message.style.opacity = "0";
-
-                setTimeout(function () {
-                    if (message.parentNode) {
-                        message.parentNode.removeChild(message);
-                    }
-                }, 500);
-            });
-        });
+    fetch("/banco-curriculos/recuperar-senha/", {
+        method: "POST",
+        body: formData,
+        headers: {
+            "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+        },
+    })
+    .then(response => response.json())  // Garante que estamos lidando com JSON
+    .then(data => {
+        if (data.success) {
+            Swal.fire("Sucesso!", data.message, "success");
+        } else {
+            Swal.fire("Erro!", data.message, "error");
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao enviar requisição:", error);
+        Swal.fire("Erro!", "Falha na comunicação com o servidor.", "error");
     });
-</script>
+});
+
+    </script>
 
 
-    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
 </body>
 </html>

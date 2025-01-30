@@ -4348,22 +4348,30 @@ class FormDeAtualizacao(forms.ModelForm):
 
 
 
-from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib import messages
+from django.shortcuts import redirect
 
-@login_required(login_url='login')  # Redireciona para a página de login se o usuário não estiver autenticado
 def editar_perfil(request):
-    if request.user.is_authenticated:
-        try:
-            # Lógica para editar perfil
-            return render(request, 'editar_perfil.html', {})
-        except Exception as e:
-            messages.error(request, "Ocorreu um erro ao carregar a página.")
-            return redirect('home')
-    else:
-        messages.error(request, "Você precisa estar autenticado para acessar esta área.")
-        return redirect('login')
+    if request.method == "POST":
+        cpf = request.POST.get("cpf", "").strip()
+
+        candidato = get_object_or_404(CadastroCandidato, cpf=cpf)
+
+        candidato.nome_completo = request.POST.get("nome_completo")
+        candidato.email = request.POST.get("email")
+
+        nova_senha = request.POST.get("senha")
+        if nova_senha:
+            candidato.senha = nova_senha
+
+        candidato.save()
+
+        # ✅ Redireciona para a área do candidato após salvar
+        return redirect("area_candidato")  # Certifique-se de que esta URL está correta no seu `urls.py`
+
+    return JsonResponse({"error": True, "message": "Método inválido"}, status=400)
+
+
+
 
 
 
@@ -4417,3 +4425,291 @@ def cadastro_demanda_view(request):
 @module_permission_required("Indicadores")
 def indicadores_view(request):
     return render(request, "modulos/indicadores.html")
+
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from semedapp.models import CadastroCandidato, Diretor
+
+def visualizar_curriculo(request):
+    candidato_id = request.session.get("candidato_id")
+
+    if not candidato_id:
+        return JsonResponse({"success": False, "message": "Usuário não autenticado."})
+
+    candidato = get_object_or_404(CadastroCandidato, id=candidato_id)
+    diretor = Diretor.objects.filter(cpf=candidato.cpf).first()
+
+    if not diretor:
+        return JsonResponse({"success": False, "message": "Nenhum currículo encontrado."})
+
+    # Retorna os dados do candidato no formato JSON
+    return JsonResponse({
+        "success": True,
+        "diretor": {
+            "nome_completo": diretor.nome_completo,
+            "cpf": diretor.cpf,
+            "rg": diretor.rg,
+            "email": diretor.email,
+            "telefone": diretor.telefone,
+            "endereco": diretor.endereco,
+            "bairro": diretor.bairro,
+            "cidade": diretor.cidade,
+            "cep": diretor.cep,
+            "data_nascimento": diretor.data_nascimento.strftime("%d/%m/%Y"),
+            "sexo": diretor.sexo,
+            "estado_civil": diretor.estado_civil,
+            "formacao_academica": diretor.formacao_academica,
+            "curso": diretor.curso,
+            "instituicao": diretor.instituicao,
+            "ano_conclusao": diretor.ano_conclusao,
+            "empresa": diretor.empresa,
+            "cargo": diretor.cargo,
+            "data_inicio": diretor.data_inicio.strftime("%d/%m/%Y") if diretor.data_inicio else None,
+            "data_fim": diretor.data_fim.strftime("%d/%m/%Y") if diretor.data_fim else None,
+            "foto": diretor.foto.url if diretor.foto else None,
+            "curriculo_pdf": diretor.curriculo_pdf.url if diretor.curriculo_pdf else None,
+        }
+    })
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from semedapp.models import Diretor
+
+def editar_curriculo(request, candidato_id):
+    candidato = get_object_or_404(Diretor, id=candidato_id)
+
+    if request.method == 'POST':
+        candidato.nome_completo = request.POST.get('nome_completo')
+        candidato.cpf = request.POST.get('cpf')
+        candidato.rg = request.POST.get('rg')
+        candidato.email = request.POST.get('email')
+        candidato.telefone = request.POST.get('telefone')
+        candidato.endereco = request.POST.get('endereco')
+        candidato.bairro = request.POST.get('bairro')
+        candidato.cidade = request.POST.get('cidade')
+        candidato.cep = request.POST.get('cep')
+        candidato.data_nascimento = request.POST.get('data_nascimento')
+        candidato.formacao_academica = request.POST.get('formacao_academica')
+        candidato.curso = request.POST.get('curso')
+        candidato.instituicao = request.POST.get('instituicao')
+        candidato.ano_conclusao = request.POST.get('ano_conclusao')
+        candidato.experiencia_profissional = request.POST.get('experiencia_profissional')
+        candidato.estado_civil = request.POST.get('estado_civil')
+        candidato.sexo = request.POST.get('sexo')
+        candidato.data_cadastro = request.POST.get('data_cadastro')
+        candidato.empresa = request.POST.get('empresa')
+        candidato.cargo = request.POST.get('cargo')
+        candidato.data_inicio = request.POST.get('data_inicio')
+        candidato.data_fim = request.POST.get('data_fim')
+
+        if 'foto' in request.FILES:
+            candidato.foto = request.FILES['foto']
+        if 'curriculo_pdf' in request.FILES:
+            candidato.curriculo_pdf = request.FILES['curriculo_pdf']
+        if 'certificados_pdf' in request.FILES:
+            candidato.certificados_pdf = request.FILES['certificados_pdf']
+
+        candidato.save()
+        return redirect('area_candidato')  # Redireciona para a área do candidato
+
+    return render(request, 'banco_curriculos/editar_curriculo.html', {'candidato': candidato})
+
+
+
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.models import User
+
+def recuperar_senha(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+
+        # Verifica se o e-mail existe no banco
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return JsonResponse({"success": False, "message": "E-mail não encontrado."}, status=400)
+
+        # Enviar e-mail de recuperação
+        try:
+            send_mail(
+                "Recuperação de Senha",
+                "Clique no link para redefinir sua senha: http://127.0.0.1:8000/banco-curriculos/resetar-senha/",
+                settings.DEFAULT_FROM_EMAIL,
+                [email],
+                fail_silently=False,
+            )
+            return JsonResponse({"success": True, "message": "E-mail enviado com sucesso!"})
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": f"Erro ao enviar e-mail: {str(e)}"}, status=500)
+
+    return JsonResponse({"success": False, "message": "Método inválido"}, status=400)
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth import get_user_model
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.forms import SetPasswordForm
+
+User = get_user_model()
+
+def resetar_senha(request, uidb64, token):
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+
+        if not default_token_generator.check_token(user, token):
+            return render(request, "error.html", {"mensagem": "Token inválido ou expirado."})  # Alterado para error.html
+
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return render(request, "error.html", {"mensagem": "Usuário inválido."})  # Alterado para error.html
+
+    if request.method == "POST":
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("login_candidato")
+
+    else:
+        form = SetPasswordForm(user)
+
+    return render(request, "resetar_senha.html", {"form": form})
+
+
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
+from django.contrib import messages
+from django.urls import reverse
+import uuid
+from django.http import JsonResponse
+from django.contrib.auth.models import User  # Certifique-se de importar o modelo correto
+
+def enviar_link_recuperacao(request):
+    if request.method == "POST":
+        email = request.POST.get("email")  # Captura o e-mail do formulário
+        print(f"🔍 Verificando e-mail: {email}")  # DEBUG: Veja se o e-mail está sendo capturado corretamente
+
+        try:
+            user = User.objects.get(email=email)  # Busca o usuário no banco de dados
+            token = str(uuid.uuid4())  # Gera um token único
+            reset_url = request.build_absolute_uri(reverse("resetar_senha", args=[token]))
+
+            # Enviar o e-mail
+            send_mail(
+                "Recuperação de Senha",
+                f"Olá, {user.username}. Clique no link abaixo para redefinir sua senha:\n{reset_url}",
+                "tecnologiasyscorp@outlook.com",  # E-mail de envio
+                [email],  # E-mail do destinatário
+                fail_silently=False,
+            )
+
+            print(f"✅ E-mail enviado com sucesso para {email}")  # DEBUG: Mostra que o e-mail foi enviado
+            return JsonResponse({"success": True, "message": "E-mail enviado com sucesso!"})
+
+        except User.DoesNotExist:
+            print(f"❌ E-mail não encontrado: {email}")  # DEBUG: Mostra o e-mail que não foi encontrado
+            return JsonResponse({"success": False, "message": f"E-mail '{email}' não encontrado no sistema."})
+
+    return JsonResponse({"success": False, "message": "Requisição inválida."})
+
+
+
+
+
+
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
+# Configurações do servidor SMTP da Microsoft
+EMAIL_HOST = "smtp.office365.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "tecnologiasyscorp@outlook.com"
+EMAIL_HOST_PASSWORD = "@Drik16091985"
+
+def enviar_email(destinatario, assunto, mensagem):
+    try:
+        # Criar o e-mail
+        msg = MIMEMultipart()
+        msg["From"] = EMAIL_HOST_USER
+        msg["To"] = destinatario
+        msg["Subject"] = assunto
+
+        # Corpo do e-mail
+        msg.attach(MIMEText(mensagem, "plain"))
+
+        # Conectar ao servidor SMTP
+        server = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
+        server.starttls()  # Ativar TLS
+        server.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)  # Autenticar
+        server.sendmail(EMAIL_HOST_USER, destinatario, msg.as_string())  # Enviar e-mail
+        server.quit()
+
+        print(f"✅ E-mail enviado com sucesso para {destinatario}")
+
+    except Exception as e:
+        print(f"❌ Erro ao enviar e-mail: {e}")
+
+# Teste
+if __name__ == "__main__":
+    enviar_email(
+        "destinatario@email.com",
+        "Teste de Envio via Outlook",
+        "Olá! Este é um teste de envio de e-mail pelo Python usando Outlook."
+    )
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.hashers import make_password
+from semedapp.models import CadastroCandidato
+
+def resetar_senha(request, candidato_id):
+    candidato = get_object_or_404(CadastroCandidato, id=candidato_id)
+
+    if request.method == "POST":
+        nova_senha = request.POST.get("nova_senha")
+        candidato.senha = make_password(nova_senha)
+        candidato.save()
+
+        return render(request, "banco_curriculos/resetar_senha_sucesso.html")
+
+    return render(request, "banco_curriculos/resetar_senha.html", {"candidato": candidato})
+
+
+from django.core.mail import send_mail
+from django.http import JsonResponse
+
+def enviar_email_recuperacao(request):
+    """Função para enviar o link de recuperação de senha"""
+    
+    if request.method == "POST":
+        email_destino = request.POST.get("email")
+
+        if not email_destino:
+            return JsonResponse({"success": False, "message": "E-mail inválido!"})
+
+        assunto = "Recuperação de Senha"
+        mensagem = f"Olá, clique no link para redefinir sua senha: https://seusite.com/redefinir-senha"
+
+        try:
+            send_mail(
+                assunto,
+                mensagem,
+                "tecnologiasyscorp@outlook.com",  # Remetente
+                [email_destino],  # Destinatário
+                fail_silently=False,
+            )
+            return JsonResponse({"success": True, "message": "E-mail enviado com sucesso!"})
+        except Exception as e:
+            return JsonResponse({"success": False, "message": f"Erro ao enviar: {str(e)}"})
+
+    return JsonResponse({"success": False, "message": "Método inválido"})

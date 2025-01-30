@@ -1637,7 +1637,7 @@ class Diretor(models.Model):
     estado_civil = models.CharField(max_length=50)
     sexo = models.CharField(max_length=50)
 
-    data_cadastro = models.DateTimeField(auto_now_add=True)
+    data_cadastro = models.DateTimeField()
 
     empresa = models.CharField(max_length=255, blank=True, null=True)
     cargo = models.CharField(max_length=255, blank=True, null=True)
@@ -1664,7 +1664,8 @@ class Diretor(models.Model):
             self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
 
     def save(self, *args, **kwargs):
-        self.generate_qr_code()
+        if not self.data_cadastro:  # Se o campo estiver vazio
+            self.data_cadastro = now()  # Define a data atual
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -1734,7 +1735,7 @@ class CadastroCandidato(models.Model):
 
     def save(self, *args, **kwargs):
         # Apenas criptografe a senha se for uma nova criação ou se ela foi alterada
-        if not self.pk or 'senha' in self.get_dirty_fields():
+        if not self.pk or self.senha:  # Apenas verifica se há senha nova
             if not self.senha.startswith("pbkdf2_"):  # Verifica se já está criptografada
                 self.senha = make_password(self.senha)
         super().save(*args, **kwargs)

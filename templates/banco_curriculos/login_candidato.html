@@ -106,5 +106,50 @@
     <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
     <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
     <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("recuperarSenhaForm").addEventListener("submit", function (event) {
+                event.preventDefault(); // Impede o envio padrão
+    
+                let formData = new FormData(this);
+    
+                fetch("{% url 'recuperar_senha' %}", {
+                    method: "POST",
+                    body: formData,
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "E-mail enviado!",
+                            text: data.message,
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        });
+                    } else {
+                        Swal.fire({
+                            title: "Erro!",
+                            text: data.message,
+                            icon: "error",
+                            confirmButtonText: "Fechar"
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    Swal.fire({
+                        title: "Erro!",
+                        text: "Erro na conexão. Verifique sua internet e tente novamente.",
+                        icon: "error",
+                        confirmButtonText: "Fechar"
+                    });
+                });
+            });
+        });
+    </script>
+    
+
 </body>
 </html>

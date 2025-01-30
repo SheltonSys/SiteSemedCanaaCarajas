@@ -1,0 +1,234 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Currículo</title>
+    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header bg-primary text-white text-center">
+                <h4><i class="fas fa-edit"></i> Editar Currículo</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="nome_completo">Nome Completo</label>
+                        <input type="text" class="form-control" id="nome_completo" name="nome_completo" value="{{ candidato.nome_completo }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cpf">CPF</label>
+                        <input type="text" class="form-control" id="cpf" name="cpf" value="{{ candidato.cpf }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rg">RG</label>
+                        <input type="text" class="form-control" id="rg" name="rg" value="{{ candidato.rg }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">E-mail</label>
+                        <input type="email" class="form-control" id="email" name="email" value="{{ candidato.email }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="telefone">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" value="{{ candidato.telefone }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" class="form-control" id="endereco" name="endereco" value="{{ candidato.endereco }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bairro">Bairro</label>
+                        <input type="text" class="form-control" id="bairro" name="bairro" value="{{ candidato.bairro }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cidade">Cidade</label>
+                        <input type="text" class="form-control" id="cidade" name="cidade" value="{{ candidato.cidade }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cep">CEP</label>
+                        <input type="text" class="form-control" id="cep" name="cep" value="{{ candidato.cep }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_nascimento">Data de Nascimento</label>
+                        <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ candidato.data_nascimento|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_nascimento">Sexo</label>
+                        <input type="text" class="form-control" id="sexo" name="sexo" value="{{ candidato.sexo }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="formacao_academica">Formação Acadêmica</label>
+                        <select class="form-control" id="formacao_academica" name="formacao_academica">
+                            <option value="" disabled {% if not candidato.formacao_academica %}selected{% endif %}>Selecione</option>
+                            <option value="FundamentalC" {% if candidato.formacao_academica == "FundamentalC" %}selected{% endif %}>Fundamental Completo</option>
+                            <option value="FundamentalI" {% if candidato.formacao_academica == "FundamentalI" %}selected{% endif %}>Fundamental Incompleto</option>
+                            <option value="MedioC" {% if candidato.formacao_academica == "MedioC" %}selected{% endif %}>Médio Completo</option>
+                            <option value="MedioI" {% if candidato.formacao_academica == "MedioI" %}selected{% endif %}>Médio Incompleto</option>
+                            <option value="MedioTecnico" {% if candidato.formacao_academica == "MedioTecnico" %}selected{% endif %}>Médio e Técnico</option>
+                            <option value="TecnicoC" {% if candidato.formacao_academica == "TecnicoC" %}selected{% endif %}>Técnico Completo</option>
+                            <option value="TecnicoI" {% if candidato.formacao_academica == "TecnicoI" %}selected{% endif %}>Técnico Incompleto</option>
+                            <option value="TecnologoC" {% if candidato.formacao_academica == "TecnologoC" %}selected{% endif %}>Tecnólogo Completo</option>
+                            <option value="TecnologoI" {% if candidato.formacao_academica == "TecnologoI" %}selected{% endif %}>Tecnólogo Incompleto</option>
+                            <option value="GraduacaoC" {% if candidato.formacao_academica == "GraduacaoC" %}selected{% endif %}>Graduação Completa</option>
+                            <option value="GraduacaoI" {% if candidato.formacao_academica == "GraduacaoI" %}selected{% endif %}>Graduação Incompleta</option>
+                            <option value="PosGraduacaoC" {% if candidato.formacao_academica == "PosGraduacaoC" %}selected{% endif %}>Pós-Graduação Completa</option>
+                            <option value="PosGraduacaoI" {% if candidato.formacao_academica == "PosGraduacaoI" %}selected{% endif %}>Pós-Graduação Incompleta</option>
+                            <option value="MestradoC" {% if candidato.formacao_academica == "MestradoC" %}selected{% endif %}>Mestrado Completo</option>
+                            <option value="MestradoI" {% if candidato.formacao_academica == "MestradoI" %}selected{% endif %}>Mestrado Incompleto</option>
+                            <option value="DoutoradoC" {% if candidato.formacao_academica == "DoutoradoC" %}selected{% endif %}>Doutorado Completo</option>
+                            <option value="DoutoradoI" {% if candidato.formacao_academica == "DoutoradoI" %}selected{% endif %}>Doutorado Incompleto</option>
+                            <option value="phdC" {% if candidato.formacao_academica == "phdC" %}selected{% endif %}>PHD Completo</option>
+                            <option value="phdI" {% if candidato.formacao_academica == "phdI" %}selected{% endif %}>PHD Incompleto</option>
+                        </select>
+                    </div>
+                    
+
+                    <div class="form-group">
+                        <label for="curso">Curso</label>
+                        <input type="text" class="form-control" id="curso" name="curso" value="{{ candidato.curso }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="instituicao">Instituição</label>
+                        <input type="text" class="form-control" id="instituicao" name="instituicao" value="{{ candidato.instituicao }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ano_conclusao">Ano de Conclusão</label>
+                        <input type="date" class="form-control" id="ano_conclusao" name="ano_conclusao" value="{{ candidato.ano_conclusao}}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="experiencia_profissional">Experiência Profissional</label>
+                        <textarea class="form-control" id="experiencia_profissional" name="experiencia_profissional">{{ candidato.experiencia_profissional }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="estado_civil">Estado Civil</label>
+                        <select class="form-control" id="estado_civil" name="estado_civil" required>
+                            <option value="" disabled>Selecione</option>
+                            <option value="Solteiro" {% if candidato.estado_civil == "Solteiro" %}selected{% endif %}>Solteiro</option>
+                            <option value="Casado" {% if candidato.estado_civil == "Casado" %}selected{% endif %}>Casado</option>
+                            <option value="Divorciado" {% if candidato.estado_civil == "Divorciado" %}selected{% endif %}>Divorciado</option>
+                            <option value="Viuvo" {% if candidato.estado_civil == "Viuvo" %}selected{% endif %}>Viúvo</option>
+                            <option value="UniaoEstavel" {% if candidato.estado_civil == "UniaoEstavel" %}selected{% endif %}>União Estável</option>
+                        </select>
+                    </div>
+                    
+
+                    <div class="form-group">
+                        <label for="estado_civil">Estado Civil</label>
+                        <select class="form-control" id="estado_civil" name="estado_civil" required>
+                            <option value="" disabled>Selecione</option>
+                            <option value="Solteiro" {% if candidato.estado_civil == "Solteiro" %}selected{% endif %}>Solteiro(a)</option>
+                            <option value="Casado" {% if candidato.estado_civil == "Casado" %}selected{% endif %}>Casado(a)</option>
+                            <option value="Divorciado" {% if candidato.estado_civil == "Divorciado" %}selected{% endif %}>Divorciado(a)</option>
+                            <option value="Viuvo" {% if candidato.estado_civil == "Viuvo" %}selected{% endif %}>Viúvo(a)</option>
+                            <option value="UniaoEstavel" {% if candidato.estado_civil == "UniaoEstavel" %}selected{% endif %}>União Estável</option>
+                        </select>
+                    </div>
+                    
+
+                    <div class="form-group">
+                        <label for="empresa">Empresa</label>
+                        <input type="text" class="form-control" id="empresa" name="empresa" value="{{ candidato.empresa }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cargo">Cargo</label>
+                        <input type="text" class="form-control" id="cargo" name="cargo" value="{{ candidato.cargo }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_inicio">Data de Início</label>
+                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ candidato.data_inicio|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data_fim">Data de Fim</label>
+                        <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ candidato.data_fim|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Salvar Alterações</button>
+                        <a href="{% url 'area_candidato' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.querySelector("form");
+            
+            form.addEventListener("submit", function (event) {
+                // Impede o envio automático do formulário
+                event.preventDefault();
+    
+                // Simula uma requisição AJAX ou submissão bem-sucedida
+                // Aqui você pode integrar a lógica de envio real, se necessário.
+                fetch(form.action, {
+                    method: "POST",
+                    body: new FormData(form),
+                })
+                .then(response => {
+                    if (response.ok) {
+                        // Mensagem de sucesso com SweetAlert2
+                        Swal.fire({
+                            icon: "success",
+                            title: "Sucesso!",
+                            text: "As alterações foram salvas com sucesso.",
+                            confirmButtonText: "OK",
+                            confirmButtonColor: "#28a745",
+                        }).then(() => {
+                            // Redireciona o usuário para a área do candidato
+                            window.location.href = "{% url 'area_candidato' %}";
+                        });
+                    } else {
+                        // Mensagem de erro, caso algo dê errado
+                        Swal.fire({
+                            icon: "error",
+                            title: "Erro!",
+                            text: "Não foi possível salvar as alterações. Tente novamente mais tarde.",
+                            confirmButtonText: "Fechar",
+                            confirmButtonColor: "#d33",
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    // Mensagem de erro em caso de falha na conexão
+                    Swal.fire({
+                        icon: "error",
+                        title: "Erro de Conexão",
+                        text: "Houve um problema na conexão. Tente novamente.",
+                        confirmButtonText: "Fechar",
+                        confirmButtonColor: "#d33",
+                    });
+                });
+            });
+        });
+    </script>
+    
+
+</body>
+</html>

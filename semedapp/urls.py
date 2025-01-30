@@ -34,8 +34,13 @@ from django.urls import path
 from semedapp import views  # Substitua 'semedapp' pelo nome do seu app
 from semedapp.views import login_candidato
 from .views import CurriculoCreateView
-
+from semedapp.views import editar_curriculo
+from semedapp.views import visualizar_curriculo
+from semedapp.views import editar_perfil
 from django.contrib.auth.views import LogoutView
+from .views import recuperar_senha, resetar_senha
+from semedapp.views import enviar_link_recuperacao  # Importe a view correta
+from .views import enviar_email_recuperacao
 
 # app_name = 'contabilidade'
 # app_name = 'banco_curriculos'
@@ -477,6 +482,34 @@ urlpatterns = [
     path("banco-curriculos/logout/", views.logout_candidato, name="logout_candidato"),
 
     path('banco-curriculos/login/', login_candidato, name='login_candidato'),
+
+    #path('visualizar-curriculo/<int:candidato_id>/', visualizar_curriculo, name='visualizar_curriculo'),
+
+    path("visualizar-curriculo/", visualizar_curriculo, name="visualizar_curriculo"),
+
+    path("banco-curriculos/login-candidato/", login_candidato, name="login_candidato"),
+
+     #path("banco-curriculos/area-candidato/", area_candidato, name="area_candidato"),
+
+     path("banco-curriculos/visualizar-curriculo/", visualizar_curriculo, name="visualizar_curriculo"),
+
+     path('editar-curriculo/<int:candidato_id>/', editar_curriculo, name='editar_curriculo'),
+
+     path("editar-perfil/", editar_perfil, name="editar_perfil"),
+
+     path("recuperar-senha/", recuperar_senha, name="recuperar_senha"),
+
+     path("resetar-senha/<uidb64>/<token>/", resetar_senha, name="resetar_senha"),
+
+     path("enviar-link-recuperacao/", enviar_link_recuperacao, name="enviar_link_recuperacao"),
+
+     path('banco-curriculos/enviar-link-recuperacao/', enviar_link_recuperacao, name='enviar_link_recuperacao'),
+
+     path("resetar-senha/<int:candidato_id>/", resetar_senha, name="resetar_senha"),
+
+    path("recuperar-senha/", enviar_link_recuperacao, name="enviar_link_recuperacao"),
+
+    path("recuperar-senha/", enviar_email_recuperacao, name="recuperar_senha"),
 
 
 ]

@@ -145,3 +145,19 @@ MESSAGE_TAGS = {
 # Certifique-se de configurar o backend da sessão
 SESSION_ENGINE = "django.contrib.sessions.backends.db"
 SESSION_COOKIE_AGE = 1209600  # Duração da sessão (em segundos)
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = "shelton.oliveira.barbosa@gmail.com"  # Substitua pelo seu e-mail
+EMAIL_HOST_PASSWORD = "nhiq aagp vxvx fzlo"  # Use a senha de aplicativo do Gmail
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+
+
+
+
+
+
