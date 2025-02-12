@@ -4854,12 +4854,13 @@ from django.shortcuts import render
 from .models import CurriculoAntigo
 from django.db.models import Q
 from django.utils.timezone import now
+from django.core.paginator import Paginator
 
 def listar_curriculos_antigos(request):
     # Obtém os parâmetros da requisição GET
     search_query = request.GET.get('search', '').strip()
     filter_cargo = request.GET.get('cargo', '').strip()
-
+    page_number = request.GET.get('page', 1)
 
     # Captura a data atual no formato desejado
     data_atual = now().strftime('%d/%m/%Y')
@@ -4876,19 +4877,23 @@ def listar_curriculos_antigos(request):
     if filter_cargo:
         curriculos = curriculos.filter(cargo__iexact=filter_cargo)
 
+    # Paginação - 200 registros por página
+    paginator = Paginator(curriculos, 200)
+    page_obj = paginator.get_page(page_number)
+
     # Obter lista de cargos únicos para o dropdown
     cargos_disponiveis = CurriculoAntigo.objects.exclude(cargo__isnull=True).exclude(cargo="").values_list('cargo', flat=True).distinct()
 
-    
-
     context = {
-        'curriculos': curriculos,
+        'curriculos': page_obj,  # Currículos paginados
         'total_curriculos': curriculos.count(),
         'cargos_disponiveis': sorted(set(c.strip() for c in cargos_disponiveis)),  # Remove espaços extras
         'search_query': search_query,  # Para manter o valor no campo de busca
         'filter_cargo': filter_cargo,  # Para manter o valor no campo de filtro
+        'page_obj': page_obj  # Objeto de paginação para usar no template
     }
     return render(request, 'banco_curriculos/listar_curriculos_antigos.html', context)
+
 ###***********************************************************************************************************************
 
 def visualizar_curriculo_antigo(request, id):
