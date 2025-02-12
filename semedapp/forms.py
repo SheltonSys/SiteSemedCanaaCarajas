@@ -342,3 +342,66 @@ class FormDeAtualizacao(forms.ModelForm):
     class Meta:
         model = Candidato  # Substitua por seu modelo
         fields = ['nome_completo', 'email', 'cpf']  # Ajuste os campos conforme necessário
+
+
+
+from django import forms
+
+class UploadCSVForm(forms.Form):
+    file = forms.FileField(label="Selecione um arquivo CSV")
+
+
+
+from django import forms
+from .models import Resposta
+
+class RespostaForm(forms.ModelForm):
+    class Meta:
+        model = Resposta
+        fields = ['aluno', 'conceito', 'data_resposta']
+        widgets = {
+            'data_resposta': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+
+# forms.py
+from django import forms
+from .models import Conceito, Aluno
+
+class LancamentoConceitoForm(forms.ModelForm):
+    aluno = forms.ModelChoiceField(queryset=Aluno.objects.all(), label="Aluno", widget=forms.Select(attrs={'class': 'form-select'}))
+    habilidade = forms.ChoiceField(
+        choices=[
+            ('EI05CMH1', 'EI05CMH1 - Identificar os numerais e grafar até 10'),
+            ('EI05CMH2', 'EI05CMH2 - Associar uma quantidade de objetos a um número natural'),
+            ('EI05LGH1', 'EI05LGH1 - Grafar o nome próprio completo com auxílio do crachá'),
+            ('EI05LGH2', 'EI05LGH2 - Identificar as letras do nome no alfabeto'),
+            # Adicione todas as habilidades aqui...
+        ],
+        label="Habilidade",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    conceito = forms.ChoiceField(
+        choices=[('CERTO', 'Certo'), ('ERRADO', 'Errado'), ('PARCIAL', 'Parcial')],
+        label="Conceito",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta:
+        model = Conceito
+        fields = ['aluno', 'habilidade', 'conceito']
+
+
+from django import forms
+
+class ConceitoForm(forms.Form):
+    conceito_matematica = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3, "class": "form-control"}), 
+        label="Conceitos de Matemática", 
+        required=True
+    )
+    conceito_linguagem = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3, "class": "form-control"}), 
+        label="Conceitos de Linguagem", 
+        required=True
+    )

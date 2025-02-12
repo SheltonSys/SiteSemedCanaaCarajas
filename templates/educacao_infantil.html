@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-4">
+        <h2 class="display-5 fw-bold text-primary">📊 Educação Infantil - Avaliação SAMACC</h2>
+        <p class="text-muted fs-5">Solicitação de suporte técnico para otimizar o processamento de dados da avaliação SAMACC.</p>
+        <hr class="mt-3 mb-5" style="width: 70px; border: 3px solid #007BFF; opacity: 0.8;">
+    </div>
+
+    <!-- Card de Contexto -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold">📌 Contexto da Solicitação</h5>
+            <p class="card-text fs-6">
+                Atualmente, o processo de lançamento e processamento dos dados da avaliação <strong>SAMACC</strong> na Educação Infantil ocorre de forma manual, o que impacta diretamente na agilidade da análise e tomada de decisões pedagógicas.
+            </p>
+        </div>
+    </div>
+
+    <!-- Card de Como Funciona -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body">
+            <h5 class="card-title text-success fw-bold">🛠 Como funciona o processo atual?</h5>
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item">Os professores aplicam as provas às crianças.</li>
+                <li class="list-group-item">Acessam o sistema utilizando o e-mail e senha de cada criança para preencher os formulários com as respostas.</li>
+                <li class="list-group-item">A equipe técnica baixa as planilhas e realiza manualmente a tabulação dos dados por turma, escola e rede.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Card de Problemas -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body">
+            <h5 class="card-title text-danger fw-bold">⚠ Problemas Identificados</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📉 O processo manual gera grande defasagem no tempo de tabulação.</li>
+                <li class="list-group-item">⏳ Atraso na obtenção dos dados compromete ações pedagógicas eficazes.</li>
+                <li class="list-group-item">🔄 Necessidade de um sistema automatizado para maior eficiência.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Card de Solução Proposta -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">🚀 Solução Proposta</h5>
+            <p class="card-text fs-6">
+                Implementação de um sistema digital para processamento ágil dos dados, permitindo a otimização da tabulação e fornecendo informações estratégicas em tempo real para ajustes pedagógicos.
+            </p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📊 Adaptar atividades conforme as dificuldades observadas.</li>
+                <li class="list-group-item">📝 Elaborar planos de ação personalizados.</li>
+                <li class="list-group-item">📚 Implementar medidas pedagógicas eficazes.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Card de Documentos Anexos -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body">
+            <h5 class="card-title text-secondary fw-bold">📎 Documentos Anexos</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📌 Avaliação aplicada às crianças.</li>
+                <li class="list-group-item">📌 Formulário preenchido pelos professores.</li>
+                <li class="list-group-item">📌 Planilha em Excel utilizada na tabulação dos dados.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Card de Download das Provas -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body text-center">
+            <h5 class="card-title text-warning fw-bold">📥 Baixar Provas a serem Aplicadas</h5>
+            <p class="card-text fs-6">Faça o download das provas que serão aplicadas para os alunos. Certifique-se de que todos os professores tenham acesso ao material.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                <a href="{% static 'downloads/01 - SAMACC DE ENTRADA - LINGUAGENS 2024.pdf' %}" class="btn btn-outline-primary btn-lg" download>
+                    <i class="fas fa-download"></i> Entrada - Linguagens
+                </a>
+                <a href="{% static 'downloads/02 - SAMACC DE ENTRADA - MATEMÁTICA 2024.pdf' %}" class="btn btn-outline-success btn-lg" download>
+                    <i class="fas fa-download"></i> Entrada - Matemática
+                </a>
+                <a href="{% static 'downloads/SAMACC SAÍDA 2024 - LINGUAGEM.pdf' %}" class="btn btn-outline-danger btn-lg" download>
+                    <i class="fas fa-download"></i> Saída - Linguagens
+                </a>
+                <a href="{% static 'downloads/SAMACC SAÍDA 2024 - MATEMÁTICA.pdf' %}" class="btn btn-outline-info btn-lg" download>
+                    <i class="fas fa-download"></i> Saída - Matemática
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<style>
+    body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f9f9f9;
+}
+
+h2.display-5 {
+    font-size: 2.5rem;
+    color: #007BFF;
+}
+
+.card {
+    border-radius: 12px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.card-text {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.list-group-item {
+    border: none;
+    font-size: 1rem;
+    padding: 10px 15px;
+    background-color: #f8f9fa;
+}
+
+.list-group-item:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+.btn-outline-primary, 
+.btn-outline-success, 
+.btn-outline-danger, 
+.btn-outline-info {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #007BFF;
+    color: #fff;
+}
+
+.btn-outline-success:hover {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.btn-outline-danger:hover {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.btn-outline-info:hover {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.card-shadow {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+hr {
+    border-top: 3px solid #007BFF;
+    width: 60px;
+    margin: 0 auto 20px auto;
+    opacity: 0.7;
+}
+
+.card-body h5 {
+    font-size: 1.3rem;
+    color: #343a40;
+    margin-bottom: 15px;
+}
+
+.d-flex.gap-3 a {
+    min-width: 200px;
+    text-align: center;
+}
+
+
+</style>

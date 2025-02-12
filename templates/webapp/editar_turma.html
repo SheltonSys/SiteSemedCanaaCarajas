@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">✏️ Editar Turma</h2>
+    <p class="text-muted text-center">Atualize as informações da turma de forma eficiente.</p>
+
+    <!-- 📋 Formulário de Edição -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="text-secondary mb-3">📌 Atualizar Dados da Turma</h5>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nome da Turma</label>
+                <input type="text" class="form-control" name="nome_turma" placeholder="Digite o nome da turma"
+                    value="{{ turma.turma }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Salvar Alterações
+            </button>
+            <a href="{% url 'cadastro_turma' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

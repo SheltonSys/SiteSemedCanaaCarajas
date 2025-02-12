@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Header -->
+    <div class="text-center mb-5">
+        <h1 class="fw-bold text-primary display-4">Gestão de Currículos Antigos</h1>
+        <p class="text-muted fs-5">
+            Administre os dados dos currículos antigos da
+            <span class="text-primary fw-bold">SEMED Canaã dos Carajás</span>.
+        </p>
+    </div>
+
+    <!-- Search and Filter -->
+    <form method="GET" action="{% url 'listar_curriculos_antigos' %}" class="row justify-content-center mb-5">
+        <div class="row justify-content-center mb-5">
+            <!-- Campo de Pesquisa -->
+            <div class="col-lg-6 col-md-8 mb-3">
+                <div class="input-group shadow">
+                    <input type="text" name="search" class="form-control form-control-lg custom-input"
+                        placeholder="Pesquise por Nome ou CPF" aria-label="Search"
+                        value="{{ search_query }}">
+                    <button class="btn btn-primary btn-lg custom-btn" type="submit">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtro de Cargo -->
+            <div class="col-lg-6 col-md-8 mb-3">
+                <div class="input-group shadow">
+                    <select name="cargo" class="form-select form-select-lg custom-input">
+                        <option value="" {% if not filter_cargo %}selected{% endif %}>Filtrar por Cargo</option>
+                        {% for cargo in cargos_disponiveis %}
+                            <option value="{{ cargo }}" {% if cargo == filter_cargo %}selected{% endif %}>{{ cargo }}</option>
+                        {% endfor %}
+                    </select>            
+                    <button class="btn btn-primary btn-lg custom-btn" type="submit">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+
+    <!-- Modal de Erro -->
+    <div class="modal fade" id="erroModal" tabindex="-1" aria-labelledby="erroModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="erroModalLabel">Erro ao Gerar Currículo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="erroMensagem"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Statistics Section -->
+    <div class="row text-center mb-5 g-4">
+        <!-- Card Total de Currículos -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg hover-card">
+                <div class="card-body">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title fw-bold text-dark">Total de Currículos</h5>
+                    <p class="card-text display-5 fw-bold text-primary">{{ total_curriculos }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Total de Cargos Disponíveis -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg hover-card">
+                <div class="card-body">
+                    <i class="fas fa-briefcase fa-3x text-success mb-3"></i>
+                    <h5 class="card-title fw-bold text-dark">Total de Cargos Disponíveis</h5>
+                    <p class="card-text display-5 fw-bold text-success">0</p>
+                </div>
+            </div>
+        </div>
+
+        {% load tz %}  <!-- Carrega as funções de timezone -->
+
+        <!-- Card Última Atualização -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-lg hover-card">
+                <div class="card-body">
+                    <i class="fas fa-calendar-alt fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title fw-bold text-dark">Última Atualização</h5>
+                    <p class="card-text display-5 fw-bold text-warning">{% now "d/m/Y" %}</p>
+                </div>
+            </div>
+        </div>
+
+        
+
+    <!-- Botões de Exportação -->
+    <!-- Botões de Exportação -->
+<div class="d-flex justify-content-end mb-3">
+    <a href="{% url 'exportar_xls' %}" class="btn btn-success me-2">
+        <i class="fas fa-file-excel"></i> Exportar XLS
+    </a>
+    <a href="{% url 'exportar_pdf' %}" class="btn btn-danger">
+        <i class="fas fa-file-pdf"></i> Exportar PDF
+    </a>
+</div>
+
+
+    <!-- Table Section -->
+    <div class="card border-0 shadow-lg mb-5">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title fw-bold mb-0">Lista de Currículos Antigos</h5>
+                <a href="{% url 'cadastrar_diretor' %}" class="btn btn-primary btn-lg shadow">
+                    <i class="fas fa-plus-circle me-2"></i> Novo Currículo
+                </a>
+            </div>
+
+            <table class="table table-hover align-middle" id="curriculosTable">
+                <thead class="table-primary">
+                    <tr>
+                        <th>#</th>
+                        <th>Nome</th>
+                        <th style="text-align: center;">CPF</th>
+                        <th style="text-align: center;">RG</th>
+                        <th>Email</th>
+                        <th style="text-align: center;">Telefone</th>
+                        <th>Endereço</th>
+                        <th>Bairro</th>
+                        <th>Cidade</th>
+                        <th style="text-align: center;">Nascimento</th>
+                        <th style="text-align: center;">Cargo</th>
+                        <th style="text-align: center;">Ações</th> <!-- Adicionando a coluna de ações -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for curriculo in curriculos %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ curriculo.nome }}</td>
+                        <td>{{ curriculo.cpf }}</td>
+                        <td>{{ curriculo.rg }}</td>
+                        <td>{{ curriculo.email }}</td>
+                        <td>{{ curriculo.fone1 }}</td>
+                        <td>{{ curriculo.logradouro }}</td>
+                        <td>{{ curriculo.bairro }}</td>
+                        <td>{{ curriculo.municipio }}</td>
+                        <td>{{ curriculo.data_nascimento|date:"d/m/Y" }}</td>
+                        <td>{{ curriculo.cargo|default:"Sem cargo" }}</td>
+                        <td class="text-center">
+                            <!-- Visualizar -->
+                            <!-- <a href="{% url 'visualizar_curriculo_antigo' curriculo.id %}" class="btn btn-outline-primary btn-sm" title="Visualizar">
+                                <i class="fas fa-eye"></i>
+                            </a> -->
+            
+                            <!-- Editar -->
+                            <!-- <a href="{% url 'editar_curriculo_antigo' curriculo.id %}" class="btn btn-outline-warning btn-sm" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a> -->
+            
+                            <!-- Excluir -->
+                            <!-- <a href="{% url 'excluir_curriculo_antigo' curriculo.id %}" class="btn btn-outline-danger btn-sm" title="Excluir">
+                                <i class="fas fa-trash"></i>
+                            </a> -->
+            
+                            <!-- Imprimir Currículo -->
+                            <!-- Imprimir Currículo -->
+                            <a href="{% url 'imprimir_curriculo_antigo' curriculo.cpf %}" 
+                            class="btn btn-outline-secondary btn-sm btn-imprimir"
+                            title="Imprimir Currículo">
+                            <i class="fas fa-print"></i>
+                            </a>
+
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="12" class="text-center text-muted">Nenhum currículo encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+<style>
+    .custom-input {
+    height: 50px; /* Define uma altura consistente */
+    font-size: 18px; /* Mantém o texto do mesmo tamanho */
+}
+
+.custom-btn {
+    height: 50px; /* Garante que os botões fiquem do mesmo tamanho */
+    font-size: 18px; /* Mantém a formatação */
+    padding: 10px 20px; /* Ajusta o espaçamento */
+}
+
+</style>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- Adiciona o SweetAlert -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Seleciona todos os botões de imprimir currículo
+    const botoesImprimir = document.querySelectorAll(".btn-imprimir");
+
+    botoesImprimir.forEach(botao => {
+        botao.addEventListener("click", function (event) {
+            event.preventDefault();  // Evita a navegação padrão
+
+            let url = botao.getAttribute("href");
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.url;  // Redireciona se não houver erro
+                    } else {
+                        // Exibe alerta amigável se o currículo não for encontrado
+                        Swal.fire({
+                            icon: "error",
+                            title: "Erro ao Imprimir",
+                            text: data.error,
+                            confirmButtonColor: "#d33"
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar currículo:", error);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Erro de Conexão",
+                        text: "Ocorreu um erro ao tentar se conectar com o servidor.",
+                        confirmButtonColor: "#d33"
+                    });
+                });
+        });
+    });
+});
+</script>
+
+    

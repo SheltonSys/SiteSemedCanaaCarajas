@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">👨‍🏫 Cadastro da Turma</h2>
+    <p class="text-muted text-center">Gerencie o cadastro de turmas de forma eficiente.</p>
+
+    <!-- 🔍 Área de Filtragem -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="text-secondary mb-3">🔍 Filtrar Turmas</h5>
+        <form method="GET">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">🏫 Nome da Escola</label>
+                    <select class="form-select" id="escolaSelect" name="nome_escola">
+                        <option value="">Todas</option>
+                        {% for escola in escolas %}
+                        <option value="{{ escola }}" {% if filtros.nome_escola == escola %}selected{% endif %}>
+                            {{ escola }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">📖 Turma</label>
+                    <select class="form-select" id="turmaSelect" name="turma">
+                        <option value="">Todas</option>
+                        {% for turma in turmas %}
+                        <option value="{{ turma }}" {% if filtros.turma == turma %}selected{% endif %}>
+                            {{ turma }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-filter"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- 📋 Formulário de Cadastro -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="text-secondary mb-3">📋 Novo Cadastro</h5>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nome da Turma</label>
+                <input type="text" class="form-control" name="nome_turma" placeholder="Digite o nome da turma" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Salvar
+            </button>
+        </form>
+    </div>
+
+    <!-- 📌 Lista de Turmas em Cards -->
+    <div class="row mt-4">
+        {% for turma in turmas_cadastradas %}
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">{{ turma.turma }}</h5>
+                    <p class="card-text">
+                        <strong>Escola:</strong> {{ turma.unidade_ensino }}<br>
+                        <strong>Ano:</strong> {{ turma.ano }}<br>
+                        <strong>Modalidade:</strong> {{ turma.modalidade }}<br>
+                        <strong>Total de alunos:</strong> {{ turma.total_alunos }}<br>
+                    </p>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'editar_escola' turma.id_matricula %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="{% url 'excluir_turma' turma.id_matricula %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> Excluir
+                        </a>
+                        
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted">Nenhuma turma cadastrada.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+<script>
+    document.getElementById("escolaSelect").addEventListener("change", function () {
+        var escola = this.value;
+        var turmaSelect = document.getElementById("turmaSelect");
+
+        turmaSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+        if (escola) {
+            fetch(`/buscar_turmas/?escola=${encodeURIComponent(escola)}`)
+                .then(response => response.json())
+                .then(data => {
+                    turmaSelect.innerHTML = "<option value=''>Todas</option>";
+                    data.forEach(turma => {
+                        turmaSelect.innerHTML += `<option value="${turma}">${turma}</option>`;
+                    });
+                })
+                .catch(error => console.error("Erro ao carregar turmas:", error));
+        } else {
+            turmaSelect.innerHTML = "<option value=''>Todas</option>";
+        }
+    });
+</script>
+
+{% endblock %}

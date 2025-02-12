@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-primary">📊 Gestão do Serviço de Orientação Educacional</h2>
+        <p class="text-muted fs-5">
+            A Gestão do SOE (Serviço de Orientação Educacional) é responsável por garantir a execução de práticas pedagógicas que promovam o desenvolvimento integral dos estudantes, além de monitorar e avaliar os resultados obtidos.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Seção de Estatísticas -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-success fw-bold">👨‍🎓 {{ total_estudantes }} Estudantes Atendidos</h5>
+                    <p class="card-text text-muted">Número total de estudantes acompanhados pelo SOE no último ano.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-primary fw-bold">🏫 {{ total_escolas }} Escolas Participantes</h5>
+                    <p class="card-text text-muted">Número de escolas que fazem parte do programa de orientação educacional.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-danger fw-bold">📅 {{ atendimentos_mensais }} Atendimentos Mensais</h5>
+                    <p class="card-text text-muted">Média de atendimentos realizados mensalmente pelo SOE.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seção de Gráfico -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📈 Evolução das Metas</h5>
+            <canvas id="performanceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Timeline de Eventos Moderna -->
+<!-- Timeline de Eventos Moderna -->
+<div class="card shadow-sm mb-5 border-0 stylish-card">
+    <div class="card-body">
+        <h5 class="card-title text-secondary fw-bold">🗓️ Principais Eventos do SOE</h5>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-icon bg-info text-white">Jan</div>
+                <div class="timeline-content">
+                    <h6 class="fw-bold">Início do Programa</h6>
+                    <p class="text-muted">Início do programa de orientação educacional para estudantes do 9º ano.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon bg-warning text-white">Abr</div>
+                <div class="timeline-content">
+                    <h6 class="fw-bold">Workshop de Formação</h6>
+                    <p class="text-muted">Workshop de formação para orientadores educacionais.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon bg-success text-white">Ago</div>
+                <div class="timeline-content">
+                    <h6 class="fw-bold">Semana de Saúde Emocional</h6>
+                    <p class="text-muted">Semana de valorização da saúde emocional nas escolas.</p>
+                </div>
+            </div>
+            <div class="timeline-item">
+                <div class="timeline-icon bg-danger text-white">Dez</div>
+                <div class="timeline-content">
+                    <h6 class="fw-bold">Apresentação de Resultados</h6>
+                    <p class="text-muted">Apresentação dos resultados e metas para o próximo ano.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Seção de Indicadores -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📊 Indicadores de Desempenho</h5>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Indicador</th>
+                        <th>Meta</th>
+                        <th>Resultado Atual</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for indicador in indicadores %}
+                    <tr>
+                        <td>{{ indicador.nome }}</td>
+                        <td>{{ indicador.meta }}</td>
+                        <td>{{ indicador.resultado }}</td>
+                        <td><span class="badge bg-{{ indicador.badge_class }}">{{ indicador.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico com Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('performanceChart').getContext('2d');
+    var performanceChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
+            datasets: [{
+                label: 'Percentual de Conclusão de Metas',
+                data: [20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 150
+                }
+            }
+        }
+    });
+</script>
+
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f4f8fb;
+    }
+    
+    .stylish-divider {
+        width: 80px;
+        border-top: 3px solid #007BFF;
+        margin: 0 auto;
+        opacity: 0.8;
+    }
+    
+    .stylish-card {
+        border-radius: 16px;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    
+    .stylish-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Timeline Section */
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+        list-style: none;
+        border-left: 3px solid #dee2e6;
+    }
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -9px;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: #007bff;
+        z-index: 1;
+    }
+    .timeline-icon {
+        flex-shrink: 0;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1rem;
+        margin-right: 15px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .timeline-content {
+        background-color: #f8f9fa;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        flex-grow: 1;
+        transition: transform 0.3s ease;
+    }
+    .timeline-content:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    }
+    .timeline-content h6 {
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+        color: #333;
+    }
+    .timeline-content p {
+        margin: 0;
+        font-size: 0.95rem;
+        color: #666;
+    }
+    </style>
+    
+{% endblock %}

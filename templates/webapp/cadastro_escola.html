@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="text-center my-4">
+        <h2 class="display-5 fw-bold text-primary">🏫 Gestão Escolar - SAMACC EI</h2>
+        <p class="text-muted fs-5">
+            Organize e gerencie as informações das escolas de forma rápida e eficiente.
+        </p>
+        <!-- <hr class="mt-4 mb-5" style="width: 1300px; border: 3px solid #007BFF; opacity: 0.8;"> -->
+    </div>
+    
+
+    <div class="row mb-4">
+        <!-- Card Total de Alunos -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center bg-gradient-primary text-white rounded">
+                    <h5 class="card-title">👩‍🎓 Total de Alunos</h5>
+                    <h2 class="display-4 fw-bold">{{ total_alunos }}</h2>
+                    <p class="card-text">Número total de alunos cadastrados</p>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Card Total de Turmas -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center bg-gradient-info text-white rounded">
+                    <h5 class="card-title">📚 Total de Turmas</h5>
+                    <h2 class="display-4 fw-bold">{{ total_turmas }}</h2>
+                    <p class="card-text">Número total de turmas cadastradas</p>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Card Total de Escolas -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center bg-gradient-success text-white rounded">
+                    <h5 class="card-title">🏫 Total de Escolas</h5>
+                    <h2 class="display-4 fw-bold">{{ total_escolas }}</h2>
+                    <p class="card-text">Número total de escolas cadastradas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- 🔍 Área de Filtragem -->
+    <div class="card shadow-lg border-0 p-4 mt-4">
+        <div class="card-header bg-gradient-primary text-white rounded">
+            <h5 class="mb-0"><i class="fas fa-search"></i> Filtrar Registros</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET">
+                <div class="row g-3">
+                    <!-- Nome da Escola -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">🏫 Nome da Escola</label>
+                        <select class="form-select shadow-sm" name="nome_escola">
+                            <option value="">Todas</option>
+                            {% for escola in escolas_nomes %}
+                                <option value="{{ escola }}" {% if filtros.nome_escola == escola %}selected{% endif %}>
+                                    {{ escola }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Ano -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">📅 Ano</label>
+                        <select class="form-select shadow-sm" name="ano">
+                            <option value="">Todos</option>
+                            <option value="2023" {% if filtros.ano == "2023" %}selected{% endif %}>2023</option>
+                            <option value="2024" {% if filtros.ano == "2024" %}selected{% endif %}>2024</option>
+                            <option value="2025" {% if filtros.ano == "2025" %}selected{% endif %}>2025</option>
+                        </select>
+                    </div>
+
+                    <!-- Modalidade -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">📖 Modalidade</label>
+                        <select class="form-select shadow-sm" name="modalidade">
+                            <option value="">Todas</option>
+                            <option value="Fundamental" {% if filtros.modalidade == "Fundamental" %}selected{% endif %}>
+                                Fundamental
+                            </option>
+                            <option value="Infantil" {% if filtros.modalidade == "Infantil" %}selected{% endif %}>
+                                Infantil
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Turma -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">📖 Turma</label>
+                        <select class="form-select shadow-sm" name="turma">
+                            <option value="">Todas</option>
+                            {% for turma in turmas %}
+                                <option value="{{ turma }}" {% if filtros.turma == turma %}selected{% endif %}>
+                                    {{ turma }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-12 text-end">
+                        <button type="submit" class="btn btn-gradient-primary btn-lg shadow-sm">
+                            <i class="fas fa-filter"></i> Aplicar Filtros
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- 📌 Lista de Escolas em Cards -->
+<div class="row mt-4">
+    {% for escola in escolas %}
+    <div class="col-md-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title text-primary">{{ escola.unidade_ensino }}</h5>
+                <p class="card-text">
+                    <strong>Ano:</strong> {{ escola.ano }}<br>
+                    <strong>Modalidade:</strong> {{ escola.modalidade }}<br>
+                    <strong>Turma:</strong> {{ escola.turma }}<br>
+                    <strong>Responsável:</strong> {{ escola.pessoa_nome }}<br>
+                    <strong>Idade:</strong> {{ escola.idade }} anos
+                </p>
+                
+                {% if escola.avaliado == "SIM" %}
+                <div class="alert alert-success text-center" role="alert">
+                    <strong>✅ Aluno Avaliado</strong>
+                </div>
+                {% else %}
+                <div class="alert alert-warning text-center" role="alert">
+                    <strong>⚠️ Aluno Não Avaliado</strong>
+                </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between mt-3">
+                    {% if escola.id_matricula %}
+                    <a href="{% url 'editar_turma' escola.id_matricula %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#avaliacaoModal{{ escola.id_matricula }}">
+                        <i class="fas fa-file-alt"></i> Avaliação
+                    </button>
+                    <a href="{% url 'excluir_escola' escola.id_matricula %}" class="btn btn-danger btn-sm">
+                        <i class="fas fa-trash"></i> Excluir
+                    </a>
+                    {% else %}
+                    <button class="btn btn-secondary btn-sm" disabled>
+                        <i class="fas fa-edit"></i> Indisponível
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+        <!-- Modal de Avaliação Melhorada -->
+        <div class="modal fade" id="avaliacaoModal{{ escola.id_matricula }}" tabindex="-1" aria-labelledby="avaliacaoModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- Modal maior e centralizado -->
+                <div class="modal-content">
+                    <div class="modal-header bg-gradient-primary text-white">
+                        <h5 class="modal-title">
+                            📊 Avaliação - <strong>{{ escola.unidade_ensino }}</strong>
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form method="POST" action="{% url 'salvar_avaliacao' escola.id_matricula %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <!-- Seção de Dados da Escola e Aluno -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h6 class="text-secondary">📍 <strong>Informações da Escola</strong></h6>
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><strong>Unidade de Ensino:</strong> {{ escola.unidade_ensino }}</li>
+                                        <li class="list-group-item"><strong>Ano:</strong> {{ escola.ano }}</li>
+                                        <li class="list-group-item"><strong>Modalidade:</strong> {{ escola.modalidade }}</li>
+                                        <li class="list-group-item"><strong>Turma:</strong> {{ escola.turma }}</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-secondary">👤 <strong>Informações do Aluno</strong></h6>
+                                    <ul class="list-group">
+                                        <li class="list-group-item"><strong>Nome do Aluno:</strong> {{ escola.pessoa_nome }}</li>
+                                        <li class="list-group-item"><strong>Idade:</strong> {{ escola.idade }} anos</li>
+                                        <li class="list-group-item"><strong>CPF:</strong> {{ escola.cpf }}</li>
+                                        <li class="list-group-item"><strong>Data de Nascimento:</strong> {{ escola.data_nascimento|date:"d/m/Y" }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Seção de Avaliação -->
+                            <!-- Seção de Avaliação Melhorada -->
+                    <div class="row">
+                        <!-- Avaliação de Matemática -->
+                        <div class="col-md-6">
+                            <h6 class="text-primary border-bottom pb-2">📘 <strong>Caderno de Avaliação – Matemática</strong></h6>
+                            <div class="row">
+                                {% for i in range_matematica %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Questão {{ i }}</label>
+                                    <select class="form-select" name="questao_matematica_{{ i }}" required>
+                                        <option value="">Selecione...</option>
+                                        <option value="CERTO">CERTO</option>
+                                        <option value="ERRADO">ERRADO</option>
+                                        <option value="PARCIAL">PARCIAL</option>
+                                        <option value="BRANCO">BRANCO</option>
+                                        <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                    </select>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                                <!-- Avaliação de Linguagem -->
+                                <!-- Avaliação de Linguagem -->
+                                <div class="col-md-6">
+                                    <h6 class="text-success border-bottom pb-2">📗 <strong>Caderno de Avaliação – Linguagem</strong></h6>
+                                    <div class="row">
+                                        {% for i in range_linguagem %}
+                                        <div class="col-md-6 mb-3">
+                                            <label class="form-label">Questão {{ forloop.counter }}</label>
+                                            <select class="form-select" name="questao_linguagem_{{ i }}" required>
+                                                <option value="">Selecione...</option>
+                                                {% if i == 11 %}
+                                                    <option value="CC">CC</option>
+                                                    <option value="SC">SC</option>
+                                                    <option value="BRANCO">BRANCO</option>
+                                                    <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                                {% elif i == 13 %}
+                                                    <option value="PSI">PSI</option>
+                                                    <option value="PSII">PSII</option>
+                                                    <option value="SSVS">SSVS</option>
+                                                    <option value="SCVS">SCVS</option>
+                                                    <option value="SA">SA</option>
+                                                    <option value="ALF">ALF</option>
+                                                    <option value="BRANCO">BRANCO</option>
+                                                    <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                                {% else %}
+                                                    <option value="CERTO">CERTO</option>
+                                                    <option value="ERRADO">ERRADO</option>
+                                                    <option value="PARCIAL">PARCIAL</option>
+                                                    <option value="BRANCO">BRANCO</option>
+                                                    <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                                {% endif %}
+                                            </select>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Salvar Avaliação
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Fim Modal de Avaliação -->
+
+
+
+        {% empty %}
+        <p class="text-center text-muted">Nenhuma escola cadastrada.</p>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('success')) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Avaliação salva com sucesso!',
+                text: 'O status do aluno foi atualizado para avaliado.',
+                showConfirmButton: false,
+                timer: 3000
+            });
+        }
+    });
+</script>
+
+
+<script>
+    document.getElementById("escolaSelect").addEventListener("change", function () {
+        var escola = this.value;
+        var turmaSelect = document.getElementById("turmaSelect");
+
+        turmaSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+        if (escola) {
+            fetch(`/buscar_turmas/?escola=${encodeURIComponent(escola)}`)
+                .then(response => response.json())
+                .then(data => {
+                    turmaSelect.innerHTML = "<option value=''>Todas</option>";
+                    data.forEach(turma => {
+                        turmaSelect.innerHTML += `<option value="${turma}">${turma}</option>`;
+                    });
+                })
+                .catch(error => console.error("Erro ao carregar turmas:", error));
+        } else {
+            turmaSelect.innerHTML = "<option value=''>Todas</option>";
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const formList = document.querySelectorAll(".avaliacao-form"); // Selecione todos os formulários de avaliação
+
+        formList.forEach(form => {
+            form.addEventListener("submit", function(event) {
+                event.preventDefault(); // Evita o envio padrão do formulário
+
+                const url = this.action;  // URL definida no atributo "action" do formulário
+                const formData = new FormData(this); // Captura todos os dados do formulário
+
+                fetch(url, {
+                    method: "POST",
+                    body: formData,
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"  // Identifica como requisição AJAX
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Atualiza a mensagem de sucesso e muda o status visualmente
+                        const alertContainer = this.closest(".card").querySelector(".alert");
+                        alertContainer.classList.remove("alert-warning");
+                        alertContainer.classList.add("alert-success");
+                        alertContainer.innerHTML = "<strong>✅ Aluno Avaliado</strong>";
+
+                        // Opcional: desativar o botão de salvar após a atualização
+                        this.querySelector("button[type='submit']").disabled = true;
+
+                        alert("Avaliação salva com sucesso!");
+                    } else {
+                        alert("Erro ao salvar a avaliação. Tente novamente.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    alert("Ocorreu um erro ao salvar. Por favor, tente novamente.");
+                });
+            });
+        });
+    });
+</script>
+
+
+
+
+<!-- JS para carregar as turmas dinamicamente -->
+<!-- <script>
+    document.getElementById("escolaSelect").addEventListener("change", function () {
+        var escola = this.value;
+        var turmaSelect = document.getElementById("turmaSelect");
+
+        turmaSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+        fetch(`/buscar_turmas/?escola=${escola}`)
+            .then(response => response.json())
+            .then(data => {
+                turmaSelect.innerHTML = "<option value=''>Todas</option>";
+                data.forEach(turma => {
+                    turmaSelect.innerHTML += `<option value="${turma}">${turma}</option>`;
+                });
+            });
+    });
+</script> -->
+
+{% endblock %}

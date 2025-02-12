@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center text-primary">📋 Lançamento de Conceitos</h2>
+    <p class="text-muted text-center">Lance os conceitos para os alunos e visualize os registros.</p>
+    <hr class="mt-4">
+
+
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center bg-gradient-primary text-white rounded">
+                    <h5 class="card-title">📋 Total de Alunos</h5>
+                    <h2 class="display-5 fw-bold">{{ total_alunos }}</h2>
+                    <p class="card-text">Número total de alunos cadastrados.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center bg-gradient-info text-white rounded">
+                    <h5 class="card-title">✅ Alunos com Conceito</h5>
+                    <h2 class="display-5 fw-bold">{{ total_conceitos_lancados }}</h2>
+                    <p class="card-text">Alunos que já receberam conceitos.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center bg-gradient-warning text-white rounded">
+                    <h5 class="card-title">⏳ Alunos sem Conceito</h5>
+                    <h2 class="display-5 fw-bold">{{ total_alunos_sem_conceito }}</h2>
+                    <p class="card-text">Alunos aguardando lançamento de conceito.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+
+
+    <!-- 🔍 Filtros -->
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="escola" class="form-label fw-bold">🏫 Escola</label>
+            <select class="form-select" id="escola" name="escola">
+                <option value="">Todas</option>
+                {% for escola in escolas %}
+                <option value="{{ escola }}" {% if filtros.escola == escola %}selected{% endif %}>
+                    {{ escola }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="turma" class="form-label fw-bold">📖 Turma</label>
+            <select class="form-select" id="turma" name="turma">
+                <option value="">Todas</option>
+                {% for turma in turmas %}
+                <option value="{{ turma }}" {% if filtros.turma == turma %}selected{% endif %}>
+                    {{ turma }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="ano" class="form-label fw-bold">📅 Ano</label>
+            <select class="form-select" id="ano" name="ano">
+                <option value="">Todos</option>
+                <option value="2025" {% if filtros.ano == "2025" %}selected{% endif %}>2025</option>
+            </select>
+        </div>
+        <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-primary">Filtrar</button>
+        </div>
+    </form>
+
+    <!-- 📋 Tabela de Alunos para Lançamento de Conceitos -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="card shadow-sm mb-5">
+            <div class="card-body">
+                <h5 class="text-secondary">📊 Alunos para Lançamento de Conceitos</h5>
+                <table class="table table-bordered mt-3">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome do Aluno</th>
+                            <th>Turma</th>
+                            <th>Ano</th>
+                            <th>Modalidade</th>
+                            <th>Conceitos Matemática</th>
+                            <th>Conceitos Linguagem</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for aluno in alunos_sem_conceito %}
+                        <tr>
+                            <td>{{ aluno.pessoa_nome }}</td>
+                            <td>{{ aluno.turma }}</td>
+                            <td>{{ aluno.ano }}</td>
+                            <td>{{ aluno.modalidade }}</td>
+                            <td>
+                                <select name="conceito_matematica_{{ aluno.id_matricula }}" class="form-select">
+                                    <option value="">Selecione...</option>
+                                    <option value="Excelente">Excelente</option>
+                                    <option value="Bom">Bom</option>
+                                    <option value="Regular">Regular</option>
+                                    <option value="Necessita Melhorar">Necessita Melhorar</option>
+                                </select>
+                            </td>
+                            <td>
+                                <select name="conceito_linguagem_{{ aluno.id_matricula }}" class="form-select">
+                                    <option value="">Selecione...</option>
+                                    <option value="Excelente">Excelente</option>
+                                    <option value="Bom">Bom</option>
+                                    <option value="Regular">Regular</option>
+                                    <option value="Necessita Melhorar">Necessita Melhorar</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Nenhum aluno encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="text-end mt-4">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Salvar Conceitos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- 📋 Tabela de Alunos com Conceitos Lançados -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="text-secondary">📊 Alunos com Conceitos Lançados</h5>
+            <table class="table table-bordered mt-3">
+                <thead class="table-light">
+                    <tr>
+                        <th>Nome do Aluno</th>
+                        <th>Turma</th>
+                        <th>Ano</th>
+                        <th>Modalidade</th>
+                        <th>Conceitos Matemática</th>
+                        <th>Conceitos Linguagem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for conceito in conceitos_lancados %}
+                    <tr>
+                        <td>{{ conceito.aluno }}</td>
+                        <td>{{ conceito.turma }}</td>
+                        <td>{{ conceito.ano }}</td>
+                        <td>{{ conceito.modalidade }}</td>
+                        <td>{{ conceito.conceito_matematica }}</td>
+                        <td>{{ conceito.conceito_linguagem }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Nenhum conceito lançado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const escolaSelect = document.getElementById('escola');
+        const turmaSelect = document.getElementById('turma');
+
+        escolaSelect.addEventListener('change', function () {
+            const escola = escolaSelect.value;
+            turmaSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+            if (escola) {
+                fetch(`/buscar_turmas/?escola=${encodeURIComponent(escola)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        turmaSelect.innerHTML = "<option value=''>Todas</option>";
+                        if (data.length > 0) {
+                            data.forEach(turma => {
+                                turmaSelect.innerHTML += `<option value="${turma}">${turma}</option>`;
+                            });
+                        } else {
+                            turmaSelect.innerHTML = "<option value=''>Nenhuma turma encontrada</option>";
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Erro ao carregar turmas:", error);
+                        turmaSelect.innerHTML = "<option value=''>Erro ao carregar</option>";
+                    });
+            } else {
+                turmaSelect.innerHTML = "<option value=''>Todas</option>";
+            }
+        });
+    });
+</script>
+

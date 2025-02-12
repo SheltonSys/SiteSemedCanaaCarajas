@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">🏫 Editar Cadastro da Escola</h2>
+    <p class="text-muted text-center">Atualize as informações da escola de forma eficiente.</p>
+
+    <!-- 📋 Formulário de Edição -->
+    <div class="card shadow-sm p-4 mt-4">
+        <h5 class="text-secondary mb-3">📌 Atualizar Dados da Escola</h5>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nome da Escola</label>
+                <input type="text" class="form-control" name="unidade_ensino" placeholder="Digite o nome da escola"
+                    value="{{ escola.unidade_ensino }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Ano</label>
+                <input type="number" class="form-control" name="ano" value="{{ escola.ano }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Modalidade</label>
+                <select class="form-select" name="modalidade">
+                    <option value="Infantil" {% if escola.modalidade == "Infantil" %}selected{% endif %}>Educação Infantil</option>
+                    <option value="Fundamental" {% if escola.modalidade == "Fundamental" %}selected{% endif %}>Ensino Fundamental</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Turma</label>
+                <input type="text" class="form-control" name="turma" value="{{ escola.turma }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Nome do Responsável</label>
+                <input type="text" class="form-control" name="pessoa_nome" value="{{ escola.pessoa_nome }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label fw-bold">Idade</label>
+                <input type="number" class="form-control" name="idade" value="{{ escola.idade }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg">
+                <i class="fas fa-save"></i> Salvar Alterações
+            </button>
+            <a href="{% url 'cadastro_escola' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

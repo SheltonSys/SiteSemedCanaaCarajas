@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-primary">📊 Gerenciamento de Dados - Serviço de Orientação Educacional (SOE)</h2>
+        <p class="text-muted fs-5">
+            Faça o upload das planilhas de dados dos diferentes sistemas para análise e monitoramento de ocorrências e intervenções.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Formulário de Upload -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📤 Upload de Planilhas</h5>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="fileUpload" class="form-label">Selecione a planilha (.xlsx, .csv)</label>
+                    <input type="file" class="form-control" id="fileUpload" name="file">
+                </div>
+                <button type="submit" class="btn btn-primary stylish-btn">Fazer Upload</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cards de Dados -->
+    <div class="row text-center mb-5">
+        <div class="col-md-3">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-success fw-bold">🔍 Sistema Synaptic</h5>
+                    <p class="card-text">Sistema de análise comportamental e acompanhamento de ocorrências.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Acessar Dados</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-primary fw-bold">📋 Sistema SIGE</h5>
+                    <p class="card-text">Sistema de gestão escolar para monitoramento de dados pedagógicos.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Acessar Dados</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-danger fw-bold">👨‍🏫 Dados dos Orientadores</h5>
+                    <p class="card-text">Relatórios detalhados sobre ações e intervenções realizadas pelos orientadores.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Acessar Dados</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-warning fw-bold">🛠 Sistema AutoKee</h5>
+                    <p class="card-text">Sistema de gestão de dados complementares.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Acessar Dados</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Dados Recentes -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📋 Dados Recentes</h5>
+            <p class="card-text">Confira os dados mais recentes enviados pelos sistemas.</p>
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Unidade de Ensino</th>
+                        <th>Ano/Série</th>
+                        <th>Turma</th>
+                        <th>Classificação</th>
+                        <th>Tipo</th>
+                        <th>Data do Registro</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>CMEJA José de Deus Andrade</td>
+                        <td>1ª Etapa EJA</td>
+                        <td>1ª Etapa EJA A-NOT</td>
+                        <td>Advertência</td>
+                        <td>Infrequência</td>
+                        <td>2024-09-05 20:46:17</td>
+                        <td><span class="badge bg-warning text-dark">Aberta</span></td>
+                    </tr>
+                    <tr>
+                        <td>CMEJA José de Deus Andrade</td>
+                        <td>2ª Etapa EJA</td>
+                        <td>2ª Etapa EJA A-NOT</td>
+                        <td>Grave</td>
+                        <td>Evasão Escolar</td>
+                        <td>2024-10-31 19:30:52</td>
+                        <td><span class="badge bg-danger">Pendente</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f8fb;
+}
+h2.display-5 {
+    font-size: 2.75rem;
+    color: #0056b3;
+}
+.stylish-divider {
+    width: 80px;
+    border-top: 3px solid #007BFF;
+    margin: 0 auto;
+    opacity: 0.8;
+}
+.stylish-card {
+    border-radius: 16px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.stylish-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+.table th, .table td {
+    vertical-align: middle;
+}
+.badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5rem;
+}
+</style>

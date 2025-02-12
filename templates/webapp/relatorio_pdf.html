@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+{%load static%}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .header, .footer {
+            text-align: center;
+        }
+        .header img {
+            width: 100%;
+            max-height: 150px;
+        }
+        .footer img {
+            width: 100%;
+            max-height: 100px;
+        }
+        h2 {
+            text-align: center;
+            color: #004080;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .no-data {
+            text-align: center;
+            color: #ff0000;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="{{ cabecalho_superior }}" alt="Cabeçalho Superior">
+    </div>
+
+    <h2>📊 Relatório de Avaliações</h2>
+<p>
+    {% if filtros.nome_escola %} <strong>Escola:</strong> {{ filtros.nome_escola }} <br> {% endif %}
+    {% if filtros.turma %} <strong>Turma:</strong> {{ filtros.turma }} <br> {% endif %}
+    {% if filtros.ano %} <strong>Ano:</strong> {{ filtros.ano }} <br> {% endif %}
+    {% if filtros.modalidade %} <strong>Modalidade:</strong> {{ filtros.modalidade }} {% endif %}
+</p>
+
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>Unidade de Ensino</th>
+                <th>Turma</th>
+                <th>Ano</th>
+                <th>Nome do Aluno</th>
+                <th>Desempenho</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for relatorio in relatorios %}
+            <tr>
+                <td>{{ relatorio.registro.unidade_ensino }}</td>
+                <td>{{ relatorio.registro.turma }}</td>
+                <td>{{ relatorio.registro.ano }}</td>
+                <td>{{ relatorio.registro.pessoa_nome }}</td>
+                <td>{{ relatorio.desempenho }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="no-data">Nenhum registro encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer" style="width: 100%; position: fixed; bottom: 0; left: 0; text-align: center;">
+        <img src="{{ cabecalho_inferior }}" alt="Cabeçalho Inferior" style="width: 100%; max-height: 100px;">
+    </div>
+    
+</body>
+</html>

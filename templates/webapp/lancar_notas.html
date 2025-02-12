@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">📌 Lançamento de Notas - {{ escola }} / {{ turma }}</h2>
+
+    <form method="POST" action="{% url 'salvar_notas' %}">
+        {% csrf_token %}
+
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>Aluno</th>
+                    <th>Disciplina</th>
+                    <th>Bimestre</th>
+                    <th>Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aluno in alunos %}
+                <tr>
+                    <td>{{ aluno.pessoa_nome }}</td>
+                    <td>
+                        <select class="form-select" name="disciplina_{{ aluno.id_matricula }}" required>
+                            <option value="Matemática">Matemática</option>
+                            <option value="Português">Português</option>
+                            <option value="Ciências">Ciências</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="form-select" name="bimestre_{{ aluno.id_matricula }}" required>
+                            <option value="1">1º Bimestre</option>
+                            <option value="2">2º Bimestre</option>
+                            <option value="3">3º Bimestre</option>
+                            <option value="4">4º Bimestre</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" class="form-control" name="nota_{{ aluno.id_matricula }}" min="0" max="10" step="0.1" required>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">💾 Salvar Notas</button>
+    </form>
+</div>
+{% endblock %}

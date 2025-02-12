@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">📚 Selecionar Turma</h2>
+
+    <form method="GET" action="{% url 'listar_alunos' %}">
+        <div class="mb-3">
+            <label class="form-label fw-bold">Selecione a Escola</label>
+            <select class="form-select" id="escolaSelect" name="escola" required>
+                <option value="">Escolha uma escola</option>
+                {% for escola in escolas %}
+                <option value="{{ escola }}">{{ escola }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Selecione a Turma</label>
+            <select class="form-select" id="turmaSelect" name="turma" required>
+                <option value="">Escolha uma turma</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-success">📌 Listar Alunos</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById("escolaSelect").addEventListener("change", function () {
+        var escola = this.value;
+        var turmaSelect = document.getElementById("turmaSelect");
+
+        turmaSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+        fetch(`/buscar_turmas/?escola=${escola}`)
+            .then(response => response.json())
+            .then(data => {
+                turmaSelect.innerHTML = "<option value=''>Escolha uma turma</option>";
+                data.forEach(turma => {
+                    turmaSelect.innerHTML += `<option value="${turma}">${turma}</option>`;
+                });
+            });
+    });
+</script>
+
+{% endblock %}

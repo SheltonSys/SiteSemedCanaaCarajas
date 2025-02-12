@@ -16,10 +16,7 @@ SECRET_KEY = 'django-insecure-zrvbu@igm3yi3k&l)8tt3=94!#tgo&1io_#s1=tl^apan#w=$0
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 # Hosts permitidos
-ALLOWED_HOSTS = os.getenv(
-    'DJANGO_ALLOWED_HOSTS',
-    'curriculos.semedcanaadoscarajas.pa.gov.br,portalteste.semedcanaadoscarajas.pa.gov.br,56.124.22.237,127.0.0.1,localhost'
-).split(',')
+ALLOWED_HOSTS = ['*', '10.19.35.56']
 
 # Application definition
 
@@ -156,6 +153,9 @@ EMAIL_HOST_PASSWORD = "nhiq aagp vxvx fzlo"  # Use a senha de aplicativo do Gmai
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 
+# settings.py
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000  # Aumente o valor conforme necessário
 
 
 

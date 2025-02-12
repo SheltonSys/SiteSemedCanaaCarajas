@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-primary text-center">📋 Ocorrências Registradas (Orientadores)</h2>
+    <hr class="mt-4 mb-4">
+
+    <!-- Indicadores principais -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card stylish-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-muted fw-bold">🔍 Total de Ocorrências</h5>
+                    <p class="card-text display-5 text-primary">{{ total_ocorrencias }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stylish-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-muted fw-bold">⚠️ Violência Sexual</h5>
+                    <p class="card-text display-6 text-danger">{{ total_violencia_sexual }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card stylish-card shadow-sm border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-muted fw-bold">🍷 Uso de Álcool/Drogas</h5>
+                    <p class="card-text display-6 text-warning">{{ total_uso_alcool_drogas }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de ocorrências -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome do Orientador</th>
+                    <th>Escola</th>
+                    <th>Ocorrências Conselho Tutelar</th>
+                    <th>Violência Sexual</th>
+                    <th>Uso de Álcool/Drogas</th>
+                    <th>Total Geral</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro.nome_orientador }}</td>
+                    <td>{{ registro.escola }}</td>
+                    <td>{{ registro.ocorrencias_conselho_tutelar }}</td>
+                    <td>{{ registro.violencia_sexual }}</td>
+                    <td>{{ registro.uso_alcool_drogas }}</td>
+                    <td>{{ registro.total_geral }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">Nenhuma ocorrência registrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginação -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próximo</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<style>
+    .stylish-card {
+        border-radius: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .stylish-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

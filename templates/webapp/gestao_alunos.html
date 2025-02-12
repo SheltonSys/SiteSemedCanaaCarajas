@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-4">
+        <h2 class="display-5 fw-bold text-primary">📊 Gestão de Alunos - Resumo Consolidado</h2>
+        <p class="text-muted fs-5">Visualize o desempenho detalhado dos alunos nas avaliações de Matemática e Linguagem.</p>
+        <hr class="mt-3 mb-5 stylish-divider">
+    </div>
+
+
+    
+
+    <!-- Cards de Resumo -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 stylish-card">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">📋 Total de Respostas</h5>
+                    <h2 class="text-success">{{ total_respostas }}</h2>
+                    <p class="text-muted">Respostas registradas em todas as turmas.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 stylish-card">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">🏆 Total de Conceitos</h5>
+                    <h2 class="text-success">{{ total_conceitos }}</h2>
+                    <p class="text-muted">Quantidade de conceitos lançados.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card shadow-sm border-0 stylish-card">
+                <div class="card-body">
+                    <h5 class="card-title text-primary">🏫 Total de Escolas</h5>
+                    <h2 class="text-success">{{ total_escolas }}</h2>
+                    <p class="text-muted">Escolas cadastradas no sistema.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detalhamento das Respostas -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-body">
+            <h5 class="card-title text-secondary">📋 Detalhamento das Respostas</h5>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID Matrícula</th>
+                        <th>Unidade de Ensino</th>
+                        <th>Nome do Aluno</th>
+                        <th>Turma</th>
+                        <th>Ano</th>
+                        <th>Idade</th>
+                        <th>Questões de Matemática</th>
+                        <th>Questões de Linguagem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in registros_com_questoes %}
+                    <tr>
+                        <td>{{ item.registro.id_matricula }}</td>
+                        <td>{{ item.registro.unidade_ensino }}</td>
+                        <td>{{ item.registro.pessoa_nome }}</td>
+                        <td>{{ item.registro.turma }}</td>
+                        <td>{{ item.registro.ano }}</td>
+                        <td>{{ item.registro.idade }}</td>
+
+
+                        <td>
+    <ul class="list-unstyled">
+        {% for i, resposta in item.questoes_matematica %}
+        <li>
+            <strong>Questão {{ i }}:</strong> 
+            {{ resposta }}
+        </li>
+        {% endfor %}
+    </ul>
+</td>
+
+<td>
+    <ul class="list-unstyled">
+        {% for i, resposta in item.questoes_linguagem %}
+        <li>
+            {% if i == 11 %}
+                <strong>Questão {{ i }} (Opções: CC, SC, BRANCO, CRIANÇA COM LAUDO):</strong> 
+            {% elif i == 13 %}
+                <strong>Questão {{ i }} (Opções: PSI, PSII, SSVS, SCVS, SA, ALF):</strong> 
+            {% else %}
+                <strong>Questão {{ i }}:</strong>
+            {% endif %}
+            {{ resposta }}
+        </li>
+        {% endfor %}
+    </ul>
+</td>
+
+
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

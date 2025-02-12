@@ -1,0 +1,35 @@
+<div class="container mt-5">
+    <h5 class="card-title text-warning fw-bold">📋 Ocorrências Registradas (Orientadores)222</h5>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome Orientador</th>
+                    <th>Escola</th>
+                    <th>Total Geral</th>
+                    <th>Ameaça</th>
+                    <th>Agressão Física</th>
+                    <th>Assédio</th>
+                    <th>Infrequência</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in registros %}
+                <tr>
+                    <td>{{ registro.nome_orientador }}</td>
+                    <td>{{ registro.escola }}</td>
+                    <td>{{ registro.total_geral }}</td>
+                    <td>{{ registro.ameaca }}</td>
+                    <td>{{ registro.agressao_fisica }}</td>
+                    <td>{{ registro.assedio }}</td>
+                    <td>{{ registro.infrequencia }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">Nenhuma ocorrência encontrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

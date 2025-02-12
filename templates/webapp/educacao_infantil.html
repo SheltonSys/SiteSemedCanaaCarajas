@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-primary">📊 Educação Infantil - Avaliação SAMACC</h2>
+        <p class="text-muted fs-5">
+            SAMACC (Sistema de Avaliação Municipal da Aprendizagem de Canaã dos Carajás) é uma ferramenta de avaliação voltada para medir e acompanhar o desempenho das crianças na Educação Infantil, com foco em competências essenciais de desenvolvimento cognitivo e habilidades nos campos de experiência com foco nos conhecimentos Matemáticos e Linguagem.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Card de Contexto -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold">📌 Por Que a Otimização É Essencial?</h5>
+            <p class="card-text fs-6">
+                A transformação desse processo manual para um modelo automatizado e integrado pode trazer diversos benefícios, <strong> Maior eficiência:</strong> Redução significativa no tempo de processamento e análise dos resultados, <strong>Melhoria na precisão dos dados:</strong> Minimização de erros e maior confiança nas informações.
+            </p>
+        </div>
+    </div>
+
+    <!-- Card de Como Funciona -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-success fw-bold">🛠 Como funciona o processo atual?</h5>
+            <ol class="list-group list-group-numbered">
+                <li class="list-group-item">📋 Os professores aplicam as provas às crianças.</li>
+                <li class="list-group-item">🔑 Acessam o sistema utilizando o e-mail e senha de cada criança para preencher os formulários com as respostas.</li>
+                <li class="list-group-item">📊 A equipe técnica baixa as planilhas e realiza manualmente a tabulação dos dados por turma, escola e rede.</li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Card de Problemas -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-danger fw-bold">⚠ Problemas Identificados</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📉 O processo manual gera grande defasagem no tempo de tabulação.</li>
+                <li class="list-group-item">⏳ Atraso na obtenção dos dados compromete ações pedagógicas eficazes.</li>
+                <li class="list-group-item">🔄 Necessidade de um sistema automatizado para maior eficiência.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Card de Solução Proposta -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">🚀 Solução Proposta</h5>
+            <p class="card-text fs-6">
+                Implementação de um sistema digital para processamento ágil dos dados, permitindo a otimização da tabulação e fornecendo informações estratégicas em tempo real para ajustes pedagógicos.
+            </p>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📊 Adaptar atividades conforme as dificuldades observadas.</li>
+                <li class="list-group-item">📝 Elaborar planos de ação personalizados.</li>
+                <li class="list-group-item">📚 Implementar medidas pedagógicas eficazes.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Card de Documentos Anexos -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-secondary fw-bold">📎 Documentos Anexos</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">📌 Avaliação aplicada às crianças.</li>
+                <li class="list-group-item">📌 Formulário preenchido pelos professores.</li>
+                <li class="list-group-item">📌 Planilha em Excel utilizada na tabulação dos dados.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Card de Download das Provas -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body text-center">
+            <h5 class="card-title text-warning fw-bold">📥 Baixar Provas e materiais complmentares</h5>
+            <p class="card-text fs-6">Faça o download das provas que serão aplicadas para os alunos. Certifique-se de que todos os professores tenham acesso ao material.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                <a href="{% static 'downloads/01-SAMACC_DE_ENTRADA-LINGUAGEM-2025.pdf' %}" class="btn btn-outline-primary btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Entrada - Linguagens
+                </a>
+                <a href="{% static 'downloads/02-SAMACC_DE_ENTRADA-MATEMÁTICA-2025.pdf' %}" class="btn btn-outline-success btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Entrada - Matemática
+                </a>
+                <!-- <a href="{% static 'downloads/SAMACC SAÍDA 2024 - LINGUAGEM.pdf' %}" class="btn btn-outline-danger btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Saída - Linguagens
+                </a>
+                <a href="{% static 'downloads/SAMACC SAÍDA 2024 - MATEMÁTICA.pdf' %}" class="btn btn-outline-info btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Saída - Matemática
+                </a> -->
+                <a href="{% static 'downloads/exemplo_cadastro.csv' %}" class="btn btn-outline-info btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Planilha Modelo
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f8fb;
+}
+
+h2.display-5 {
+    font-size: 2.75rem;
+    color: #0056b3;
+}
+
+.stylish-divider {
+    width: 80px;
+    border-top: 3px solid #007BFF;
+    margin: 0 auto;
+    opacity: 0.8;
+}
+
+.stylish-card {
+    border-radius: 16px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stylish-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.list-group-item {
+    font-size: 1rem;
+    background-color: #f9f9f9;
+    border: none;
+}
+
+.stylish-btn {
+    border-radius: 12px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.stylish-btn:hover {
+    color: #fff;
+}
+
+.stylish-btn.btn-outline-primary:hover {
+    background-color: #007BFF;
+}
+
+.stylish-btn.btn-outline-success:hover {
+    background-color: #28a745;
+}
+
+.stylish-btn.btn-outline-danger:hover {
+    background-color: #dc3545;
+}
+
+.stylish-btn.btn-outline-info:hover {
+    background-color: #17a2b8;
+}
+</style>

@@ -41,6 +41,23 @@ from django.contrib.auth.views import LogoutView
 from .views import recuperar_senha, resetar_senha
 from semedapp.views import enviar_link_recuperacao  # Importe a view correta
 from .views import enviar_email_recuperacao
+from .views import listar_curriculos_antigos
+from .views import educacao_infantil
+from .views import upload_cadastro_ei
+from .views import cadastro_escola, excluir_escola  # Importa as views necessárias
+from .views import editar_escola
+from .views import cadastro_escola, get_turmas
+from .views import cadastro_turma, get_turmas
+from .views import cadastro_turma, editar_turma
+from .views import visualizar_avaliacao
+from .views import salvar_avaliacao
+from .views import gestao_relatorios, get_turmas
+from .views import lancamento_conceitos
+from .views import gestao_relatorios, gerar_pdf_relatorio
+from .views import buscar_turmas
+from .views import ocorrencias_synaptic, ocorrencias_synaptic_pdf
+from .views import ocorrencias_autokee
+from .views import ocorrencias_orientadores
 
 # app_name = 'contabilidade'
 # app_name = 'banco_curriculos'
@@ -511,6 +528,90 @@ urlpatterns = [
 
     path("recuperar-senha/", enviar_email_recuperacao, name="recuperar_senha"),
 
+    path('listar-diretores-antigos/', views.listar_diretores_antigos, name='listar_diretores_antigos'),
+    
+    path('listar-curriculos-antigos/', views.listar_curriculos_antigos, name='listar_curriculos_antigos'),
+    path('visualizar-curriculo-antigo/<int:id>/', views.visualizar_curriculo_antigo, name='visualizar_curriculo_antigo'),
+    path('editar-curriculo-antigo/<int:id>/', views.editar_curriculo_antigo, name='editar_curriculo_antigo'),
+    path('excluir-curriculo-antigo/<int:id>/', views.excluir_curriculo_antigo, name='excluir_curriculo_antigo'),
+    path('imprimir-curriculo-antigo/<str:cpf>/', views.imprimir_curriculo_antigo, name='imprimir_curriculo_antigo'),
+
+    path('exportar-xls/', views.exportar_xls, name='exportar_xls'),
+    path('exportar-pdf/', views.exportar_pdf, name='exportar_pdf'),
+
+    path('educacao_infantil/', educacao_infantil, name='educacao_infantil'),
+
+    path('educacao-infantil/', views.educacao_infantil, name='educacao_infantil'),
+    path('educacao-infantil/cadastro-escola/', views.cadastro_escola, name='cadastro_escola'),
+    path('educacao-infantil/cadastro-turma/', views.cadastro_turma, name='cadastro_turma'),
+    path('educacao-infantil/cadastro-alunos/', views.cadastro_alunos, name='cadastro_alunos'),
+    path('educacao-infantil/corrigir-avaliacoes/', views.corrigir_avaliacoes, name='corrigir_avaliacoes'),
+    path("educacao-infantil/upload/", upload_cadastro_ei, name="upload_cadastro_ei"),
+
+    path("cadastro-escola/", cadastro_escola, name="cadastro_escola"),
+    path("cadastro-escola/excluir/<int:id_matricula>/", excluir_escola, name="excluir_escola"),  # Nova URL
+
+    path("editar-escola/<str:id_matricula>/", editar_escola, name="editar_escola"),
+
+    path("lancamento-notas/", views.selecionar_turma, name="selecionar_turma"),
+    path("buscar_turmas/", views.buscar_turmas, name="buscar_turmas"),
+    path("listar_alunos/", views.listar_alunos, name="listar_alunos"),
+    path("salvar_notas/", views.salvar_notas, name="salvar_notas"),
+
+    path("cadastro-turma/", cadastro_turma, name="cadastro_turma"),
+    path("buscar_turmas/", get_turmas, name="buscar_turmas"),  # Endpoint para AJAX
+    path('editar-turma/<int:id_matricula>/', views.editar_turma, name='editar_turma'),
+    path('excluir-turma/<int:id_matricula>/', views.excluir_turma, name='excluir_turma'),  # Verifique esta linha
+
+    path('visualizar-avaliacao/<int:id_matricula>/', visualizar_avaliacao, name='visualizar_avaliacao'),
+
+    path('salvar-avaliacao/<int:id_matricula>/', salvar_avaliacao, name='salvar_avaliacao'),
+
+    path('lancar-conceito/', views.lancar_conceito, name='lancar_conceito'),
+
+    path('corrigir-avaliacoes/', views.corrigir_avaliacoes, name='corrigir_avaliacoes'),
+
+    path('gestao-alunos/', views.gestao_alunos, name='gestao_alunos'),
+
+    path("gestao-relatorios/", gestao_relatorios, name="gestao_relatorios"),
+
+    path('gestao-relatorios/', views.gestao_relatorios, name='gestao_relatorios'),
+
+    path('buscar_turmas/', views.buscar_turmas, name='buscar_turmas'),
+
+    path('gestao-relatorios/', gestao_relatorios, name='gestao_relatorios'),
+
+    path('gerar-pdf-relatorio/', gerar_pdf_relatorio, name='gerar_pdf_relatorio'),
+
+    path('lancamento-conceitos/', lancamento_conceitos, name='lancamento_conceitos'),
+
+    path('buscar_turmas/', buscar_turmas, name='buscar_turmas'),
+
+    path('buscar_turmas/', get_turmas, name='buscar_turmas'),
+
+    path('cadastro_escola/', cadastro_escola, name='cadastro_escola'),
+
+    path('salvar_avaliacao/<int:id_matricula>/', salvar_avaliacao, name='salvar_avaliacao'),
+
+    path('salvar_avaliacao/<int:id_matricula>/', views.salvar_avaliacao, name='salvar_avaliacao'),
+
+    path('soe/principal/', views.soe_principal, name='soe_principal'),
+    path('soe/gestao/', views.soe_gestao, name='soe_gestao'),
+    path('soe/uploads/', views.soe_uploads, name='soe_uploads'),
+    path('soe/relatorios/', views.soe_relatorios, name='soe_relatorios'),
+    path('soe/servicos/', views.soe_servicos, name='soe_servicos'),
+    path('upload-dados/', views.upload_dados, name='upload_dados'),
+    path('dados-synaptic/', views.dados_synaptic, name='dados_synaptic'),
+    path('upload-dados/', views.upload_files, name='upload_dados'),  # Altere para o nome correto da função
+    path('banco-curriculos/ocorrencias-sige/', views.ocorrencias_sige, name='ocorrencias_sige'),
+    path('ocorrencias-sige/', views.ocorrencias_sige, name='ocorrencias_sige'),
+    path('ocorrencias-synaptic/', views.ocorrencias_synaptic, name='ocorrencias_synaptic'),
+    path('ocorrencias-synaptic/', ocorrencias_synaptic, name='ocorrencias_synaptic'),
+    path('ocorrencias-synaptic/pdf/', ocorrencias_synaptic_pdf, name='ocorrencias_synaptic_pdf'),
+    path('ocorrencias-sige/pdf/', views.ocorrencias_sige_pdf, name='ocorrencias_sige_pdf'),
+    path('ocorrencias-autokee/', ocorrencias_autokee, name='ocorrencias_autokee'),
+    path('ocorrencias/orientadores/', ocorrencias_orientadores, name='ocorrencias_orientadores'),
+    path('orientadores/ocorrencias/', views.orientadores_ocorrencias, name='orientadores_ocorrencias'),
 
 ]
 

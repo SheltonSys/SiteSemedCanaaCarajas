@@ -1,0 +1,48 @@
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-success">📊 Dados do Sistema Synaptic</h2>
+        <p class="text-muted fs-5">
+            Visualize e gerencie as ocorrências registradas no Sistema Synaptic. Faça o upload de novas planilhas ou acompanhe os indicadores abaixo.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Cards de Indicadores -->
+    <div class="row text-center mb-5">
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">🔍 Total de Ocorrências</h5>
+                    <p class="card-text display-5 text-white">{{ total_ocorrencias }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">🚨 Ocorrências Pendentes</h5>
+                    <p class="card-text display-5 text-white">{{ ocorrencias_pendentes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-warning shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">🕒 Ocorrências Abertas</h5>
+                    <p class="card-text display-5 text-white">{{ ocorrencias_abertas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">✅ Ocorrências Resolvidas</h5>
+                    <p class="card-text display-5 text-white">{{ ocorrencias_resolvidas }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- O restante do template permanece o mesmo -->
+</div>

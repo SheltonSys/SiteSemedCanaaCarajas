@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Ocorrências SIGE</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background-color: #f4f4f4; }
+        h2 { text-align: center; color: #333; }
+        .status-resolvida { background-color: #28a745; color: white; padding: 5px; border-radius: 3px; }
+        .status-pendente { background-color: #ffc107; color: black; padding: 5px; border-radius: 3px; }
+        .status-em-analise { background-color: #dc3545; color: white; padding: 5px; border-radius: 3px; }
+        .status-outros { background-color: #6c757d; color: white; padding: 5px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h2>📊 Relatório de Ocorrências SIGE</h2>
+    <p>Total de Ocorrências: <strong>{{ total_ocorrencias }}</strong></p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Unidade de Ensino</th>
+                <th>Ano/Série</th>
+                <th>Turma</th>
+                <th>Classificação</th>
+                <th>Tipo</th>
+                <th>Data do Registro</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.nome_unidade_ensino }}</td>
+                <td>{{ registro.ano_serie }}</td>
+                <td>{{ registro.nome_turma }}</td>
+                <td>{{ registro.classificacao_nome }}</td>
+                <td>{{ registro.tipo_ocorrencia_nome }}</td>
+                <td>{{ registro.registro|date:"d/m/Y H:i" }}</td>
+                <td>
+                    {% if registro.status_descricao == "Resolvida" %}
+                        <span class="status-resolvida">{{ registro.status_descricao }}</span>
+                    {% elif registro.status_descricao == "Pendente" %}
+                        <span class="status-pendente">{{ registro.status_descricao }}</span>
+                    {% elif registro.status_descricao == "Em análise" %}
+                        <span class="status-em-analise">{{ registro.status_descricao }}</span>
+                    {% else %}
+                        <span class="status-outros">{{ registro.status_descricao }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7">Nenhuma ocorrência encontrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

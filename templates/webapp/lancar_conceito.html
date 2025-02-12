@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center text-primary">📋 Lançamento de Conceitos</h2>
+    <p class="text-muted text-center">Lance os conceitos para os alunos e visualize os registros.</p>
+    <hr class="mt-4">
+
+    <!-- Formulário de Lançamento de Conceitos -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-body">
+            <h5 class="text-secondary">📝 Formulário de Lançamento</h5>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary mt-3">
+                    <i class="fas fa-save"></i> Salvar Conceito
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Lista de Respostas -->
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="text-secondary">📊 Conceitos Lançados</h5>
+            <table class="table table-striped mt-3">
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Turma</th>
+                        <th>Habilidade</th>
+                        <th>Conceito</th>
+                        <th>Data</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for resposta in respostas %}
+                        <tr>
+                            <td>{{ resposta.aluno.nome }}</td>
+                            <td>{{ resposta.aluno.turma }}</td>
+                            <td>{{ resposta.habilidade }}</td>
+                            <td>{{ resposta.conceito }}</td>
+                            <td>{{ resposta.data_resposta|date:"d/m/Y" }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">Nenhum conceito lançado.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

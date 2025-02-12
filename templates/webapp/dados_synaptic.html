@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-success">📊 Dados do Sistema Synaptic</h2>
+        <p class="text-muted fs-5">
+            Visualize e gerencie as ocorrências registradas no Sistema Synaptic. Faça o upload de novas planilhas ou acompanhe os indicadores abaixo.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Cards de Indicadores -->
+    <div class="row text-center mb-5">
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-primary shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">🔍 Total de Ocorrências</h5>
+                    <p class="card-text display-5 text-white">{{ total_ocorrencias }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-danger shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">🚨 Ocorrências Pendentes</h5>
+                    <p class="card-text display-5 text-white">{{ ocorrencias_pendentes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-warning shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">🕒 Ocorrências Abertas</h5>
+                    <p class="card-text display-5 text-white">{{ ocorrencias_abertas }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 gradient-bg-success shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-white fw-bold">✅ Ocorrências Resolvidas</h5>
+                    <p class="card-text display-5 text-white">{{ ocorrencias_resolvidas }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campo para Upload de Planilhas -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📤 Upload de Planilhas</h5>
+            <p class="card-text">Faça o upload de uma planilha para atualizar os dados do sistema.</p>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="planilha" class="form-label">Selecione uma planilha:</label>
+                    <input type="file" class="form-control" id="planilha" name="planilha" required>
+                </div>
+                <button type="submit" class="btn btn-outline-success stylish-btn btn-lg">Enviar Planilha</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Gráfico de Ocorrências -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold">📈 Gráfico de Ocorrências por Status</h5>
+            <p class="card-text">Visualize a distribuição das ocorrências por status (Aberta, Pendente, Resolvida).</p>
+            <div class="text-center">
+                <img src="{% static 'img/grafico_ocorrencias.png' %}" class="img-fluid rounded" alt="Gráfico de Ocorrências">
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Ocorrências -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📋 Ocorrências Registradas</h5>
+            <p class="card-text">Confira as ocorrências registradas no Sistema Synaptic.</p>
+            <div class="table-responsive">
+                <table class="table table-hover mt-4">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Unidade de Ensino</th>
+                            <th>Ano/Série</th>
+                            <th>Turma</th>
+                            <th>Classificação</th>
+                            <th>Tipo</th>
+                            <th>Data do Registro</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dado in dados %}
+                        <tr>
+                            <td>{{ dado.nome_unidade_ensino }}</td>
+                            <td>{{ dado.ano_serie }}</td>
+                            <td>{{ dado.nome_turma }}</td>
+                            <td>{{ dado.classificacao_nome }}</td>
+                            <td>{{ dado.tipo_ocorrencia_nome }}</td>
+                            <td>{{ dado.registro|date:"d/m/Y H:i" }}</td>
+                            <td>
+                                {% if dado.status_descricao == "Aberta" %}
+                                    <span class="badge bg-warning text-dark">Aberta</span>
+                                {% elif dado.status_descricao == "Pendente" %}
+                                    <span class="badge bg-danger">Pendente</span>
+                                {% elif dado.status_descricao == "Resolvida" %}
+                                    <span class="badge bg-success">Resolvida</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">Nenhum dado encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f8fb;
+}
+
+h2.display-5 {
+    font-size: 2.75rem;
+    color: #28a745;
+}
+
+.stylish-divider {
+    width: 80px;
+    border-top: 3px solid #28a745;
+    margin: 0 auto;
+    opacity: 0.8;
+}
+
+.stylish-card {
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stylish-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.gradient-bg-primary {
+    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+}
+
+.gradient-bg-danger {
+    background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+}
+
+.gradient-bg-warning {
+    background: linear-gradient(135deg, #f7971e 0%, #ffd200 100%);
+}
+
+.gradient-bg-success {
+    background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%);
+}
+
+.card-text {
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+</style>

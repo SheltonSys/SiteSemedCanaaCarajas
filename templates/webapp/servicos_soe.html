@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-primary">📊 Serviços do Serviço de Orientação Educacional (SOE)</h2>
+        <p class="text-muted fs-5">
+            O SOE oferece diversos serviços voltados ao acompanhamento e suporte educacional, garantindo o desenvolvimento integral dos estudantes e a mediação de ocorrências escolares.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Cards de Indicadores -->
+    <div class="row text-center mb-5">
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 bg-light shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-dark fw-bold">🔍 Total de Ocorrências</h5>
+                    <p class="card-text display-5 text-primary">{{ total_ocorrencias }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 bg-light shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-dark fw-bold">🚨 Ocorrências Pendentes</h5>
+                    <p class="card-text display-5 text-danger">{{ pendentes_total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 bg-light shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-dark fw-bold">🕒 Ocorrências Abertas</h5>
+                    <p class="card-text display-5 text-warning">{{ abertas_total }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stylish-card border-0 bg-light shadow">
+                <div class="card-body">
+                    <h5 class="card-title text-dark fw-bold">✅ Ocorrências Resolvidas</h5>
+                    <p class="card-text display-5 text-success">{{ resolvidas_total }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+   
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <h5 class="card-title text-info fw-bold">
+        <a href="{% url 'ocorrencias_synaptic' %}" class="text-info text-decoration-none">
+            📋 Ocorrências Registradas (Synaptic)
+        </a>
+    </h5>
+    
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Unidade de Ensino</th>
+                <th>Ano/Série</th>
+                <th>Turma</th>
+                <th>Classificação</th>
+                <th>Tipo</th>
+                <th>Data do Registro</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atendimento in synaptic %}
+            <tr>
+                <td>{{ atendimento.nome_unidade_ensino }}</td>
+                <td>{{ atendimento.ano_serie }}</td>
+                <td>{{ atendimento.nome_turma }}</td>
+                <td>{{ atendimento.classificacao_nome }}</td>
+                <td>{{ atendimento.tipo_ocorrencia_nome }}</td>
+                <td>{{ atendimento.registro|date:"d/m/Y H:i" }}</td>
+                <td>{{ atendimento.status_descricao }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">Nenhuma ocorrência registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+
+
+    <!-- Tabela para Sistema SIGE -->
+    <a href="{% url 'ocorrencias_sige' %}" class="text-primary text-decoration-none">
+        📋 Ocorrências Registradas (SIGE)
+    </a>
+    
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Unidade de Ensino</th>
+                <th>Ano/Série</th>
+                <th>Turma</th>
+                <th>Classificação</th>
+                <th>Tipo</th>
+                <th>Data do Registro</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atendimento in sige %}
+            <tr>
+                <td>{{ atendimento.nome_unidade_ensino }}</td>
+                <td>{{ atendimento.ano_serie }}</td>
+                <td>{{ atendimento.nome_turma }}</td>
+                <td>{{ atendimento.classificacao_nome }}</td>
+                <td>{{ atendimento.tipo_ocorrencia_nome }}</td>
+                <td>{{ atendimento.registro|date:"d/m/Y H:i" }}</td>
+                <td>{{ atendimento.status_descricao }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">Nenhuma ocorrência registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Tabela para Sistema AutoKee -->
+    <h5 class="card-title text-danger fw-bold">
+        <a href="{% url 'ocorrencias_autokee' %}" class="text-danger text-decoration-none">
+            📋 Ocorrências Registradas (AutoKee)
+        </a>
+    </h5>
+    
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Unidade de Ensino</th>
+                <th>Ano/Série</th>
+                <th>Turma</th>
+                <th>Classificação</th>
+                <th>Tipo</th>
+                <th>Data do Registro</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atendimento in autokee %}
+            <tr>
+                <td>{{ atendimento.nome_unidade_ensino }}</td>
+                <td>{{ atendimento.ano_serie }}</td>
+                <td>{{ atendimento.nome_turma }}</td>
+                <td>{{ atendimento.classificacao_nome }}</td>
+                <td>{{ atendimento.tipo_ocorrencia_nome }}</td>
+                <td>{{ atendimento.registro|date:"d/m/Y H:i" }}</td>
+                <td>{{ atendimento.status_descricao }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">Nenhuma ocorrência registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Tabela para Dados dos Orientadores -->
+    <h5 class="card-title text-warning fw-bold">
+        <a href="{% url 'orientadores_ocorrencias' %}" class="text-warning text-decoration-none">
+            📋 Ocorrências Registradas (Orientadores)
+        </a>
+    </h5>
+    
+    <table class="table table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Unidade de Ensino</th>
+                <th>Ano/Série</th>
+                <th>Turma</th>
+                <th>Classificação</th>
+                <th>Tipo</th>
+                <th>Data do Registro</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for atendimento in orientadores %}
+            <tr>
+                <td>{{ atendimento.nome_unidade_ensino }}</td>
+                <td>{{ atendimento.ano_serie }}</td>
+                <td>{{ atendimento.nome_turma }}</td>
+                <td>{{ atendimento.classificacao_nome }}</td>
+                <td>{{ atendimento.tipo_ocorrencia_nome }}</td>
+                <td>{{ atendimento.registro|date:"d/m/Y H:i" }}</td>
+                <td>{{ atendimento.status_descricao }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">Nenhuma ocorrência registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Gráfico de Ocorrências -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold">📈 Gráfico de Ocorrências por Classificação</h5>
+            <p class="card-text">Distribuição das ocorrências por classificação (Advertência, Grave, Pedagógica).</p>
+            <div class="text-center">
+                <img src="{% static 'img/grafico_ocorrencias.png' %}" class="img-fluid" alt="Gráfico de Ocorrências">
+            </div>
+        </div>
+    </div>
+
+    <!-- Área de Downloads -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body text-center">
+            <h5 class="card-title text-warning fw-bold">📥 Downloads de Planilhas</h5>
+            <p class="card-text">Baixe as planilhas para compor os dados dos atendimentos e acompanhar as ocorrências.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                <a href="{% static 'downloads/ocorrencias_sistema_synaptic.xlsx' %}" class="btn btn-outline-primary btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Sistema Synaptic
+                </a>
+                <a href="{% static 'downloads/ocorrencias_sistema_sige.xlsx' %}" class="btn btn-outline-success btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Sistema SIGE
+                </a>
+                <a href="{% static 'downloads/dados_orientadores.xlsx' %}" class="btn btn-outline-info btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Dados dos Orientadores
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+<style>
+    .stylish-card {
+    border-radius: 15px;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    background-color: #ffffff; /* Garantir fundo branco */
+}
+
+.stylish-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+    font-size: 1.25rem;
+    color: #333; /* Texto preto */
+}
+
+.card-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.bg-light {
+    background: linear-gradient(135deg, #f9f9f9 0%, #eaeaea 100%);
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.05);
+}
+
+.shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.text-primary {
+    color: #007bff !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-success {
+    color: #28a745 !important;
+}
+
+</style>

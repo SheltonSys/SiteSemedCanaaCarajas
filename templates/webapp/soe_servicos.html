@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h2 class="display-5 fw-bold text-primary">📊 Serviços do Serviço de Orientação Educacional (SOE)</h2>
+        <p class="text-muted fs-5">
+            O SOE oferece diversos serviços voltados ao acompanhamento e suporte educacional, garantindo o desenvolvimento integral dos estudantes e a mediação de ocorrências escolares.
+        </p>
+        <hr class="mt-4 mb-5 stylish-divider">
+    </div>
+
+    <!-- Cards de Indicadores -->
+    <div class="row text-center mb-5">
+        <div class="col-md-4">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-success fw-bold">🔍 Sistema Synaptic</h5>
+                    <p class="card-text">Sistema de análise comportamental e acompanhamento de ocorrências.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Acessar Sistema</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-primary fw-bold">📋 Sistema SIGE</h5>
+                    <p class="card-text">Sistema de gestão escolar para monitoramento de dados pedagógicos.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Acessar Sistema</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm stylish-card border-0">
+                <div class="card-body">
+                    <h5 class="card-title text-danger fw-bold">👨‍🏫 Dados dos Orientadores</h5>
+                    <p class="card-text">Relatórios detalhados sobre ações e intervenções realizadas pelos orientadores.</p>
+                    <a href="#" class="btn btn-outline-primary btn-sm stylish-btn">Baixar Relatórios</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabela de Ocorrências -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-info fw-bold">📋 Ocorrências Registradas</h5>
+            <p class="card-text">Confira as ocorrências registradas, classificadas por tipo, status e data.</p>
+
+            <table class="table table-striped">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Unidade de Ensino</th>
+                        <th scope="col">Ano/Série</th>
+                        <th scope="col">Turma</th>
+                        <th scope="col">Classificação</th>
+                        <th scope="col">Tipo</th>
+                        <th scope="col">Data do Registro</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for atendimento in atendimentos %}
+                    <tr>
+                        <td>{{ atendimento.nome_unidade_ensino }}</td>
+                        <td>{{ atendimento.ano_serie }}</td>
+                        <td>{{ atendimento.nome_turma }}</td>
+                        <td>{{ atendimento.classificacao_nome }}</td>
+                        <td>{{ atendimento.tipo_ocorrencia_nome }}</td>
+                        <td>{{ atendimento.registro|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if atendimento.status_descricao == "Aberta" %}
+                                <span class="badge bg-warning text-dark">Aberta</span>
+                            {% elif atendimento.status_descricao == "Pendente" %}
+                                <span class="badge bg-danger">Pendente</span>
+                            {% elif atendimento.status_descricao == "Resolvida" %}
+                                <span class="badge bg-success">Resolvida</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">Nenhuma ocorrência registrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            
+
+        </div>
+    </div>
+
+    <!-- Gráfico de Ocorrências -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold">📈 Gráfico de Ocorrências por Classificação</h5>
+            <p class="card-text">Distribuição das ocorrências por classificação (Advertência, Grave, Pedagógica).</p>
+            <div class="text-center">
+                <img src="{% static 'img/grafico_ocorrencias.png' %}" class="img-fluid" alt="Gráfico de Ocorrências">
+            </div>
+        </div>
+    </div>
+
+    <!-- Área de Downloads -->
+    <div class="card shadow-sm mb-5 border-0 stylish-card">
+        <div class="card-body text-center">
+            <h5 class="card-title text-warning fw-bold">📥 Downloads de Planilhas</h5>
+            <p class="card-text">Baixe as planilhas para compor os dados dos atendimentos e acompanhar as ocorrências.</p>
+            <div class="d-flex flex-wrap justify-content-center gap-3 mt-3">
+                <a href="{% static 'downloads/ocorrencias_sistema_synaptic.xlsx' %}" class="btn btn-outline-primary btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Sistema Synaptic
+                </a>
+                <a href="{% static 'downloads/ocorrencias_sistema_sige.xlsx' %}" class="btn btn-outline-success btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Sistema SIGE
+                </a>
+                <a href="{% static 'downloads/dados_orientadores.xlsx' %}" class="btn btn-outline-info btn-lg stylish-btn" download>
+                    <i class="fas fa-download"></i> Dados dos Orientadores
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f8fb;
+}
+
+h2.display-5 {
+    font-size: 2.75rem;
+    color: #0056b3;
+}
+
+.stylish-divider {
+    width: 80px;
+    border-top: 3px solid #007BFF;
+    margin: 0 auto;
+    opacity: 0.8;
+}
+
+.stylish-card {
+    border-radius: 16px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.stylish-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.badge {
+    font-size: 0.85rem;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5rem;
+}
+</style>

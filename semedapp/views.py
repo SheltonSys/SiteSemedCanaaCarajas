@@ -94,9 +94,11 @@ from django.contrib import messages
 from django.db import IntegrityError
 from .forms import FormDeAtualizacao
 from semedapp.models import RoleModulePermission
-
+from reportlab.lib.pagesizes import letter
 from django.db import IntegrityError
 import logging
+from .models import CadastroEI, ConceitoLancado
+
 
 logger = logging.getLogger(__name__)
 
@@ -3537,6 +3539,80 @@ def criar_tipo_demanda(request):
         form = TipoDemandaForm()
     
     return render(request, 'demandas/criar_tipo_demanda.html', {'form': form})
+
+
+from django.contrib.auth.decorators import login_required, user_passes_test
+
+# Função para verificar se o usuário pertence ao grupo "Cadastro de Demandas"
+def is_demanda_user(user):
+    return user.groups.filter(name="Cadastro de Demandas").exists()
+
+
+@login_required
+@user_passes_test(is_demanda_user)
+def tipo_demandas(request):
+    return render(request, 'demandas/tipo_demandas.html')
+
+@login_required
+@user_passes_test(is_demanda_user)
+def cadastro_demandas(request):
+    return render(request, 'demandas/cadastro_demandas.html')
+
+@login_required
+@user_passes_test(is_demanda_user)
+def criar_demanda(request):
+    if request.method == 'POST':
+        form = TipoDemandaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Demanda cadastrada com sucesso!')
+            return redirect('criar_demanda')
+        else:
+            messages.error(request, 'Erro ao cadastrar demanda. Verifique os dados.')
+    else:
+        form = TipoDemandaForm()
+
+    demandas = TipoDemanda.objects.all()
+    return render(request, 'demandas/cadastro_demandas.html', {'form': form, 'demandas': demandas})
+
+
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+def gestao_demandas(request):
+    demandas = TipoDemanda.objects.all()
+    total_demandas = demandas.count()
+    concluidas = demandas.filter(status="Finalizado").count()
+    em_andamento = demandas.filter(status="Em andamento").count()
+    pendentes = demandas.filter(status="Pendente").count()
+
+    context = {
+        'demandas': demandas,
+        'total_demandas': total_demandas,
+        'concluidas': concluidas,
+        'em_andamento': em_andamento,
+        'pendentes': pendentes,
+    }
+    return render(request, 'demandas/gestao_demandas.html', context)
+
+
+from django.contrib.auth.decorators import user_passes_test
+
+# Função para verificar se o usuário está no grupo "Acesso Total Demandas"
+def is_acesso_total_demandas(user):
+    return user.groups.filter(name="Acesso Total Demandas").exists() or user.is_superuser
+
+@user_passes_test(is_acesso_total_demandas)
+def tipo_demandas(request):
+    return render(request, 'demandas/tipo_demandas.html')
+
+
+
+
+
+
+
 ###***********************************************************************************************************************
 
 def gerar_relatorio_pdf(request):
@@ -4010,26 +4086,86 @@ def exportar_excel(request):
     return response
 
 ###***********************************************************************************************************************
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from .models import CurriculoAntigo
+from datetime import datetime
+import os
+
+# ✅ Exportação para PDF (com cabeçalho, rodapé, formato paisagem)
 def exportar_pdf(request):
-    response = HttpResponse(content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="diretores.pdf"'
+    # Criar resposta HTTP com tipo de arquivo PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="curriculos.pdf"'
 
-    p = canvas.Canvas(response)
-    p.setFont("Helvetica", 12)
-    y = 800
+    # Criar documento PDF em formato paisagem
+    p = canvas.Canvas(response, pagesize=landscape(letter))
+    largura, altura = landscape(letter)
 
-    p.drawString(100, y, "Lista de Diretores")
+    # Caminho da imagem para o cabeçalho
+    imagem_cabecalho = os.path.join("static", "img", "logo_semed.png")  # Ajuste conforme seu projeto
+
+    def desenhar_cabecalho_rodape(canvas_obj, doc_page_num):
+        """ Adiciona cabeçalho e rodapé em cada página """
+        # Cabeçalho
+        if os.path.exists(imagem_cabecalho):  # Verifica se a imagem existe
+            canvas_obj.drawImage(imagem_cabecalho, 30, altura - 50, width=100, height=40, preserveAspectRatio=True)
+
+        canvas_obj.setFont("Helvetica-Bold", 14)
+        canvas_obj.drawString(150, altura - 40, "Relatório de Currículos Antigos - SEMED Canaã dos Carajás")
+
+        # Rodapé
+        canvas_obj.setFont("Helvetica", 10)
+        data_atual = datetime.now().strftime('%d/%m/%Y %H:%M')
+        canvas_obj.drawString(30, 20, f"Gerado em: {data_atual}")
+        canvas_obj.drawString(largura - 100, 20, f"Página {doc_page_num}")
+
+    # Cabeçalhos da tabela
+    p.setFont("Helvetica-Bold", 10)
+    y = altura - 80  # Posição vertical inicial para o cabeçalho da tabela
+    colunas = ["CPF", "Nome", "Email", "Cargo", "Telefone"]  # Mudamos "Data Nascimento" para "Telefone"
+    espacamento = [50, 150, 350, 500, 650]
+
+    # Criar numeração de páginas
+    pagina_atual = 1
+    desenhar_cabecalho_rodape(p, pagina_atual)
+
+    for i, coluna in enumerate(colunas):
+        p.drawString(espacamento[i], y, coluna)
+
+    # Linhas da tabela
+    p.setFont("Helvetica", 9)
     y -= 20
 
-    diretores = Diretor.objects.all()
-    for diretor in diretores:
-        p.drawString(100, y, f"Nome: {diretor.nome_completo}, CPF: {diretor.cpf}")
-        y -= 20
+    curriculos = CurriculoAntigo.objects.all().values("cpf", "nome", "email", "cargo", "fone1")  # Agora pegamos "fone1"
 
-    p.showPage()
+    for curriculo in curriculos:
+        cpf = str(curriculo["cpf"]) if curriculo["cpf"] else ""
+        nome = str(curriculo["nome"]) if curriculo["nome"] else ""
+        email = str(curriculo["email"]) if curriculo["email"] else ""
+        cargo = str(curriculo["cargo"]) if curriculo["cargo"] else "Sem Cargo"
+        telefone = str(curriculo["fone1"]) if curriculo["fone1"] else "Sem telefone"  # Pegamos telefone em vez de data_nascimento
+
+        p.drawString(50, y, cpf)
+        p.drawString(150, y, nome)
+        p.drawString(350, y, email)
+        p.drawString(500, y, cargo)
+        p.drawString(650, y, telefone)  # Alterado para telefone
+        y -= 15  # Move a linha para baixo
+
+        # Evita que o conteúdo saia da página
+        if y < 50:
+            p.showPage()
+            pagina_atual += 1
+            desenhar_cabecalho_rodape(p, pagina_atual)
+            p.setFont("Helvetica", 9)
+            y = altura - 80  # Reinicia a posição vertical para a nova página
+
     p.save()
-
     return response
+
+
 
 ###***********************************************************************************************************************
 def exportar_csv(request):
@@ -4056,33 +4192,56 @@ def exportar_csv(request):
     return response
 
 ###***********************************************************************************************************************
+
+
+
+import pandas as pd
+from django.http import HttpResponse
+from django.utils.timezone import is_aware, localtime
+from datetime import datetime
+from .models import CurriculoAntigo
+
 def exportar_xls(request):
-    response = HttpResponse(content_type="application/ms-excel")
-    response["Content-Disposition"] = 'attachment; filename="diretores.xls"'
+    # Selecionar apenas as colunas desejadas
+    colunas = [
+        "cpf", "nome", "email", "senha", "data_nascimento", "sexo", "naturalidade", "naturalidade_uf",
+        "pne", "pne_detalhe", "curriculo_lattes", "logradouro", "numero", "bairro", "cep", "complemento",
+        "uf", "municipio", "fone1", "fone2", "formacao_nivel", "formacao_instituicao", "formacao_curso",
+        "formacao_situacao", "formacao_inicio", "formacao_conclusao", "data_cadastro", "data_update", "ip", "cargo"
+    ]
 
-    wb = xlwt.Workbook(encoding="utf-8")
-    ws = wb.add_sheet("Diretores")
+    # Recuperar os dados e criar um DataFrame
+    curriculos = list(CurriculoAntigo.objects.values(*colunas))
+    df = pd.DataFrame(curriculos)
 
-    # Cabeçalhos
-    columns = ["Nome", "CPF", "RG", "Email", "Telefone", "Endereço", "Bairro", "Cidade", "Nascimento"]
-    for col_num, column_title in enumerate(columns):
-        ws.write(0, col_num, column_title)
+    # ✅ Corrigir os campos de data
+    campos_de_data = ["data_nascimento", "formacao_inicio", "formacao_conclusao", "data_cadastro", "data_update"]
+    for campo in campos_de_data:
+        if campo in df.columns:
+            df[campo] = df[campo].apply(lambda x: formatar_data(x))
 
-    # Dados
-    rows = Diretor.objects.all()
-    for row_num, diretor in enumerate(rows, start=1):
-        ws.write(row_num, 0, diretor.nome_completo)
-        ws.write(row_num, 1, diretor.cpf)
-        ws.write(row_num, 2, diretor.rg)
-        ws.write(row_num, 3, diretor.email)
-        ws.write(row_num, 4, diretor.telefone)
-        ws.write(row_num, 5, diretor.endereco)
-        ws.write(row_num, 6, diretor.bairro)
-        ws.write(row_num, 7, diretor.cidade)
-        ws.write(row_num, 8, diretor.data_nascimento.strftime("%d/%m/%Y") if diretor.data_nascimento else "")
+    # Criar resposta HTTP com o arquivo Excel
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="curriculos.xls"'
 
-    wb.save(response)
+    df.to_excel(response, index=False)
+
     return response
+
+# ✅ Função auxiliar para formatar datas corretamente
+def formatar_data(valor):
+    if pd.isna(valor):  # Verifica se o valor está vazio (NaN)
+        return ""
+    elif isinstance(valor, datetime):  # Se for datetime, converte para naive e formata
+        if is_aware(valor):
+            valor = localtime(valor)  # Remove timezone
+        return valor.strftime('%d/%m/%Y')
+    elif isinstance(valor, str):  # Se for string, retorna sem modificação
+        return valor
+    else:  # Para valores do tipo date (sem timezone)
+        return valor.strftime('%d/%m/%Y')
+
+
 ###***********************************************************************************************************************
 # Página inicial do Portal da Transparência
 def transparencia_index(request):
@@ -4156,20 +4315,17 @@ def cadastrar_formacao(request, diretor_id):
             return redirect('cadastrar_formacao', diretor_id=diretor.id)
 
     return render(request, 'semedapp/cadastrar_formacao.html', {'diretor': diretor})
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 
 def registrar_novo_curriculo(request):
     return render(request, 'banco_curriculos/registrar.html')
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from .models import CadastroCandidato
-
-
 from django.contrib.auth.hashers import make_password
 from django.db import IntegrityError
 
@@ -4210,12 +4366,7 @@ def cadastrar_candidato(request):
             print(f"Erro ao cadastrar candidato: {e}")
 
     return render(request, "banco_curriculos/registrar.html")
-
-
-
-
-
-
+###***********************************************************************************************************************
 
 def area_candidato(request):
     candidato_id = request.session.get('candidato_id')
@@ -4229,9 +4380,7 @@ def area_candidato(request):
     candidato = CadastroCandidato.objects.get(id=candidato_id)
 
     return render(request, "banco_curriculos/area_candidato.html", {"candidato": candidato})
-
-
-
+###***********************************************************************************************************************
 
 @login_required
 def adicionar_curriculo(request):
@@ -4248,7 +4397,7 @@ def adicionar_curriculo(request):
         form = CurriculoForm()
 
     return render(request, 'banco_curriculos/adicionar_curriculo.html', {'form': form})
-
+###***********************************************************************************************************************
 
 from django.shortcuts import redirect
 from django.contrib.auth import logout
@@ -4261,12 +4410,10 @@ def logout_candidato(request):
     messages.success(request, "Você saiu com sucesso.")
     # Redireciona para a página de login
     return redirect("login_candidato")
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-
 
 @login_required
 def minhas_inscricoes(request):
@@ -4279,11 +4426,7 @@ def minhas_inscricoes(request):
         'mensagem': 'Nenhuma inscrição encontrada!' if not inscricoes else None
     }
     return render(request, 'banco_curriculos/minhas_inscricoes.html', contexto)
-
-
-
-
-
+###***********************************************************************************************************************
 
 import qrcode
 from django.core.files.base import ContentFile
@@ -4298,7 +4441,7 @@ def gerar_qr_code(diretor):
         qr.save(qr_file)
 
     diretor.qr_code.save(qr_code_path, ContentFile(qr_file.read()), save=True)
-
+###***********************************************************************************************************************
 
 from django.http import JsonResponse
 from semedapp.models import Diretor
@@ -4308,7 +4451,7 @@ def verificar_cpf(request):
     if Diretor.objects.filter(cpf=cpf).exists():
         return JsonResponse({'success': True})
     return JsonResponse({'success': False, 'message': 'CPF não encontrado no sistema!'})
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from django.http import HttpResponse
@@ -4336,7 +4479,7 @@ def imprimir_curriculo(request, cpf):
         return render(request, 'semedapp/imprimir_curriculo.html', {
             'alerta': f'Currículo não encontrado para o CPF: {cpf}.'
         })
-    
+###***********************************************************************************************************************   
 
 from django import forms
 from .models import Candidato
@@ -4345,8 +4488,7 @@ class FormDeAtualizacao(forms.ModelForm):
     class Meta:
         model = Candidato
         fields = ['nome_completo', 'email', 'cpf']  # Inclua os campos que deseja permitir edição
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import redirect
 
@@ -4369,13 +4511,7 @@ def editar_perfil(request):
         return redirect("area_candidato")  # Certifique-se de que esta URL está correta no seu `urls.py`
 
     return JsonResponse({"error": True, "message": "Método inválido"}, status=400)
-
-
-
-
-
-
-
+###***********************************************************************************************************************
 
 # from django.contrib.auth.models import User
 # from .models import Candidato
@@ -4389,8 +4525,7 @@ def editar_perfil(request):
 #         cpf='123.456.789-00',
 #         email='joao@example.com',
 #     )
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import redirect
 from functools import wraps
@@ -4414,18 +4549,17 @@ def module_permission_required(module_name):
             return redirect("acesso_negado")
         return _wrapped_view
     return decorator
-
-
-
+###***********************************************************************************************************************
 
 @module_permission_required("Cadastro Demanda")
 def cadastro_demanda_view(request):
     return render(request, "modulos/cadastro_demanda.html")
+###***********************************************************************************************************************
 
 @module_permission_required("Indicadores")
 def indicadores_view(request):
     return render(request, "modulos/indicadores.html")
-
+###***********************************************************************************************************************
 
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
@@ -4471,7 +4605,7 @@ def visualizar_curriculo(request):
             "curriculo_pdf": diretor.curriculo_pdf.url if diretor.curriculo_pdf else None,
         }
     })
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, get_object_or_404, redirect
 from semedapp.models import Diretor
@@ -4514,8 +4648,7 @@ def editar_curriculo(request, candidato_id):
         return redirect('area_candidato')  # Redireciona para a área do candidato
 
     return render(request, 'banco_curriculos/editar_curriculo.html', {'candidato': candidato})
-
-
+###***********************************************************************************************************************
 
 from django.http import JsonResponse
 from django.core.mail import send_mail
@@ -4547,9 +4680,7 @@ def recuperar_senha(request):
             return JsonResponse({"success": False, "message": f"Erro ao enviar e-mail: {str(e)}"}, status=500)
 
     return JsonResponse({"success": False, "message": "Método inválido"}, status=400)
-
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.tokens import default_token_generator
@@ -4580,7 +4711,7 @@ def resetar_senha(request, uidb64, token):
         form = SetPasswordForm(user)
 
     return render(request, "resetar_senha.html", {"form": form})
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
@@ -4617,12 +4748,7 @@ def enviar_link_recuperacao(request):
             return JsonResponse({"success": False, "message": f"E-mail '{email}' não encontrado no sistema."})
 
     return JsonResponse({"success": False, "message": "Requisição inválida."})
-
-
-
-
-
-
+###***********************************************************************************************************************
 
 import smtplib
 from email.mime.text import MIMEText
@@ -4664,9 +4790,7 @@ if __name__ == "__main__":
         "Teste de Envio via Outlook",
         "Olá! Este é um teste de envio de e-mail pelo Python usando Outlook."
     )
-
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password
@@ -4683,7 +4807,7 @@ def resetar_senha(request, candidato_id):
         return render(request, "banco_curriculos/resetar_senha_sucesso.html")
 
     return render(request, "banco_curriculos/resetar_senha.html", {"candidato": candidato})
-
+###***********************************************************************************************************************
 
 from django.core.mail import send_mail
 from django.http import JsonResponse
@@ -4713,3 +4837,1452 @@ def enviar_email_recuperacao(request):
             return JsonResponse({"success": False, "message": f"Erro ao enviar: {str(e)}"})
 
     return JsonResponse({"success": False, "message": "Método inválido"})
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import CurriculoAntigo  # Ajuste o nome do modelo conforme necessário
+
+def listar_diretores_antigos(request):
+    # Buscando todos os currículos antigos no banco de dados
+    curriculos = CurriculoAntigo.objects.all()
+
+    # Passando os dados para o template
+    return render(request, 'banco_curriculos/listar_diretores_antigos.html', {'curriculos': curriculos})
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import CurriculoAntigo
+from django.db.models import Q
+from django.utils.timezone import now
+
+def listar_curriculos_antigos(request):
+    # Obtém os parâmetros da requisição GET
+    search_query = request.GET.get('search', '').strip()
+    filter_cargo = request.GET.get('cargo', '').strip()
+
+
+    # Captura a data atual no formato desejado
+    data_atual = now().strftime('%d/%m/%Y')
+
+    # Filtrar os currículos pelo nome, CPF ou cargo
+    curriculos = CurriculoAntigo.objects.all()
+
+    if search_query:
+        curriculos = curriculos.filter(
+            Q(nome__icontains=search_query) | 
+            Q(cpf__icontains=search_query)
+        )
+
+    if filter_cargo:
+        curriculos = curriculos.filter(cargo__iexact=filter_cargo)
+
+    # Obter lista de cargos únicos para o dropdown
+    cargos_disponiveis = CurriculoAntigo.objects.exclude(cargo__isnull=True).exclude(cargo="").values_list('cargo', flat=True).distinct()
+
+    
+
+    context = {
+        'curriculos': curriculos,
+        'total_curriculos': curriculos.count(),
+        'cargos_disponiveis': sorted(set(c.strip() for c in cargos_disponiveis)),  # Remove espaços extras
+        'search_query': search_query,  # Para manter o valor no campo de busca
+        'filter_cargo': filter_cargo,  # Para manter o valor no campo de filtro
+    }
+    return render(request, 'banco_curriculos/listar_curriculos_antigos.html', context)
+###***********************************************************************************************************************
+
+def visualizar_curriculo_antigo(request, id):
+    curriculo = get_object_or_404(CurriculoAntigo, id=id)
+    return render(request, 'banco_curriculos/visualizar_curriculo_antigo.html', {'curriculo': curriculo})
+###***********************************************************************************************************************
+
+# Editar curriculo antigo
+def editar_curriculo_antigo(request, id):
+    curriculo = get_object_or_404(CurriculoAntigo, id=id)
+    if request.method == 'POST':
+        # Processar o formulário de edição
+        pass  # Aqui você pode implementar a lógica para editar
+    return render(request, 'editar_curriculo_antigo.html', {'curriculo': curriculo})
+###***********************************************************************************************************************
+
+# Excluir curriculo antigo
+def excluir_curriculo_antigo(request, id):
+    curriculo = get_object_or_404(CurriculoAntigo, id=id)
+    if request.method == 'POST':
+        curriculo.delete()
+        return redirect('listar_curriculos_antigos')  # Redireciona de volta para a lista
+    return render(request, 'confirmar_exclusao.html', {'curriculo': curriculo})
+###***********************************************************************************************************************
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import CurriculoAntigo
+
+def imprimir_curriculo_antigo(request, cpf):
+    try:
+        curriculo = get_object_or_404(CurriculoAntigo, cpf=cpf)
+        # Retornar a URL para imprimir caso o currículo exista
+        return JsonResponse({"success": True, "url": f"/banco-curriculos/imprimir/{cpf}/"})
+    except:
+        # Retorna uma resposta JSON com a mensagem de erro
+        return JsonResponse({"success": False, "error": "Nenhum currículo encontrado para este CPF."})
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+
+def educacao_infantil(request):
+    return render(request, 'educacao_infantil.html')  # Sem a pasta "webapp"
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+
+def educacao_infantil(request):
+    return render(request, 'webapp/educacao_infantil.html')
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
+from .models import CadastroEI
+
+def cadastro_escola(request):
+    # Captura os filtros da URL
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+    turma = request.GET.get('turma', '')
+
+    # Filtra os dados conforme os parâmetros fornecidos
+    escolas = CadastroEI.objects.all()
+
+    if nome_escola:
+        escolas = escolas.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        escolas = escolas.filter(ano=ano)
+    if modalidade:
+        escolas = escolas.filter(modalidade=modalidade)
+    if turma:
+        escolas = escolas.filter(turma=turma)
+
+    # Divisão entre alunos avaliados e não avaliados
+    escolas_avaliadas = escolas.filter(avaliado="SIM")
+    escolas_nao_avaliadas = escolas.exclude(avaliado="SIM")
+
+    # Contagem dinâmica
+    total_alunos = escolas.count()
+    total_turmas = escolas.values("turma").distinct().count()
+    total_escolas = escolas.values("unidade_ensino").distinct().count()
+    total_avaliados = escolas_avaliadas.count()
+
+    # Paginação para alunos não avaliados
+    paginator = Paginator(escolas_nao_avaliadas, 50)  # Mostra 50 registros por página
+    page_number = request.GET.get('page')
+    escolas_paginadas = paginator.get_page(page_number)
+
+    # Obter todas as escolas únicas ordenadas
+    escolas_nomes = CadastroEI.objects.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
+
+    # Obter as turmas relacionadas à escola selecionada
+    turmas = (
+        CadastroEI.objects.filter(unidade_ensino=nome_escola).order_by("turma").values_list("turma", flat=True).distinct()
+        if nome_escola else CadastroEI.objects.order_by("turma").values_list("turma", flat=True).distinct()
+    )
+
+    # Cria a string de query para preservar os filtros na paginação
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = query_params.urlencode()
+
+    context = {
+        'escolas': escolas_paginadas,  # Alunos não avaliados
+        'escolas_avaliadas': escolas_avaliadas,  # Alunos avaliados
+        'escolas_nomes': escolas_nomes,
+        'turmas': turmas,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'ano': ano,
+            'modalidade': modalidade,
+            'turma': turma,
+        },
+        'total_alunos': total_alunos,
+        'total_turmas': total_turmas,
+        'total_escolas': total_escolas,
+        'total_avaliados': total_avaliados,
+        'query_string': query_string,
+        'range_matematica': range(1, 11),  # QUESTÕES DE 1 A 10 PARA MATEMÁTICA
+        'range_linguagem': range(11, 21),  # QUESTÕES DE 11 A 20 PARA LINGUAGEM
+    }
+
+    return render(request, 'webapp/cadastro_escola.html', context)
+###***********************************************************************************************************************
+
+from django.http import JsonResponse
+from .models import CadastroEI
+
+def get_turmas(request):
+    escola_nome = request.GET.get('escola', '').strip()
+    
+    if escola_nome:
+        turmas = CadastroEI.objects.filter(unidade_ensino=escola_nome).values_list("turma", flat=True).distinct()
+        return JsonResponse(list(turmas), safe=False)
+    
+    return JsonResponse([], safe=False)  # Retorna lista vazia se não encontrar
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import CadastroEI
+
+def cadastro_turma(request):
+    # Captura os filtros da URL
+    nome_escola = request.GET.get('nome_escola', '')
+    turma = request.GET.get('turma', '')
+
+    # Filtra as turmas conforme os parâmetros fornecidos
+    turmas_cadastradas = CadastroEI.objects.all()
+
+    if nome_escola:
+        turmas_cadastradas = turmas_cadastradas.filter(unidade_ensino=nome_escola)
+
+    if turma:
+        turmas_cadastradas = turmas_cadastradas.filter(turma=turma)
+
+    # Obter todas as escolas únicas
+    escolas_nomes = CadastroEI.objects.values_list("unidade_ensino", flat=True).distinct()
+
+    # Obter todas as turmas únicas associadas às escolas
+    turmas = CadastroEI.objects.filter(unidade_ensino=nome_escola).values_list("turma", flat=True).distinct() if nome_escola else []
+
+    context = {
+        'turmas_cadastradas': turmas_cadastradas,
+        'escolas': escolas_nomes,
+        'turmas': turmas,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'turma': turma,
+        }
+    }
+    
+    return render(request, 'webapp/cadastro_turma.html', context)
+
+# Endpoint para buscar as turmas de uma escola selecionada via AJAX
+def get_turmas(request):
+    escola_nome = request.GET.get('escola', '')
+    turmas = CadastroEI.objects.filter(unidade_ensino=escola_nome).values_list("turma", flat=True).distinct()
+    return JsonResponse(list(turmas), safe=False)
+
+###***********************************************************************************************************************
+
+def cadastro_alunos(request):
+    return render(request, 'webapp/cadastro_alunos.html')
+###***********************************************************************************************************************
+
+def corrigir_avaliacoes(request):
+    return render(request, 'webapp/corrigir_avaliacoes.html')
+###***********************************************************************************************************************
+
+import csv
+import io
+from datetime import datetime
+from django.shortcuts import render
+from django.contrib import messages
+from .models import CadastroEI
+from .forms import UploadCSVForm
+
+def upload_cadastro_ei(request):
+    if request.method == "POST":
+        form = UploadCSVForm(request.POST, request.FILES)
+        if form.is_valid():
+            csv_file = request.FILES["file"]
+
+            if not csv_file.name.endswith(".csv"):
+                messages.error(request, "Por favor, envie um arquivo CSV válido.")
+                return render(request, "webapp/upload_cadastro_ei.html", {"form": form})
+
+            try:
+                data_set = csv_file.read().decode("utf-8")
+                io_string = io.StringIO(data_set)
+                reader = csv.DictReader(io_string, delimiter=";")
+
+                erros = []
+                linhas_processadas = 0
+
+                for index, row in enumerate(reader, start=2):
+                    try:
+                        # Corrigir o formato da data para aceitar %d/%m/%Y
+                        data_nascimento = datetime.strptime(row["data_nascimento"], "%d/%m/%Y").strftime("%Y-%m-%d")
+
+                        CadastroEI.objects.create(
+                            unidade_ensino=row["unidade_ensino"],
+                            ano=row["ano"],
+                            modalidade=row["modalidade"],
+                            formato_letivo=row["formato_letivo"],
+                            turma=row["turma"],
+                            cpf=row["cpf"],
+                            pessoa_nome=row["pessoa_nome"],
+                            data_nascimento=data_nascimento,  # Data corrigida para o formato esperado no banco
+                            idade=int(row["idade"]) if row["idade"] else None,
+                        )
+                        linhas_processadas += 1
+
+                    except ValueError as ve:
+                        erros.append(f"Linha {index}: Erro de conversão de data ({ve})")
+                    except Exception as e:
+                        erros.append(f"Linha {index}: Erro ({e})")
+
+                if erros:
+                    messages.warning(request, f"Foram encontrados {len(erros)} erros. Veja abaixo:")
+                    for erro in erros[:10]:  # Mostra os primeiros 10 erros
+                        messages.warning(request, erro)
+                else:
+                    messages.success(request, f"Importação concluída! {linhas_processadas} registros inseridos.")
+
+                return render(request, "webapp/upload_cadastro_ei.html", {"form": form})
+
+            except Exception as e:
+                messages.error(request, f"Erro ao processar o arquivo: {e}")
+                return render(request, "webapp/upload_cadastro_ei.html", {"form": form})
+
+    else:
+        form = UploadCSVForm()
+
+    return render(request, "webapp/upload_cadastro_ei.html", {"form": form})
+
+###***********************************************************************************************************************
+
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse
+from .models import CadastroEI
+
+def excluir_escola(request, id_matricula):
+    escola = get_object_or_404(CadastroEI, id_matricula=id_matricula)
+    escola.delete()
+    return redirect(reverse("cadastro_escola"))  # Redireciona de volta para a lista
+###***********************************************************************************************************************
+
+import csv
+import io
+from django.shortcuts import render
+from django.contrib import messages
+from .models import CadastroEscola  # Ajuste para o seu modelo
+
+def processar_csv(request):
+    if request.method == "POST" and request.FILES.get("csv_file"):
+        csv_file = request.FILES["csv_file"]
+
+        # Verifica se é um arquivo CSV válido
+        if not csv_file.name.endswith('.csv'):
+            messages.error(request, "Por favor, envie um arquivo CSV válido.")
+            return render(request, "webapp/cadastro_escola.html")
+
+        # Abrindo o CSV corretamente, considerando o encoding correto
+        try:
+            decoded_file = csv_file.read().decode("ISO-8859-1")  # Alternativa a UTF-8
+        except UnicodeDecodeError:
+            messages.error(request, "Erro ao processar o arquivo: encoding inválido.")
+            return render(request, "webapp/cadastro_escola.html")
+
+        # Lendo o CSV e ignorando erros
+        csv_reader = csv.reader(io.StringIO(decoded_file), delimiter=";")
+        next(csv_reader, None)  # Pular cabeçalho
+
+        total_registros = 0
+        registros_cadastrados = 0
+        erros = []
+
+        for row in csv_reader:
+            total_registros += 1
+            try:
+                # Pegando os valores do CSV
+                id_matricula = row[0]
+                unidade_ensino = row[1]
+                ano = row[2]
+                modalidade = row[3]
+                formato_letivo = row[4]
+                turma = row[5]
+                cpf = row[6]
+                pessoa_nome = row[7]
+                data_nascimento = row[8]
+                idade = row[9]
+
+                # Verifica se o CPF já existe
+                if CadastroEscola.objects.filter(cpf=cpf).exists():
+                    erros.append(f"⚠ CPF {cpf} já cadastrado, pulando...")
+                    continue  # Pula para o próximo registro
+
+                # Criar o novo registro
+                CadastroEscola.objects.create(
+                    id_matricula=id_matricula,
+                    unidade_ensino=unidade_ensino,
+                    ano=ano,
+                    modalidade=modalidade,
+                    formato_letivo=formato_letivo,
+                    turma=turma,
+                    cpf=cpf,
+                    pessoa_nome=pessoa_nome,
+                    data_nascimento=data_nascimento,
+                    idade=idade,
+                )
+                registros_cadastrados += 1
+
+            except Exception as e:
+                erros.append(f"⚠ Erro ao processar linha {total_registros}: {str(e)}")
+
+        # Exibir mensagens de sucesso e erro
+        messages.success(request, f"{registros_cadastrados} registros cadastrados com sucesso!")
+        if erros:
+            for erro in erros[:5]:  # Mostra apenas os primeiros 5 erros
+                messages.warning(request, erro)
+
+        return render(request, "webapp/cadastro_escola.html")
+
+    return render(request, "webapp/cadastro_escola.html")
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import CadastroEI
+
+def editar_escola(request, id_matricula):
+    escola = get_object_or_404(CadastroEI, id_matricula=id_matricula)
+
+    if request.method == "POST":
+        escola.unidade_ensino = request.POST["unidade_ensino"]
+        escola.ano = request.POST["ano"]
+        escola.modalidade = request.POST["modalidade"]
+        escola.turma = request.POST["turma"]
+        escola.pessoa_nome = request.POST["pessoa_nome"]
+        escola.idade = request.POST["idade"]
+        escola.save()
+        
+        return redirect("cadastro_escola")  # Redireciona para a listagem de escolas após salvar
+
+    return render(request, "webapp/editar_escola.html", {"escola": escola})
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from .models import CadastroEI, NotaAluno
+from django.contrib import messages
+
+def selecionar_turma(request):
+    """ Página inicial para selecionar uma escola e turma """
+    escolas = CadastroEI.objects.values_list("unidade_ensino", flat=True).distinct()
+
+    filtros = {
+        "nome_escola": request.GET.get("nome_escola", ""),
+        "turma": request.GET.get("turma", ""),
+        "ano": request.GET.get("ano", ""),
+    }
+
+    alunos = CadastroEI.objects.all()
+
+    if filtros["nome_escola"]:
+        alunos = alunos.filter(unidade_ensino=filtros["nome_escola"])
+    
+    if filtros["turma"]:
+        alunos = alunos.filter(turma=filtros["turma"])
+
+    if filtros["ano"]:
+        alunos = alunos.filter(ano=filtros["ano"])
+
+    turmas = CadastroEI.objects.filter(unidade_ensino=filtros["nome_escola"]).values_list("turma", flat=True).distinct()
+
+    return render(request, 'webapp/selecionar_turma.html', {
+        "escolas": escolas,
+        "turmas": turmas,
+        "filtros": filtros,
+        "alunos": alunos
+    })
+###***********************************************************************************************************************
+
+from django.http import JsonResponse
+from .models import CadastroEI
+
+def buscar_turmas(request):
+    """ Retorna as turmas de uma escola via AJAX """
+    escola_nome = request.GET.get("escola", "")
+    
+    if not escola_nome:
+        return JsonResponse({"error": "Escola não fornecida."}, status=400)
+    
+    try:
+        turmas = CadastroEI.objects.filter(unidade_ensino=escola_nome).values_list("turma", flat=True).distinct()
+        if turmas.exists():
+            return JsonResponse(list(turmas), safe=False)
+        else:
+            return JsonResponse({"message": "Nenhuma turma encontrada para esta escola."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+###***********************************************************************************************************************
+
+def listar_alunos(request):
+    """ Exibe os alunos da turma selecionada e permite inserir notas """
+    escola = request.GET.get("escola", "")
+    turma = request.GET.get("turma", "")
+
+    alunos = CadastroEI.objects.filter(unidade_ensino=escola, turma=turma)
+
+    return render(request, 'webapp/lancar_notas.html', {
+        "alunos": alunos,
+        "escola": escola,
+        "turma": turma,
+    })
+###***********************************************************************************************************************
+
+def salvar_notas(request):
+    """ Processa o salvamento das notas no banco """
+    if request.method == "POST":
+        for key, value in request.POST.items():
+            if key.startswith("nota_"):  # Verifica os campos de nota
+                matricula_id = key.split("_")[1]  # Extrai o ID do aluno
+                aluno = get_object_or_404(CadastroEI, id_matricula=matricula_id)
+                disciplina = request.POST.get(f"disciplina_{matricula_id}")
+                bimestre = request.POST.get(f"bimestre_{matricula_id}")
+                
+                # Salva a nota
+                NotaAluno.objects.create(
+                    aluno=aluno,
+                    disciplina=disciplina,
+                    nota=float(value),
+                    bimestre=int(bimestre)
+                )
+
+        messages.success(request, "Notas lançadas com sucesso!")
+        return redirect("selecionar_turma")
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import CadastroEI
+from django.contrib import messages
+
+def editar_turma(request, id_matricula):  # Alterado o nome do argumento para id_matricula
+    turma = get_object_or_404(CadastroEI, id_matricula=id_matricula)  # Substituído id por id_matricula
+
+    if request.method == "POST":
+        turma.turma = request.POST.get("nome_turma")
+        turma.save()
+        messages.success(request, "Turma atualizada com sucesso!")
+        return redirect("cadastro_turma")  # Redireciona após a edição
+
+    return render(request, "webapp/editar_turma.html", {"turma": turma})
+
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404
+from .models import CadastroEI
+
+def visualizar_avaliacao(request, id_matricula):
+    escola = get_object_or_404(CadastroEI, id_matricula=id_matricula)
+    
+    return render(request, "webapp/visualizar_avaliacao.html", {"escola": escola})
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import CadastroEI
+
+def salvar_avaliacao(request, id_matricula):
+    if request.method == "POST":
+        escola = get_object_or_404(CadastroEI, id_matricula=id_matricula)
+        
+        # Atualiza as 20 questões na tabela
+        for i in range(1, 11):
+            questao_matematica = request.POST.get(f"questao_matematica_{i}")
+            setattr(escola, f"questao_matematica_{i}", questao_matematica)
+        
+        for i in range(11, 21):
+            questao_linguagem = request.POST.get(f"questao_linguagem_{i}")
+            setattr(escola, f"questao_linguagem_{i}", questao_linguagem)
+        
+        # Atualiza a coluna 'avaliado' para 'SIM'
+        escola.avaliado = "SIM"
+        
+        escola.save()  # Salva todas as alterações
+        
+        # Redireciona para a página de cadastro de escolas
+        return redirect('cadastro_escola')
+
+###***********************************************************************************************************************
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import CadastroEI
+from django.contrib import messages
+
+def excluir_turma(request, id_matricula):
+    turma = get_object_or_404(CadastroEI, id_matricula=id_matricula)
+    turma.delete()
+    messages.success(request, "Turma excluída com sucesso!")
+    return redirect('cadastro_turma')
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import Aluno, Escola, Resposta
+
+def resumo_dashboard(request):
+    total_respostas = Resposta.objects.count()
+    total_conceitos = Resposta.objects.values('conceito').distinct().count()
+    total_escolas = Escola.objects.count()
+
+    respostas_por_turma = (
+        Resposta.objects.values('turma__nome')
+        .annotate(total=Count('id'))
+        .order_by('turma__nome')
+    )
+    respostas_por_turma_dict = {r['turma__nome']: r['total'] for r in respostas_por_turma}
+
+    conceitos = (
+        Resposta.objects.values('conceito')
+        .annotate(total=Count('id'))
+        .order_by('conceito')
+    )
+    conceitos_dict = {c['conceito']: c['total'] for c in conceitos}
+
+    respostas_por_escola = (
+        Resposta.objects.values('escola__nome')
+        .annotate(total=Count('id'))
+        .order_by('escola__nome')
+    )
+    respostas_por_escola_dict = {e['escola__nome']: e['total'] for e in respostas_por_escola}
+
+    context = {
+        'total_respostas': total_respostas,
+        'total_conceitos': total_conceitos,
+        'total_escolas': total_escolas,
+        'respostas_por_turma': respostas_por_turma_dict,
+        'conceitos': conceitos_dict,
+        'respostas_por_escola': respostas_por_escola_dict,
+    }
+    return render(request, 'webapp/resumo_dashboard.html', context)
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Aluno, Resposta
+from .forms import RespostaForm
+from django.contrib import messages
+
+def lancar_conceito(request):
+    if request.method == 'POST':
+        form = RespostaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Conceito lançado com sucesso!")
+            return redirect('lancar_conceito')
+    else:
+        form = RespostaForm()
+    
+    respostas = Resposta.objects.select_related('aluno').order_by('-data_resposta')
+    
+    context = {
+        'form': form,
+        'respostas': respostas,
+    }
+    return render(request, 'lancar_conceito.html', context)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import CadastroEI
+
+def gestao_alunos(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+    turma = request.GET.get('turma', '')
+
+    registros = CadastroEI.objects.all()
+    if nome_escola:
+        registros = registros.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        registros = registros.filter(ano=ano)
+    if modalidade:
+        registros = registros.filter(modalidade=modalidade)
+    if turma:
+        registros = registros.filter(turma=turma)
+
+    escolas_nomes = CadastroEI.objects.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
+    turmas = (
+        CadastroEI.objects.filter(unidade_ensino=nome_escola).order_by("turma").values_list("turma", flat=True).distinct()
+        if nome_escola else CadastroEI.objects.order_by("turma").values_list("turma", flat=True).distinct()
+    )
+
+    total_alunos = registros.count()
+    total_turmas = registros.values("turma").distinct().count()
+    total_escolas = registros.values("unidade_ensino").distinct().count()
+
+    registros_com_questoes = []
+    for registro in registros:
+        questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
+
+        questoes_linguagem = []
+        desempenho_linguagem = 0
+        for i in range(11, 21):
+            resposta = getattr(registro, f"questao_linguagem_{i}", "BRANCO")
+            # Ignorar avaliações cognitivas das questões específicas (1 e 3)
+            if i == 11 and resposta in ["CC", "SC"]:
+                resposta = "SEA"
+            elif i == 13 and resposta in ["PSI", "PSII", "SSVS", "SCVS", "SA", "ALF"]:
+                resposta = "SEA"
+            else:
+                # Somente as questões não cognitivas serão contabilizadas
+                desempenho_linguagem += 2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0
+            questoes_linguagem.append(resposta)
+
+        pontuacao_matematica = sum(2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0 for resposta in questoes_matematica)
+        max_pontuacao_matematica = 20
+        max_pontuacao_linguagem = 16  # Apenas as questões não cognitivas contam
+
+        desempenho_matematica = (pontuacao_matematica / max_pontuacao_matematica) * 100 if max_pontuacao_matematica > 0 else 0
+        desempenho_linguagem = (desempenho_linguagem / max_pontuacao_linguagem) * 100 if max_pontuacao_linguagem > 0 else 0
+
+        avaliacao_matematica = "Excelente" if desempenho_matematica >= 90 else "Bom" if desempenho_matematica >= 70 else "Regular" if desempenho_matematica >= 50 else "INSUFICIENTE"
+        avaliacao_linguagem = "Excelente" if desempenho_linguagem >= 90 else "Bom" if desempenho_linguagem >= 70 else "Regular" if desempenho_linguagem >= 50 else "INSUFICIENTE"
+
+        registros_com_questoes.append({
+            "registro": registro,
+            "questoes_matematica": questoes_matematica,
+            "questoes_linguagem": questoes_linguagem,
+            "avaliacao_matematica": avaliacao_matematica,
+            "avaliacao_linguagem": avaliacao_linguagem,
+            "desempenho_matematica": f"{desempenho_matematica:.2f}%",
+            "desempenho_linguagem": f"{desempenho_linguagem:.2f}%"
+        })
+
+    context = {
+        'registros_com_questoes': registros_com_questoes,
+        'escolas_nomes': escolas_nomes,
+        'turmas': turmas,
+        'total_alunos': total_alunos,
+        'total_turmas': total_turmas,
+        'total_escolas': total_escolas,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'ano': ano,
+            'modalidade': modalidade,
+            'turma': turma,
+        }
+    }
+
+    return render(request, 'semedapp/gestao_alunos.html', context)
+
+
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import CadastroEI
+
+def gestao_relatorios(request):
+    # Captura os filtros da URL
+    nome_escola = request.GET.get('nome_escola', '')
+    turma = request.GET.get('turma', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    # Filtrar registros com base nos filtros fornecidos
+    registros = CadastroEI.objects.all()
+    if nome_escola:
+        registros = registros.filter(unidade_ensino__icontains=nome_escola)
+    if turma:
+        registros = registros.filter(turma__icontains=turma)
+    if ano:
+        registros = registros.filter(ano=ano)
+    if modalidade:
+        registros = registros.filter(modalidade__icontains=modalidade)
+
+    # Processamento das questões
+    relatorios = []
+    total_pontos_geral = 0
+    pontuacao = {'CERTO': 2, 'PARCIAL': 1, 'ERRADO': 0, 'BRANCO': 0, 'CRIANÇA COM LAUDO': 1.5}
+    total_alunos_avaliados = registros.count()
+    total_excelente = 0
+    total_necessita_melhorar = 0
+
+    for registro in registros:
+        questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
+        questoes_linguagem = [getattr(registro, f"questao_linguagem_{i}", "BRANCO") for i in range(11, 21)]
+
+        # Cálculo do desempenho
+        total_pontos = sum(pontuacao.get(resposta, 0) for resposta in questoes_matematica + questoes_linguagem)
+        total_pontos_geral += total_pontos
+        max_pontos = 40
+        desempenho = (total_pontos / max_pontos) * 100 if max_pontos > 0 else 0
+
+        # Classificação de desempenho
+        if desempenho >= 90:
+            avaliacao = "Excelente"
+            total_excelente += 1
+        elif desempenho >= 70:
+            avaliacao = "Bom"
+        elif desempenho >= 50:
+            avaliacao = "Regular"
+        else:
+            avaliacao = "Necessita Melhorar"
+            total_necessita_melhorar += 1
+
+        relatorios.append({
+            'registro': registro,
+            'desempenho': f"{desempenho:.2f}%",
+            'avaliacao': avaliacao,
+            'questoes_matematica': questoes_matematica,
+            'questoes_linguagem': questoes_linguagem,
+        })
+
+    # Cálculo da média de desempenho
+    media_desempenho = (total_pontos_geral / (total_alunos_avaliados * 40) * 100) if total_alunos_avaliados > 0 else 0
+
+    # Filtragem das escolas e turmas
+    escolas = CadastroEI.objects.order_by('unidade_ensino').values_list('unidade_ensino', flat=True).distinct()
+    turmas = CadastroEI.objects.filter(unidade_ensino=nome_escola).order_by('turma').values_list('turma', flat=True).distinct() if nome_escola else []
+
+    context = {
+        'relatorios': relatorios,
+        'escolas': escolas,
+        'turmas': turmas,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'turma': turma,
+            'ano': ano,
+            'modalidade': modalidade,
+        },
+        'total_alunos_avaliados': total_alunos_avaliados,
+        'media_desempenho': f"{media_desempenho:.2f}",
+        'total_excelente': total_excelente,
+        'total_necessita_melhorar': total_necessita_melhorar,
+    }
+    return render(request, 'webapp/gestao_relatorios.html', context)
+###***********************************************************************************************************************
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.templatetags.static import static
+from xhtml2pdf import pisa
+from .models import CadastroEI
+
+def gerar_pdf_relatorio(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    turma = request.GET.get('turma', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    registros = CadastroEI.objects.all()
+    if nome_escola:
+        registros = registros.filter(unidade_ensino__icontains=nome_escola)
+    if turma:
+        registros = registros.filter(turma__icontains=turma)
+    if ano:
+        registros = registros.filter(ano=ano)
+    if modalidade:
+        registros = registros.filter(modalidade__icontains=modalidade)
+
+    relatorios = []
+    for registro in registros:
+        questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
+        questoes_linguagem = [getattr(registro, f"questao_linguagem_{i}", "BRANCO") for i in range(11, 21)]
+        desempenho = sum(2 for resposta in questoes_matematica + questoes_linguagem if resposta == 'CERTO')
+
+        relatorios.append({
+            'registro': registro,
+            'desempenho': desempenho,
+        })
+
+    # Caminhos absolutos para as imagens
+    cabecalho_superior = request.build_absolute_uri(static('assets/dist/img/cabecalho_superior.png'))
+    cabecalho_inferior = request.build_absolute_uri(static('assets/dist/img/cabecalho_inferior.png'))
+
+    template_path = 'webapp/relatorio_pdf.html'
+    context = {
+        'relatorios': relatorios,
+        'cabecalho_superior': cabecalho_superior,
+        'cabecalho_inferior': cabecalho_inferior,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'turma': turma,
+            'ano': ano,
+            'modalidade': modalidade,
+        }
+    }
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="relatorio_avaliacoes.pdf"'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF <pre>' + html + '</pre>')
+    
+    return response
+
+###***********************************************************************************************************************
+
+def get_turmas(request):
+    """View para buscar turmas dinamicamente com base na escola selecionada."""
+    escola = request.GET.get('escola', '')
+    if escola:
+        turmas = CadastroEI.objects.filter(unidade_ensino__icontains=escola).values_list('turma', flat=True).distinct()
+    else:
+        turmas = []
+    return JsonResponse(list(turmas), safe=False)
+###***********************************************************************************************************************
+
+# views.py
+from django.shortcuts import render, redirect
+from django.db.models import Q
+from .models import CadastroEI, ConceitoLancado
+
+def lancamento_conceitos(request):
+    escola = request.GET.get('escola', '')
+    turma = request.GET.get('turma', '')
+    ano = request.GET.get('ano', '')
+
+    # Alunos sem conceito
+    alunos_sem_conceito = CadastroEI.objects.exclude(
+        pessoa_nome__in=ConceitoLancado.objects.values_list('aluno', flat=True)
+    )
+    
+    # Aplicação de filtros
+    if escola:
+        alunos_sem_conceito = alunos_sem_conceito.filter(unidade_ensino__icontains=escola)
+    if turma:
+        alunos_sem_conceito = alunos_sem_conceito.filter(turma__icontains=turma)
+    if ano:
+        alunos_sem_conceito = alunos_sem_conceito.filter(ano=ano)
+
+    # Alunos com conceito já lançado
+    conceitos_lancados = ConceitoLancado.objects.all()
+
+    # Contagem para os cards
+    total_alunos = CadastroEI.objects.count()
+    total_conceitos_lancados = conceitos_lancados.count()
+    total_alunos_sem_conceito = alunos_sem_conceito.count()
+
+    if request.method == 'POST':
+        for aluno in alunos_sem_conceito:
+            conceito_matematica = request.POST.get(f'conceito_matematica_{aluno.id_matricula}')
+            conceito_linguagem = request.POST.get(f'conceito_linguagem_{aluno.id_matricula}')
+            
+            if conceito_matematica or conceito_linguagem:
+                # Verifica se já existe conceito lançado para evitar duplicação
+                if not ConceitoLancado.objects.filter(aluno=aluno.pessoa_nome, ano=aluno.ano, turma=aluno.turma).exists():
+                    ConceitoLancado.objects.create(
+                        aluno=aluno.pessoa_nome,
+                        turma=aluno.turma,
+                        ano=aluno.ano,
+                        modalidade=aluno.modalidade,
+                        conceito_matematica=conceito_matematica,
+                        conceito_linguagem=conceito_linguagem
+                    )
+        return redirect('lancamento_conceitos')
+
+    context = {
+        'alunos_sem_conceito': alunos_sem_conceito,
+        'conceitos_lancados': conceitos_lancados,
+        'escolas': CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct(),
+        'turmas': CadastroEI.objects.values_list('turma', flat=True).distinct(),
+        'total_alunos': total_alunos,
+        'total_conceitos_lancados': total_conceitos_lancados,
+        'total_alunos_sem_conceito': total_alunos_sem_conceito,
+        'filtros': {
+            'escola': escola,
+            'turma': turma,
+            'ano': ano,
+        }
+    }
+    return render(request, 'webapp/lancamento_conceitos.html', context)
+###***********************************************************************************************************************
+
+# from django.templatetags.static import static
+# from django.http import HttpResponse
+# from weasyprint import HTML
+
+# def gerar_pdf(request):
+
+#     cabecalho_superior = request.build_absolute_uri(static('assets/dist/img/cabecalho_superior.png'))
+#     cabecalho_inferior = request.build_absolute_uri(static('assets/dist/img/cabecalho_inferior.png'))
+
+#     context = {
+#         'relatorios': relatorios,
+#         'cabecalho_superior': cabecalho_superior,
+#         'cabecalho_inferior': cabecalho_inferior,
+#     }
+
+#     html_string = render_to_string('webapp/relatorio_pdf.html', context)
+#     response = HttpResponse(content_type='application/pdf')
+#     HTML(string=html_string).write_pdf(response)
+#     return response
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import SynapticAtendimento
+from django.db.models import Count, Avg, Q
+
+def soe_gestao(request):
+    total_estudantes = SynapticAtendimento.objects.values('nome_unidade_ensino').distinct().count()
+    total_escolas = SynapticAtendimento.objects.values('nome_unidade_ensino').distinct().count()
+    atendimentos_mensais = SynapticAtendimento.objects.filter(
+        registro__month=1  # Ajuste para obter a média real por mês
+    ).count()
+
+    indicadores = [
+        {
+            "nome": "Acompanhamento Psicoemocional",
+            "meta": "100% dos estudantes",
+            "resultado": "85%",
+            "status": "Em Progresso",
+            "badge_class": "warning"
+        },
+        {
+            "nome": "Redução de Conflitos Escolares",
+            "meta": "20% de redução",
+            "resultado": "15%",
+            "status": "Concluído",
+            "badge_class": "success"
+        },
+        {
+            "nome": "Orientação Vocacional",
+            "meta": "100% dos alunos do 9º ano",
+            "resultado": "95%",
+            "status": "Quase lá",
+            "badge_class": "info"
+        }
+    ]
+
+    equipe_gestao = [
+        {"nome": "Janayna1", "cargo": "Coordenadora Pedagógica"},
+        {"nome": "Janayna2", "cargo": "Psicólogo Escolar"},
+        {"nome": "Janayna3", "cargo": "Assistente Social"},
+        {"nome": "Janayna4", "cargo": "Orientador Educacional"}
+    ]
+
+    context = {
+        "total_estudantes": total_estudantes,
+        "total_escolas": total_escolas,
+        "atendimentos_mensais": atendimentos_mensais,
+        "indicadores": indicadores,
+        "equipe_gestao": equipe_gestao,
+    }
+
+    return render(request, "webapp/soe_gestao.html", context)
+
+###***********************************************************************************************************************
+
+from django.db.models import Sum
+
+def soe_servicos(request):
+    # Consultando os dados de cada tabela, limitando a 10 registros
+    synaptic = SynapticAtendimento.objects.all()[:10]
+    sige = SIGEAtendimento.objects.all()[:10]
+    autokee = AutoKeeAtendimento.objects.all()[:10]
+    orientadores = OrientadoresAtendimento.objects.all()[:10]
+    soe = AtendimentoSOE.objects.all()[:10]
+
+    # Debugging: verificar contagem no terminal
+    print(f"Synaptic: {synaptic.count()} registros encontrados.")
+    print(f"SIGE: {sige.count()} registros encontrados.")
+    print(f"AutoKee: {autokee.count()} registros encontrados.")
+    print(f"Orientadores: {orientadores.count()} registros encontrados.")
+
+    # Somatórios gerais de todas as tabelas
+    total_ocorrencias = SynapticAtendimento.objects.count() + SIGEAtendimento.objects.count() + \
+                        AutoKeeAtendimento.objects.count() + OrientadoresAtendimento.objects.count() + \
+                        AtendimentoSOE.objects.count()
+
+    # Exemplo de cálculo de pendentes usando um campo existente em OrientadoresAtendimento
+    pendentes_total = (
+        SynapticAtendimento.objects.filter(status_descricao="Pendente").count() +
+        SIGEAtendimento.objects.filter(status_descricao="Pendente").count() +
+        AutoKeeAtendimento.objects.filter(status_descricao="Pendente").count() +
+        AtendimentoSOE.objects.filter(status_descricao="Pendente").count() +
+        (OrientadoresAtendimento.objects.aggregate(total=Sum('ameaca'))['total'] or 0)  # Exemplo usando o campo 'ameaca'
+    )
+
+    abertas_total = (
+        SynapticAtendimento.objects.filter(status_descricao="Aberta").count() +
+        SIGEAtendimento.objects.filter(status_descricao="Aberta").count() +
+        AutoKeeAtendimento.objects.filter(status_descricao="Aberta").count() +
+        AtendimentoSOE.objects.filter(status_descricao="Aberta").count() +
+        (OrientadoresAtendimento.objects.aggregate(total=Sum('bullying'))['total'] or 0)  # Usando 'bullying' como exemplo
+    )
+
+    resolvidas_total = (
+        SynapticAtendimento.objects.filter(status_descricao="Resolvida").count() +
+        SIGEAtendimento.objects.filter(status_descricao="Resolvida").count() +
+        AutoKeeAtendimento.objects.filter(status_descricao="Resolvida").count() +
+        AtendimentoSOE.objects.filter(status_descricao="Resolvida").count() +
+        (OrientadoresAtendimento.objects.aggregate(total=Sum('uso_alcool_drogas'))['total'] or 0)  # 'uso_alcool_drogas'
+    )
+
+    context = {
+        'total_ocorrencias': total_ocorrencias,
+        'pendentes_total': pendentes_total,
+        'abertas_total': abertas_total,
+        'resolvidas_total': resolvidas_total,
+        'synaptic': synaptic,
+        'sige': sige,
+        'autokee': autokee,
+        'orientadores': orientadores,
+        'soe': soe,
+    }
+
+    return render(request, 'webapp/servicos_soe.html', context)
+###***********************************************************************************************************************
+
+def soe_uploads(request):
+    return render(request, 'webapp/soe_uploads.html')
+###***********************************************************************************************************************
+
+def soe_relatorios(request):
+    return render(request, 'webapp/soe_relatorios.html')
+###***********************************************************************************************************************
+from django.shortcuts import render
+from .models import AtendimentoSOE  # Assumindo que o modelo já foi criado
+
+def servicos_soe(request):
+    atendimentos = AtendimentoSOE.objects.all().order_by('-registro')  # Ordenação pela data do registro (mais recente primeiro)
+    return render(request, 'webapp/servicos_soe.html', {'atendimentos': atendimentos})
+###***********************************************************************************************************************
+
+# from django.shortcuts import render
+# from semedapp.models import SynapticAtendimento, SIGEAtendimento, AutoKeeAtendimento, OrientadoresAtendimento
+
+# def soe_servicos(request):
+#     # Consultando os dados de cada tabela e limitando a 10 registros
+#     synaptic = SynapticAtendimento.objects.all()[:10]
+#     sige = SIGEAtendimento.objects.all()[:10]
+#     autokee = AutoKeeAtendimento.objects.all()[:10]
+#     orientadores = OrientadoresAtendimento.objects.all()[:10]
+
+#     # Somatórios gerais de todas as tabelas
+#     total_ocorrencias = (
+#         SynapticAtendimento.objects.count() +
+#         SIGEAtendimento.objects.count() +
+#         AutoKeeAtendimento.objects.count() +
+#         OrientadoresAtendimento.objects.count()
+#     )
+#     pendentes_total = (
+#         SynapticAtendimento.objects.filter(status_descricao="Pendente").count() +
+#         SIGEAtendimento.objects.filter(status_descricao="Pendente").count() +
+#         AutoKeeAtendimento.objects.filter(status_descricao="Pendente").count() +
+#         OrientadoresAtendimento.objects.filter(status_descricao="Pendente").count()
+#     )
+#     abertas_total = (
+#         SynapticAtendimento.objects.filter(status_descricao="Aberta").count() +
+#         SIGEAtendimento.objects.filter(status_descricao="Aberta").count() +
+#         AutoKeeAtendimento.objects.filter(status_descricao="Aberta").count() +
+#         OrientadoresAtendimento.objects.filter(status_descricao="Aberta").count()
+#     )
+#     resolvidas_total = (
+#         SynapticAtendimento.objects.filter(status_descricao="Resolvida").count() +
+#         SIGEAtendimento.objects.filter(status_descricao="Resolvida").count() +
+#         AutoKeeAtendimento.objects.filter(status_descricao="Resolvida").count() +
+#         OrientadoresAtendimento.objects.filter(status_descricao="Resolvida").count()
+#     )
+
+#     context = {
+#         'total_ocorrencias': total_ocorrencias,
+#         'pendentes_total': pendentes_total,
+#         'abertas_total': abertas_total,
+#         'resolvidas_total': resolvidas_total,
+#         'synaptic': synaptic,
+#         'sige': sige,
+#         'autokee': autokee,
+#         'orientadores': orientadores,
+#     }
+
+#     return render(request, 'webapp/servicos_soe.html', context)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import SynapticAtendimento
+
+def dados_synaptic(request):
+    dados = SynapticAtendimento.objects.all().order_by('-registro')
+    return render(request, 'webapp/dados_synaptic.html', {'dados': dados})
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+
+def upload_dados(request):
+    # Lógica para upload de dados
+    return render(request, 'semedapp/upload_dados.html')
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import SIGEAtendimento
+from django.core.paginator import Paginator
+from django.db.models import Count
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+import weasyprint
+
+def ocorrencias_sige(request):
+    registros = SIGEAtendimento.objects.all()
+
+    # Filtros de busca
+    unidade = request.GET.get('unidade')
+    classificacao = request.GET.get('classificacao')
+    status_descricao = request.GET.get('status')
+
+    if unidade:
+        registros = registros.filter(nome_unidade_ensino__icontains=unidade)
+    if classificacao:
+        registros = registros.filter(classificacao_nome__icontains=classificacao)
+    if status_descricao:
+        registros = registros.filter(status_descricao__icontains=status_descricao)
+
+    # Paginação
+    paginator = Paginator(registros, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Contagem de status
+    status_count = registros.values('status_descricao').annotate(count=Count('id')).order_by('-count')
+
+    # Total de ocorrências
+    total_ocorrencias = registros.count()
+
+    context = {
+        'page_obj': page_obj,
+        'status_count': status_count,
+        'total_ocorrencias': total_ocorrencias,
+        'classificacoes_list': registros.values_list('classificacao_nome', flat=True).distinct(),
+        'unidades_list': registros.values_list('nome_unidade_ensino', flat=True).distinct(),
+        'status_list': registros.values_list('status_descricao', flat=True).distinct(),
+    }
+
+    return render(request, 'webapp/ocorrencias_sige.html', context)
+###***********************************************************************************************************************
+
+def ocorrencias_sige_pdf(request):
+    registros = SIGEAtendimento.objects.all()
+
+    # Filtragem opcional para o PDF
+    unidade = request.GET.get('unidade')
+    classificacao = request.GET.get('classificacao')
+    status_descricao = request.GET.get('status')
+
+    if unidade:
+        registros = registros.filter(nome_unidade_ensino__icontains=unidade)
+    if classificacao:
+        registros = registros.filter(classificacao_nome__icontains=classificacao)
+    if status_descricao:
+        registros = registros.filter(status_descricao__icontains=status_descricao)
+
+    # Renderiza o template HTML como string
+    html_string = render_to_string('webapp/ocorrencias_sige_pdf.html', {
+        'registros': registros,
+        'total_ocorrencias': registros.count(),
+    })
+
+    # Gera o PDF usando WeasyPrint
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="relatorio_ocorrencias_sige.pdf"'
+    weasyprint.HTML(string=html_string).write_pdf(response)
+
+    return response
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from django.core.paginator import Paginator
+from .models import SynapticAtendimento
+from django.db.models import Count
+
+def ocorrencias_synaptic(request):
+    registros = SynapticAtendimento.objects.all()
+
+    # Filtros
+    classificacao_filtrada = request.GET.get('classificacao')
+    status_filtrado = request.GET.get('status')
+    unidade_filtrada = request.GET.get('unidade')
+
+    if classificacao_filtrada:
+        registros = registros.filter(classificacao_nome=classificacao_filtrada)
+    if status_filtrado:
+        registros = registros.filter(status_descricao=status_filtrado)
+    if unidade_filtrada:
+        registros = registros.filter(nome_unidade_ensino=unidade_filtrada)
+
+    # Paginação (100 registros por página)
+    paginator = Paginator(registros, 100)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Dados para os filtros
+    classificacoes_list = SynapticAtendimento.objects.values_list('classificacao_nome', flat=True).distinct()
+    status_list = SynapticAtendimento.objects.values_list('status_descricao', flat=True).distinct()
+    unidades_list = SynapticAtendimento.objects.values_list('nome_unidade_ensino', flat=True).distinct()
+
+    # Dados estatísticos para os cards
+    total_ocorrencias = registros.count()
+    status_count = registros.values('status_descricao').annotate(count=Count('status_descricao'))
+    classificacoes_count = registros.values('classificacao_nome').annotate(count=Count('classificacao_nome'))
+    ultimo_registro = registros.order_by('-registro').first()
+
+    context = {
+        'page_obj': page_obj,
+        'total_ocorrencias': total_ocorrencias,
+        'status_count': status_count,
+        'classificacoes_count': classificacoes_count,
+        'ultimo_registro': ultimo_registro.registro if ultimo_registro else None,
+        'classificacoes_list': classificacoes_list,
+        'status_list': status_list,
+        'unidades_list': unidades_list,
+    }
+
+    return render(request, 'webapp/ocorrencias_synaptic.html', context)
+###***********************************************************************************************************************
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from .models import SynapticAtendimento
+import io
+from django.db.models import Count
+
+def ocorrencias_synaptic_pdf(request):
+    registros = SynapticAtendimento.objects.all()
+
+    # Aplicando filtros conforme parâmetros GET
+    classificacao_filtrada = request.GET.get('classificacao')
+    status_filtrado = request.GET.get('status')
+    unidade_filtrada = request.GET.get('unidade')
+
+    if classificacao_filtrada:
+        registros = registros.filter(classificacao_nome=classificacao_filtrada)
+    if status_filtrado:
+        registros = registros.filter(status_descricao=status_filtrado)
+    if unidade_filtrada:
+        registros = registros.filter(nome_unidade_ensino=unidade_filtrada)
+
+    # Dados estatísticos
+    total_ocorrencias = registros.count()
+
+    context = {
+        'registros': registros,
+        'total_ocorrencias': total_ocorrencias,
+    }
+
+    # Gerando o PDF
+    template_path = 'webapp/ocorrencias_synaptic_pdf.html'
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="ocorrencias_synaptic.pdf"'
+
+    template = get_template(template_path)
+    html = template.render(context)
+    pisa_status = pisa.CreatePDF(io.BytesIO(html.encode('UTF-8')), dest=response, encoding='UTF-8')
+
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF', status=500)
+    return response
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import SIGEAtendimento, SynapticAtendimento, AutoKeeAtendimento
+from django.db.models import Count
+
+def soe_principal(request):
+    # Estatísticas gerais combinadas para SIGE, Synaptic e AutoKee
+    total_sige_atendimentos = SIGEAtendimento.objects.count()
+    total_synaptic_atendimentos = SynapticAtendimento.objects.count()
+    total_autokee_atendimentos = AutoKeeAtendimento.objects.count()
+    
+    total_atendimentos = total_sige_atendimentos + total_synaptic_atendimentos + total_autokee_atendimentos
+    total_escolas = SIGEAtendimento.objects.values('nome_unidade_ensino').distinct().count()
+    
+    # Estimativa de atendimentos mensais
+    atendimentos_mensais = total_atendimentos // 12
+
+    # Eventos Recentes combinando SIGE, Synaptic e AutoKee (limite de 5 registros)
+    eventos_recentes_sige = SIGEAtendimento.objects.order_by('-registro')[:2]
+    eventos_recentes_synaptic = SynapticAtendimento.objects.order_by('-registro')[:2]
+    eventos_recentes_autokee = AutoKeeAtendimento.objects.order_by('-registro')[:2]
+    eventos_recentes = list(eventos_recentes_sige) + list(eventos_recentes_synaptic) + list(eventos_recentes_autokee)
+    
+    # Dados recentes de AutoKee para a tabela
+    registros = AutoKeeAtendimento.objects.order_by('-registro')[:10]
+
+    context = {
+        'total_atendimentos': total_atendimentos,
+        'total_escolas': total_escolas,
+        'atendimentos_mensais': atendimentos_mensais,
+        'eventos_recentes': eventos_recentes,
+        'registros': registros,
+    }
+
+    return render(request, 'webapp/soe_principal.html', context)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import AutoKeeAtendimento
+from django.core.paginator import Paginator
+from django.db.models import Count
+
+def ocorrencias_autokee(request):
+    registros = AutoKeeAtendimento.objects.all()
+
+    # Filtros de busca
+    unidade = request.GET.get('unidade')
+    classificacao = request.GET.get('classificacao')
+    status_descricao = request.GET.get('status')
+
+    if unidade:
+        registros = registros.filter(nome_unidade_ensino__icontains=unidade)
+    if classificacao:
+        registros = registros.filter(classificacao_nome__icontains=classificacao)
+    if status_descricao:
+        registros = registros.filter(status_descricao__icontains=status_descricao)
+
+    # Paginação
+    paginator = Paginator(registros, 10)  # 10 registros por página
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Contagem de status
+    status_count = registros.values('status_descricao').annotate(count=Count('id')).order_by('-count')
+
+    context = {
+        'page_obj': page_obj,
+        'status_count': status_count,
+        'total_ocorrencias': registros.count(),
+        'classificacoes_list': registros.values_list('classificacao_nome', flat=True).distinct(),
+        'unidades_list': registros.values_list('nome_unidade_ensino', flat=True).distinct(),
+        'status_list': registros.values_list('status_descricao', flat=True).distinct(),
+    }
+
+    return render(request, 'webapp/ocorrencias_autokee.html', context)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import OrientadoresAtendimento
+
+def ocorrencias_orientadores(request):
+    registros = OrientadoresAtendimento.objects.all()[:100]  # Limite de 10 registros
+
+    context = {
+        'registros': registros,
+        'total_ocorrencias': registros.count(),
+    }
+    return render(request, 'webapp/ocorrencias_orientadores.html', context)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import OrientadoresAtendimento
+
+def orientadores_ocorrencias(request):
+    # Recuperando os 10 primeiros registros para exibição
+    registros = OrientadoresAtendimento.objects.all()[:100]
+
+    # Calculando os totais para exibição nos indicadores
+    total_ocorrencias = registros.aggregate(total=Sum('total_geral'))['total'] or 0
+    total_violencia_sexual = registros.aggregate(total=Sum('violencia_sexual'))['total'] or 0
+    total_uso_alcool_drogas = registros.aggregate(total=Sum('uso_alcool_drogas'))['total'] or 0
+
+    context = {
+        'registros': registros,
+        'total_ocorrencias': total_ocorrencias,
+        'total_violencia_sexual': total_violencia_sexual,
+        'total_uso_alcool_drogas': total_uso_alcool_drogas,
+    }
+
+    return render(request, 'webapp/orientadores_ocorrencias.html', context)
+###***********************************************************************************************************************
+

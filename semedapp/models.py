@@ -16,6 +16,7 @@ from django.core.files.base import ContentFile
 import qrcode
 from io import BytesIO
 import io
+from django.utils import timezone
 
 
 
@@ -73,9 +74,25 @@ class Aluno(models.Model):
     nome = models.CharField(max_length=255)
     data_nascimento = models.DateField()
     matricula = models.CharField(max_length=50, unique=True)
+    turma = models.CharField(max_length=100)
+    escola = models.CharField(max_length=255)
 
     def __str__(self):
         return self.nome
+    
+
+
+from django.db import models
+
+class Estudante(models.Model):
+    nome_completo = models.CharField(max_length=150)
+    data_nascimento = models.DateField()
+    email = models.EmailField()
+    matricula = models.CharField(max_length=20, unique=True)
+    turma = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nome_completo
 # ********************************************************************************************************************************
 
 class PDDE(models.Model):
@@ -1579,6 +1596,14 @@ class Professor(models.Model):
 #     arquivo = models.FileField(upload_to='certificados/')
 # ********************************************************************************************************************************
 
+from django.db import models
+from django.core.exceptions import ValidationError
+from django.utils.timezone import now
+from io import BytesIO
+from django.core.files.base import ContentFile
+import qrcode
+
+
 class Diretor(models.Model):
     SEXO_CHOICES = [
         ('Masculino', 'Masculino'),
@@ -1602,8 +1627,8 @@ class Diretor(models.Model):
         ('MedioTecnico', 'Médio e Técnico'),
         ('TecnicoC', 'Técnico Completo'),
         ('TecnicoI', 'Técnico Incompleto'),
-        ('TecnologoC', 'Técnólogo Completo'),
-        ('TecnologoI', 'Técnólogo Incompleto'),
+        ('TecnologoC', 'Tecnólogo Completo'),
+        ('TecnologoI', 'Tecnólogo Incompleto'),
         ('GraduacaoC', 'Graduação Completa'),
         ('GraduacaoI', 'Graduação Incompleta'),
         ('PosGraduacaoC', 'Pós-Graduação Completa'),
@@ -1617,7 +1642,7 @@ class Diretor(models.Model):
     ]
 
     nome_completo = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=14, unique=False)
+    cpf = models.CharField(max_length=14, unique=True)
     rg = models.CharField(max_length=12, blank=True, null=True)
     email = models.EmailField(unique=True)
     telefone = models.CharField(max_length=15)
@@ -1634,42 +1659,50 @@ class Diretor(models.Model):
     curriculo_pdf = models.FileField(upload_to='diretores_curriculos/', blank=True, null=True)
     certificados_pdf = models.FileField(upload_to='diretores_certificados/', blank=True, null=True)
     experiencia_profissional = models.TextField(blank=True, null=True)
-    estado_civil = models.CharField(max_length=50)
-    sexo = models.CharField(max_length=50)
+    estado_civil = models.CharField(max_length=50, choices=ESTADO_CIVIL_CHOICES)
+    sexo = models.CharField(max_length=50, choices=SEXO_CHOICES)
 
     data_cadastro = models.DateTimeField()
-
     empresa = models.CharField(max_length=255, blank=True, null=True)
     cargo = models.CharField(max_length=255, blank=True, null=True)
     data_inicio = models.DateField(blank=True, null=True)
     data_fim = models.DateField(blank=True, null=True)
-
     qr_code = models.ImageField(upload_to='diretores_qrcodes/', null=True, blank=True)
+
+    def clean(self):
+        if not self.nome_completo:
+            raise ValidationError("O nome completo é obrigatório.")
+        if not self.cpf:
+            raise ValidationError("O CPF é obrigatório.")
+        if not self.email:
+            raise ValidationError("O e-mail é obrigatório.")
+        if not self.telefone:
+            raise ValidationError("O telefone é obrigatório.")
+        if len(self.cpf) != 14:
+            raise ValidationError("O CPF deve ter 14 caracteres (formato: 000.000.000-00).")
 
     def generate_qr_code(self):
         if not self.qr_code:
-            # Dados para o QR Code
             qr_data = f"https://semedcanaadoscarajas.gov.br/diretor/{self.id}/"
             qr = qrcode.QRCode(box_size=10, border=4)
             qr.add_data(qr_data)
             qr.make(fit=True)
-
-            # Cria a imagem do QR Code
             img = qr.make_image(fill_color="black", back_color="white")
-
-            # Salva o QR Code como arquivo
             buffer = BytesIO()
             img.save(buffer, format="PNG")
             file_name = f"qr_code_{self.id}.png"
             self.qr_code.save(file_name, ContentFile(buffer.getvalue()), save=False)
 
     def save(self, *args, **kwargs):
-        if not self.data_cadastro:  # Se o campo estiver vazio
-            self.data_cadastro = now()  # Define a data atual
+        self.full_clean()  # Valida antes de salvar
+        if not self.data_cadastro:
+            self.data_cadastro = now()
+        self.generate_qr_code()
         super().save(*args, **kwargs)
 
     def __str__(self):
         return self.nome_completo
+
 # ********************************************************************************************************************************
 
 class ExperienciaProfissional(models.Model):
@@ -1745,11 +1778,7 @@ class CadastroCandidato(models.Model):
 
     def __str__(self):
         return self.nome_completo
-
-
-
-
-
+# ********************************************************************************************************************************
 
 from django.db import models
 
@@ -1762,7 +1791,7 @@ class CandidatoCurriculo(models.Model):
 
     def __str__(self):
         return self.nome_completo
-
+# ********************************************************************************************************************************
 
 from django.db import models
 from django.contrib.auth.models import User
@@ -1773,7 +1802,7 @@ class CandidatoAutenticado(models.Model):
 
     def __str__(self):
         return self.user.first_name
-
+# ********************************************************************************************************************************
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -1784,6 +1813,7 @@ class ModulePermission(models.Model):
 
     def __str__(self):
         return self.module_name
+# ********************************************************************************************************************************
     
 class UserModulePermission(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='module_permissions')
@@ -1791,7 +1821,7 @@ class UserModulePermission(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.module.name}"
-
+# ********************************************************************************************************************************
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
@@ -1817,7 +1847,7 @@ class User(AbstractUser):
         related_name="custom_user_set",
         blank=True,
     )
-
+# ********************************************************************************************************************************
 
 from django.db import models
 from .models import ModulePermission, User  # Ajuste o caminho conforme necessário
@@ -1836,7 +1866,313 @@ class RoleModulePermission(models.Model):
 
     def __str__(self):
         return f"{self.role} - {self.module.module_name}"
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class CurriculoAntigo(models.Model):
+    id = models.AutoField(primary_key=True)
+    cpf = models.CharField(max_length=20, null=True, blank=True)
+    nome = models.CharField(max_length=200, null=True, blank=True)
+    email = models.EmailField(max_length=100, null=True, blank=True)
+    senha = models.CharField(max_length=100, null=True, blank=True)
+    data_nascimento = models.DateField(null=True, blank=True)
+    sexo = models.CharField(max_length=100, null=True, blank=True)
+    naturalidade = models.CharField(max_length=100, null=True, blank=True)
+    naturalidade_uf = models.CharField(max_length=2, null=True, blank=True)
+    pne = models.CharField(max_length=3, null=True, blank=True)
+    pne_detalhe = models.CharField(max_length=500, null=True, blank=True)
+    curriculo_lattes = models.CharField(max_length=300, null=True, blank=True)
+    logradouro = models.CharField(max_length=300, null=True, blank=True)
+    numero = models.CharField(max_length=10, null=True, blank=True)
+    bairro = models.CharField(max_length=100, null=True, blank=True)
+    cep = models.CharField(max_length=10, null=True, blank=True)
+    complemento = models.CharField(max_length=500, null=True, blank=True)
+    uf = models.CharField(max_length=2, null=True, blank=True)
+    municipio = models.IntegerField(null=True, blank=True)
+    fone1 = models.CharField(max_length=100, null=True, blank=True)
+    fone2 = models.CharField(max_length=100, null=True, blank=True)
+    formacao_nivel = models.IntegerField(null=True, blank=True)
+    formacao_instituicao = models.CharField(max_length=200, null=True, blank=True)
+    formacao_curso = models.CharField(max_length=200, null=True, blank=True)
+    formacao_situacao = models.CharField(max_length=50, null=True, blank=True)
+    formacao_inicio = models.CharField(max_length=10, null=True, blank=True)
+    formacao_conclusao = models.CharField(max_length=10, null=True, blank=True)
+    data_cadastro = models.DateTimeField(auto_now_add=True)
+    data_update = models.DateTimeField(auto_now=True)
+    ip = models.CharField(max_length=50, null=True, blank=True)
+    cargo = models.CharField(max_length=100, null=True, blank=True)  # ✅ Adicionamos a coluna CARGO
+
+    class Meta:
+        db_table = 'curriculo_antigo'
+# ********************************************************************************************************************************
+
+    def get_cargo_utf8(self):
+        """
+        Método seguro para exibir o cargo corrigindo caracteres com problema de codificação.
+        """
+        if self.cargo:
+            try:
+                return self.cargo.encode("latin-1").decode("utf-8")
+            except UnicodeDecodeError:
+                return self.cargo.encode("utf-8", "ignore").decode("utf-8")
+        return ""
+
+    def __str__(self):
+        """
+        Converte o nome para UTF-8 se necessário.
+        """
+        return self.nome.encode('utf-8').decode('utf-8') if self.nome else "Sem Nome"
+# ********************************************************************************************************************************
+
+class CadastroEI(models.Model):
+    id_matricula = models.AutoField(primary_key=True)
+    unidade_ensino = models.CharField(max_length=255)
+    formato_letivo = models.CharField(max_length=255, null=True, blank=True)  # Certifique-se de que o campo existe
+    cpf = models.CharField(max_length=11)
+    data_nascimento = models.DateField()
+    turma = models.CharField(max_length=100)
+    ano = models.CharField(max_length=4)
+    modalidade = models.CharField(max_length=100)
+    pessoa_nome = models.CharField(max_length=255)
+    idade = models.IntegerField()
+    avaliado = models.CharField(max_length=3, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
+
+    # Campos para as questões
+    for i in range(1, 11):
+        locals()[f"questao_matematica_{i}"] = models.CharField(max_length=50, null=True, blank=True)
+    for i in range(11, 21):
+        locals()[f"questao_linguagem_{i}"] = models.CharField(max_length=50, null=True, blank=True)
+# ********************************************************************************************************************************
+
+class CadastroEscola(models.Model):
+    id_matricula = models.CharField(max_length=50, unique=True)
+    unidade_ensino = models.CharField(max_length=255)
+    ano = models.IntegerField()
+    modalidade = models.CharField(max_length=255)
+    formato_letivo = models.CharField(max_length=255)
+    turma = models.CharField(max_length=100)
+    cpf = models.CharField(max_length=14, unique=True)
+    pessoa_nome = models.CharField(max_length=255)
+    data_nascimento = models.DateField()
+    idade = models.IntegerField()
+
+    def __str__(self):
+        return f"{self.pessoa_nome} - {self.unidade_ensino}"
+# ********************************************************************************************************************************
+
+class NotaAluno(models.Model):
+    aluno = models.ForeignKey(CadastroEI, on_delete=models.CASCADE)
+    disciplina = models.CharField(max_length=100)
+    nota = models.DecimalField(max_digits=4, decimal_places=2)  # Exemplo: 9.5
+    bimestre = models.IntegerField(choices=[(1, "1º Bimestre"), (2, "2º Bimestre"), (3, "3º Bimestre"), (4, "4º Bimestre")])
+
+    def __str__(self):
+        return f"{self.aluno.pessoa_nome} - {self.disciplina} - {self.nota}"
+# ********************************************************************************************************************************
+
+class Resposta(models.Model):
+    aluno = models.ForeignKey('Aluno', on_delete=models.CASCADE)
+    conceito = models.CharField(max_length=100, choices=[
+        ('CERTO', 'Certo'),
+        ('ERRADO', 'Errado'),
+        ('PARCIAL', 'Parcial'),
+        ('BRANCO', 'Branco'),
+        ('LAUDO', 'Criança com Laudo')
+    ])
+    data_resposta = models.DateField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.aluno.nome} - {self.conceito}"
+# ********************************************************************************************************************************
+
+class Conceito(models.Model):
+    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE)
+    habilidade = models.CharField(max_length=50)  # EI05CMH1, EI05LGH1 etc.
+    conceito = models.CharField(max_length=50, choices=[('CERTO', 'Certo'), ('ERRADO', 'Errado'), ('PARCIAL', 'Parcial')])
+    data_resposta = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.aluno.nome} - {self.habilidade} - {self.conceito}"
+    
+#     from django.db import models
+
+# class Aluno(models.Model):
+#     nome = models.CharField(max_length=255)
+#     turma = models.CharField(max_length=50)
+
+#     def __str__(self):
+#         return f"{self.nome} - {self.turma}"
+# essa classe ja existe
+# ********************************************************************************************************************************
+
+# models.py
+from django.db import models
+
+class ConceitoLancado(models.Model):
+    aluno = models.CharField(max_length=255)
+    turma = models.CharField(max_length=100)
+    ano = models.CharField(max_length=4)
+    modalidade = models.CharField(max_length=100)
+    conceito_matematica = models.CharField(max_length=50, choices=[
+        ('Excelente', 'Excelente'),
+        ('Bom', 'Bom'),
+        ('Regular', 'Regular'),
+        ('Necessita Melhorar', 'Necessita Melhorar'),
+    ], null=True, blank=True)
+    conceito_linguagem = models.CharField(max_length=50, choices=[
+        ('Excelente', 'Excelente'),
+        ('Bom', 'Bom'),
+        ('Regular', 'Regular'),
+        ('Necessita Melhorar', 'Necessita Melhorar'),
+    ], null=True, blank=True)
+    data_lancamento = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.aluno} - {self.turma} - {self.ano}"
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class AtendimentoSOE(models.Model):
+    estudante = models.ForeignKey(Estudante, on_delete=models.CASCADE)
+    data = models.DateTimeField()
+    descricao = models.TextField()
+    nome_unidade_ensino = models.CharField(max_length=255)
+    ano_serie = models.CharField(max_length=100, blank=True, null=True)
+    nome_turma = models.CharField(max_length=100, blank=True, null=True)
+    classificacao_nome = models.CharField(max_length=100)
+    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    registro = models.DateTimeField()
+    status_descricao = models.CharField(max_length=50)
+    fonte_dado = models.CharField(max_length=50, choices=[
+        ('SIGE', 'SIGE'),
+        ('Synaptic', 'Synaptic'),
+        ('Orientadores', 'Orientadores'),
+        ('SOE', 'SOE'),
+        ('AutoKee', 'AutoKee')
+    ])
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'atendimento_soe'  # Nome correto da tabela no banco de dados
+
+    def __str__(self):
+        return f"{self.nome_unidade_ensino} - {self.tipo_ocorrencia_nome}"
+
+# ********************************************************************************************************************************
+
+class SynapticAtendimento(models.Model):
+    nome_unidade_ensino = models.CharField(max_length=255)
+    ano_serie = models.CharField(max_length=255)
+    nome_turma = models.CharField(max_length=255)
+    classificacao_nome = models.CharField(max_length=255)
+    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    registro = models.DateTimeField()
+    status_descricao = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'synaptic_atendimento'  # Confirme o nome aqui
+
+# ********************************************************************************************************************************
+from django.db import models
+
+class SIGEAtendimento(models.Model):
+    nome_unidade_ensino = models.CharField(max_length=255)
+    ano_serie = models.CharField(max_length=100, blank=True, null=True)
+    nome_turma = models.CharField(max_length=100, blank=True, null=True)
+    classificacao_nome = models.CharField(max_length=100)
+    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    registro = models.DateTimeField()
+    status_descricao = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'sige_atendimento'
+        verbose_name = 'SIGE Atendimento'
+        verbose_name_plural = 'SIGE Atendimentos'
+
+    def __str__(self):
+        return f"{self.nome_unidade_ensino} - {self.classificacao_nome}"
 
 
+# ********************************************************************************************************************************
 
+class AutoKeeAtendimento(models.Model):
+    nome_unidade_ensino = models.CharField(max_length=255)
+    ano_serie = models.CharField(max_length=100, blank=True, null=True)
+    nome_turma = models.CharField(max_length=100, blank=True, null=True)
+    classificacao_nome = models.CharField(max_length=100)
+    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    registro = models.DateTimeField()
+    status_descricao = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = 'autokee_atendimento'  # Atualize com o nome correto
+
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class OrientadoresAtendimento(models.Model):
+    nome_orientador = models.CharField(max_length=255)
+    escola = models.CharField(max_length=255)
+    ocorrencias_conselho_tutelar = models.IntegerField(default=0)
+    ameaca = models.IntegerField(default=0)
+    agressao_fisica = models.IntegerField(default=0)
+    assedio = models.IntegerField(default=0)
+    violencia_sexual = models.IntegerField(default=0)
+    exploracao_sexual = models.IntegerField(default=0)
+    bullying = models.IntegerField(default=0)
+    infrequencia = models.IntegerField(default=0)
+    evasao = models.IntegerField(default=0)
+    repetencia = models.IntegerField(default=0)
+    furtos = models.IntegerField(default=0)
+    gravidez_adolescencia = models.IntegerField(default=0)
+    explosivos = models.IntegerField(default=0)
+    trafico_drogas = models.IntegerField(default=0)
+    uso_alcool_drogas = models.IntegerField(default=0)
+    vandalismo = models.IntegerField(default=0)
+    posse_armas = models.IntegerField(default=0)
+    delegacia_civil = models.IntegerField(default=0)
+    deaca = models.IntegerField(default=0)
+    escuta_especializada = models.IntegerField(default=0)
+    creas = models.IntegerField(default=0)
+    cras = models.IntegerField(default=0)
+    viver_conviver = models.IntegerField(default=0)
+    ministerio_publico = models.IntegerField(default=0)
+    policia_militar = models.IntegerField(default=0)
+    busca_ativa = models.IntegerField(default=0)
+    centro_tea = models.IntegerField(default=0)
+    caps = models.IntegerField(default=0)
+    saude = models.IntegerField(default=0)
+    total_geral = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.nome_orientador} - {self.escola}"
+
+# ********************************************************************************************************************************
+
+class SOEAtendimento(models.Model):
+    nome_unidade_ensino = models.CharField(max_length=255)
+    ano_serie = models.CharField(max_length=50)
+    nome_turma = models.CharField(max_length=100)
+    classificacao_nome = models.CharField(max_length=100)
+    tipo_ocorrencia_nome = models.CharField(max_length=100)
+    registro = models.DateTimeField()
+    status_descricao = models.CharField(max_length=50)
+    fonte_dado = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'soe_atendimento'  # Atualize com o nome correto
+# ********************************************************************************************************************************
+
+class Indicador(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField()
+    meta = models.IntegerField()
+    resultado = models.IntegerField()
+# ********************************************************************************************************************************

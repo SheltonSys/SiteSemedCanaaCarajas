@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="display-4 fw-bold text-info text-center">📊 Análise de Ocorrências SIGE</h2>
+    <hr class="mt-4 mb-5 stylish-divider">
+
+    <!-- Indicadores -->
+<div class="row text-center mb-4">
+    <!-- Total de Ocorrências -->
+    <div class="col-md-4">
+        <div class="card stylish-card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title text-muted fw-bold">🔍 Total de Ocorrências</h5>
+                <p class="card-text display-5 text-primary">{{ total_ocorrencias }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status das Ocorrências -->
+    <div class="col-md-4">
+        <div class="card stylish-card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title text-muted fw-bold">📊 Status das Ocorrências</h5>
+                <ul class="list-group">
+                    {% for status in status_count %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ status.status_descricao }}
+                            <span class="badge bg-primary rounded-pill">{{ status.count }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    <!-- Área de Filtragem -->
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <label for="classificacao" class="form-label fw-bold">Filtrar por Classificação</label>
+            <select id="classificacao" name="classificacao" class="form-select">
+                <option value="">Todas</option>
+                {% for classificacao in classificacoes_list %}
+                    <option value="{{ classificacao }}" {% if request.GET.classificacao == classificacao %}selected{% endif %}>
+                        {{ classificacao }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="status" class="form-label fw-bold">Filtrar por Status</label>
+            <select id="status" name="status" class="form-select">
+                <option value="">Todos</option>
+                {% for status in status_list %}
+                    <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>
+                        {{ status }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="unidade" class="form-label fw-bold">Filtrar por Unidade de Ensino</label>
+            <select id="unidade" name="unidade" class="form-select">
+                <option value="">Todas</option>
+                {% for unidade in unidades_list %}
+                    <option value="{{ unidade }}" {% if request.GET.unidade == unidade %}selected{% endif %}>
+                        {{ unidade }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-12 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </form>
+
+    <a href="{% url 'ocorrencias_sige_pdf' %}?classificacao={{ request.GET.classificacao }}&status={{ request.GET.status }}&unidade={{ request.GET.unidade }}" 
+   class="btn btn-danger mb-4" target="_blank">📄 Exportar para PDF</a>
+
+
+    <!-- Gráfico de Classificações -->
+    <div class="card stylish-card shadow-sm mb-5">
+        <div class="card-body">
+            <h5 class="card-title text-primary fw-bold">📈 Gráfico de Classificações</h5>
+            <canvas id="classificacoesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Tabela de Dados -->
+    <h5 class="card-title text-info fw-bold mb-3">📋 Tabela de Ocorrências SIGE</h5><br>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Unidade de Ensino</th>
+                    <th>Ano/Série</th>
+                    <th>Turma</th>
+                    <th>Classificação</th>
+                    <th>Tipo</th>
+                    <th>Data do Registro</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for registro in page_obj %}
+                    <tr>
+                        <td><span class="badge bg-primary">{{ registro.nome_unidade_ensino }}</span></td>
+                        <td><span class="badge bg-secondary">{{ registro.ano_serie }}</span></td>
+                        <td><span class="badge bg-dark">{{ registro.nome_turma }}</span></td>
+                        <td><span class="badge bg-info">{{ registro.classificacao_nome }}</span></td>
+                        <td><span class="badge bg-warning text-dark">{{ registro.tipo_ocorrencia_nome }}</span></td>
+                        <td>{{ registro.registro|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if registro.status_descricao == "Resolvida" %}
+                                <span class="badge bg-success">{{ registro.status_descricao }}</span>
+                            {% elif registro.status_descricao == "Pendente" %}
+                                <span class="badge bg-warning text-dark">{{ registro.status_descricao }}</span>
+                            {% elif registro.status_descricao == "Em análise" %}
+                                <span class="badge bg-danger">{{ registro.status_descricao }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ registro.status_descricao }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center">Nenhuma ocorrência encontrada.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginação -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a>
+                </li>
+            {% endif %}
+            <li class="page-item disabled">
+                <span class="page-link">Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+            </li>
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Próximo</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
+<!-- Gráfico com Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var ctx = document.getElementById('classificacoesChart').getContext('2d');
+    var classificacoesData = {
+        labels: [{% for item in classificacoes_count %}'{{ item.classificacao_nome }}',{% endfor %}],
+        datasets: [{
+            label: 'Classificações',
+            data: [{% for item in classificacoes_count %}{{ item.count }},{% endfor %}],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.6)',
+                'rgba(54, 162, 235, 0.6)',
+                'rgba(255, 206, 86, 0.6)',
+                'rgba(75, 192, 192, 0.6)',
+                'rgba(153, 102, 255, 0.6)',
+                'rgba(255, 159, 64, 0.6)'
+            ],
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: classificacoesData,
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+<style>
+    .stylish-card {
+        border-radius: 12px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .stylish-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .table-responsive {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+</style>
+{% endblock %}

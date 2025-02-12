@@ -170,23 +170,4 @@
     </div>
 </div>
 {% endfor %}
-
-<!-- Chart Script -->
-<!-- <script>
-    const ctx = document.getElementById('acompanhamentoChart').getContext('2d');
-    const acompanhamentoChart = new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Acompanhamentos Concluídos', 'Pendentes'],
-            datasets: [{
-                data: [{{ concluidos }}, {{ pendentes }}],
-                backgroundColor: ['#28a745', '#dc3545'],
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
-</script> -->
 {% endblock %}
