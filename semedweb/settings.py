@@ -16,7 +16,8 @@ SECRET_KEY = 'django-insecure-zrvbu@igm3yi3k&l)8tt3=94!#tgo&1io_#s1=tl^apan#w=$0
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 # Hosts permitidos
-ALLOWED_HOSTS = ['*', '10.19.35.56','portal.semedcanaadoscarajas.pa.gov.br', "54.207.94.5", "localhost"]
+ALLOWED_HOSTS = ["portal.semedcanaadoscarajas.pa.gov.br", "54.207.94.5", "localhost", "10.19.34.132"]
+
 
 # Application definition
 
