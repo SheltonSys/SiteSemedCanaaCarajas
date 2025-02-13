@@ -98,7 +98,7 @@ from reportlab.lib.pagesizes import letter
 from django.db import IntegrityError
 import logging
 from .models import CadastroEI, ConceitoLancado
-
+from django.contrib.auth import get_user_model
 
 logger = logging.getLogger(__name__)
 
@@ -133,6 +133,11 @@ from django.template.loader import get_template
 from django.forms import inlineformset_factory
 from .models import Formacao, Experiencia
 from .forms import CurriculoForm, FormacaoForm, ExperienciaForm
+
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 
 
@@ -231,39 +236,56 @@ def logout_view(request):
     return redirect('login')  # Replace 'login' with the name of your login URL
 # *********************************************************************************************************************
 
+from django.contrib.auth import get_user_model
+
 def controle_usuarios(request):
-    usuarios = User.objects.all()  # Obtém todos os usuários
-    return render(request, 'controle_usuarios.html', {'usuarios': usuarios})
+    User = get_user_model()  # Obtém o modelo correto (CustomUser)
+    usuarios = User.objects.all()  # Consulta todos os usuários
+    
+    context = {
+        'usuarios': usuarios,
+    }
+    return render(request, 'semedapp/controle_usuarios.html', context)
+
 # *********************************************************************************************************************
 
-def adicionar_usuario(request):
-    if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        is_active = request.POST.get('is_active') == 'True'
-        is_superuser = 'is_superuser' in request.POST
+from django.shortcuts import render, redirect
+from django.contrib.auth import get_user_model
+from django.contrib import messages
 
-        try:
-            # Criação do usuário
-            user = User.objects.create_user(
-                username=username,
-                email=email,
-                password=password,
-                first_name=first_name,
-                last_name=last_name,
-            )
-            user.is_active = is_active
-            user.is_superuser = is_superuser
-            user.is_staff = is_superuser
-            user.save()
+User = get_user_model()
 
-            return JsonResponse({'success': True, 'message': 'Usuário criado com sucesso!'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': f'Erro ao criar usuário: {e}'})
-    return JsonResponse({'success': False, 'message': 'Requisição inválida.'})
+# def adicionar_usuario(request):
+#     if request.method == "POST":
+#         first_name = request.POST.get("first_name")
+#         last_name = request.POST.get("last_name")
+#         email = request.POST.get("email")
+#         username = request.POST.get("username")
+#         password = request.POST.get("password")
+#         is_superuser = request.POST.get("is_superuser") == "True"
+#         is_staff = request.POST.get("is_staff") == "True"
+#         is_active = request.POST.get("is_active") == "True"
+
+#         try:
+#             user = User.objects.create_user(
+#                 first_name=first_name,
+#                 last_name=last_name,
+#                 email=email,
+#                 username=username,
+#                 password=password,
+#                 is_superuser=is_superuser,
+#                 is_staff=is_staff,
+#                 is_active=is_active,
+#             )
+#             messages.success(request, "Usuário cadastrado com sucesso!")
+#             return redirect("controle_usuarios")  # Substitua pelo nome correto da URL de listagem
+#         except Exception as e:
+#             messages.error(request, f"Erro ao cadastrar usuário: {e}")
+
+#     return render(request, "adicionar_usuario.html")
+
+
+
 # *********************************************************************************************************************
 
 def transporte_dashboard(request):
@@ -1404,14 +1426,33 @@ def gerenciar_usuarios(request):
 # *********************************************************************************************************************
 
 def adicionar_usuario(request):
-    if request.method == 'POST':
-        form = UsuarioForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('gerenciar_usuarios')
-    else:
-        form = UsuarioForm()
-    return render(request, 'adicionar_usuario.html', {'form': form})
+    if request.method == "POST":
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        email = request.POST.get("email")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        is_superuser = request.POST.get("is_superuser") == "True"
+        is_staff = request.POST.get("is_staff") == "True"
+        is_active = request.POST.get("is_active") == "True"
+
+        try:
+            user = User.objects.create_user(
+                first_name=first_name,
+                last_name=last_name,
+                email=email,
+                username=username,
+                password=password,
+                is_superuser=is_superuser,
+                is_staff=is_staff,
+                is_active=is_active,
+            )
+            messages.success(request, "Usuário cadastrado com sucesso!")
+            return redirect("controle_usuarios")  # Substitua pelo nome correto da URL de listagem
+        except Exception as e:
+            messages.error(request, f"Erro ao cadastrar usuário: {e}")
+
+    return render(request, "adicionar_usuario.html")
 # *********************************************************************************************************************
 
 def site_semed(request):
@@ -6291,3 +6332,90 @@ def orientadores_ocorrencias(request):
     return render(request, 'webapp/orientadores_ocorrencias.html', context)
 ###***********************************************************************************************************************
 
+# views.py
+from django.shortcuts import get_object_or_404, redirect, render
+from django.contrib.auth.models import User
+from django.contrib import messages
+
+def editar_usuario(request, user_id):
+    usuario = get_object_or_404(User, id=user_id)
+    
+    if request.method == 'POST':
+        usuario.first_name = request.POST.get('first_name')
+        usuario.last_name = request.POST.get('last_name')
+        usuario.email = request.POST.get('email')
+        usuario.save()
+        messages.success(request, 'Usuário atualizado com sucesso!')
+        return redirect('controle_usuarios')
+
+    context = {'usuario': usuario}
+    return render(request, 'semedapp/editar_usuario.html', context)
+
+
+# views.py
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.models import User
+from django.contrib import messages
+
+def excluir_usuario(request, user_id):
+    usuario = get_object_or_404(User, id=user_id)
+    usuario.delete()
+    messages.success(request, 'Usuário excluído com sucesso!')
+    return redirect('controle_usuarios')
+
+
+# views.py
+# from django.shortcuts import render, redirect
+# from .forms import ProfessorForm, CoordenadorForm
+
+from django.shortcuts import render, redirect
+from .models import ProfessorEI, CoordenadorEI  # Certifique-se de importar os modelos corretos
+
+def adicionar_professor(request):
+    if request.method == "POST":
+        unidade_ensino = request.POST.get('unidade_ensino')
+        ano = request.POST.get('ano')
+        modalidade = request.POST.get('modalidade')
+        formato_letivo = request.POST.get('formato_letivo')
+        turma = request.POST.get('turma')
+        nome_professor = request.POST.get('nome_professor')
+        cpf_professor = request.POST.get('cpf_professor')
+        email_professor = request.POST.get('email_professor')
+
+        ProfessorEI.objects.create(
+            unidade_ensino=unidade_ensino,
+            ano=ano,
+            modalidade=modalidade,
+            formato_letivo=formato_letivo,
+            turma=turma,
+            nome_professor=nome_professor,
+            cpf_professor=cpf_professor,
+            email_professor=email_professor
+        )
+        return redirect('controle_usuarios')
+
+    return render(request, 'semedapp/adicionar_professor.html')
+
+
+def adicionar_coordenador(request):
+    if request.method == "POST":
+        unidade_ensino = request.POST.get('unidade_ensino')
+        ano = request.POST.get('ano')
+        modalidade = request.POST.get('modalidade')
+        formato_letivo = request.POST.get('formato_letivo')
+        nome_coordenadora = request.POST.get('nome_Coordenadora')
+        cpf_professor = request.POST.get('cpf_professor')
+        email_coordenadora = request.POST.get('email_Coordenadora')
+
+        CoordenadorEI.objects.create(
+            unidade_ensino=unidade_ensino,
+            ano=ano,
+            modalidade=modalidade,
+            formato_letivo=formato_letivo,
+            nome_Coordenadora=nome_coordenadora,
+            cpf_professor=cpf_professor,
+            email_Coordenadora=email_coordenadora
+        )
+        return redirect('controle_usuarios')
+
+    return render(request, 'semedapp/adicionar_coordenador.html')

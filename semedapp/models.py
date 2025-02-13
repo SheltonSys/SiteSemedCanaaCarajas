@@ -931,26 +931,35 @@ class Student(models.Model):
         return self.nome_completo
 ############################################################################################################################
 
+from django.contrib.auth.models import BaseUserManager
+
 class UserManager(BaseUserManager):
-    def create_user(self, username, password=None, **extra_fields):
+    def create_user(self, username, email=None, password=None, **extra_fields):
         if not username:
-            raise ValueError('The Username field must be set')
-        user = self.model(username=username, **extra_fields)
-        user.set_password(password)
+            raise ValueError("O campo Nome de Usuário é obrigatório")
+        if not email:
+            raise ValueError("O campo E-mail é obrigatório")
+        
+        # Certificar-se de que o e-mail esteja em minúsculas
+        email = self.normalize_email(email)
+        extra_fields.setdefault("is_active", True)
+
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)  # Hash da senha
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+    def create_superuser(self, username, email=None, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        user = self.create_user(username, password, **extra_fields)
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser precisa ter is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser precisa ter is_superuser=True.")
 
-        # Importar Profile dentro do método para evitar importações cíclicas
-        # from diagnoses.models import Profile
-        # Profile.objects.create(user=user)
+        return self.create_user(username, email, password, **extra_fields)
 
-        return user
 ############################################################################################################################
 
 class UploadedFile(models.Model):
@@ -1824,6 +1833,8 @@ class UserModulePermission(models.Model):
 # ********************************************************************************************************************************
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.db import models
+from .managers import UserManager  # Certifique-se de importar o UserManager
 
 class User(AbstractUser):
     ROLE_CHOICES = [
@@ -1831,22 +1842,36 @@ class User(AbstractUser):
         ("Gestor", "Gestor"),
         ("Técnico", "Técnico"),
     ]
+    
     role = models.CharField(
         max_length=15,
         choices=ROLE_CHOICES,
         default="Técnico",
-        verbose_name="Função do Usuário",
+        verbose_name="Função do Usuário"
     )
     groups = models.ManyToManyField(
         Group,
         related_name="custom_user_set",
         blank=True,
+        verbose_name="Grupos"
     )
     user_permissions = models.ManyToManyField(
         Permission,
         related_name="custom_user_set",
         blank=True,
+        verbose_name="Permissões"
     )
+
+    # Adicionando o UserManager personalizado
+    objects = UserManager()
+
+    class Meta:
+        verbose_name = "Usuário"
+        verbose_name_plural = "Usuários"
+
+    def __str__(self):
+        return f"{self.username} ({self.role})"
+
 # ********************************************************************************************************************************
 
 from django.db import models
@@ -2176,3 +2201,43 @@ class Indicador(models.Model):
     meta = models.IntegerField()
     resultado = models.IntegerField()
 # ********************************************************************************************************************************
+
+# models.py
+
+class ProfessorEI(models.Model):
+    unidade_ensino = models.CharField(max_length=255)
+    ano = models.IntegerField()
+    modalidade = models.CharField(max_length=255)
+    formato_letivo = models.CharField(max_length=255)
+    turma = models.CharField(max_length=255)
+    nome_professor = models.CharField(max_length=255)
+    cpf_professor = models.CharField(max_length=14)
+    email_professor = models.EmailField()
+
+    def __str__(self):
+        return self.nome_professor
+
+class Coordenador(models.Model):
+    unidade_ensino = models.CharField(max_length=255)
+    ano = models.IntegerField()
+    modalidade = models.CharField(max_length=255)
+    formato_letivo = models.CharField(max_length=255)
+    nome_Coordenadora = models.CharField(max_length=255)
+    cpf_professor = models.CharField(max_length=14)
+    email_Coordenadora = models.EmailField()
+
+    def __str__(self):
+        return self.nome_Coordenadora
+    
+
+class CoordenadorEI(models.Model):
+    unidade_ensino = models.CharField(max_length=255)
+    ano = models.CharField(max_length=20)
+    modalidade = models.CharField(max_length=100)
+    formato_letivo = models.CharField(max_length=100)
+    nome_Coordenadora = models.CharField(max_length=255)
+    cpf_professor = models.CharField(max_length=14)
+    email_Coordenadora = models.EmailField()
+
+    def __str__(self):
+        return self.nome_Coordenadora

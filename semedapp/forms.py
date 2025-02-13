@@ -98,10 +98,46 @@ class EventoForm(forms.ModelForm):
         fields = ['titulo', 'data', 'local', 'descricao']
 # *******************************************************************************************************************
 
+from django import forms
+from .models import Usuario  # Certifique-se de que o modelo esteja correto
+
 class UsuarioForm(forms.ModelForm):
+    confirm_password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control shadow-sm p-3',
+            'placeholder': 'Confirme a senha'
+        }),
+        label="Confirmar Senha"
+    )
+
     class Meta:
         model = Usuario
         fields = ['nome', 'email', 'senha']
+        widgets = {
+            'nome': forms.TextInput(attrs={
+                'class': 'form-control shadow-sm p-3',
+                'placeholder': 'Digite o nome'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control shadow-sm p-3',
+                'placeholder': 'Digite o e-mail'
+            }),
+            'senha': forms.PasswordInput(attrs={
+                'class': 'form-control shadow-sm p-3',
+                'placeholder': 'Digite a senha'
+            }),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        senha = cleaned_data.get('senha')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if senha and confirm_password and senha != confirm_password:
+            self.add_error('confirm_password', "As senhas não coincidem.")
+        
+        return cleaned_data
+
 # *******************************************************************************************************************
 
 class PortuguesProfessoresForm(forms.ModelForm):
@@ -405,3 +441,39 @@ class ConceitoForm(forms.Form):
         label="Conceitos de Linguagem", 
         required=True
     )
+
+
+
+# forms.py
+from django import forms
+from .models import Professor, Coordenador,ProfessorEI
+
+class ProfessorEIForm(forms.ModelForm):
+    class Meta:
+        model = ProfessorEI
+        fields = ['unidade_ensino', 'ano', 'modalidade', 'formato_letivo', 'turma', 'nome_professor', 'cpf_professor', 'email_professor']
+        widgets = {
+            'unidade_ensino': forms.TextInput(attrs={'class': 'form-control'}),
+            'ano': forms.TextInput(attrs={'class': 'form-control'}),
+            'modalidade': forms.TextInput(attrs={'class': 'form-control'}),
+            'formato_letivo': forms.TextInput(attrs={'class': 'form-control'}),
+            'turma': forms.TextInput(attrs={'class': 'form-control'}),
+            'nome_professor': forms.TextInput(attrs={'class': 'form-control'}),
+            'cpf_professor': forms.TextInput(attrs={'class': 'form-control'}),
+            'email_professor': forms.EmailInput(attrs={'class': 'form-control'}),
+        }
+
+
+class CoordenadorForm(forms.ModelForm):
+    class Meta:
+        model = Coordenador
+        fields = ['unidade_ensino', 'ano', 'modalidade', 'formato_letivo', 'nome_Coordenadora', 'cpf_professor', 'email_Coordenadora']
+        widgets = {
+            'unidade_ensino': forms.TextInput(attrs={'class': 'form-control'}),
+            'ano': forms.TextInput(attrs={'class': 'form-control'}),
+            'modalidade': forms.TextInput(attrs={'class': 'form-control'}),
+            'formato_letivo': forms.TextInput(attrs={'class': 'form-control'}),
+            'nome_Coordenadora': forms.TextInput(attrs={'class': 'form-control'}),
+            'cpf_professor': forms.TextInput(attrs={'class': 'form-control'}),
+            'email_Coordenadora': forms.EmailInput(attrs={'class': 'form-control'}),
+        }

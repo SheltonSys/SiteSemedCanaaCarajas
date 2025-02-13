@@ -1,11 +1,234 @@
 {% extends "base.html" %}
+{% load widget_tweaks %}
+
 {% block content %}
 <div class="container mt-5">
-    <h1>Adicionar Novo Usuário</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Salvar</button>
-    </form>
+    <div class="row g-5">
+        <!-- Módulo de Cadastro de Professor -->
+        <div class="col-md-4">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i> Cadastro de Professor</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="post" action="{% url 'adicionar_professor' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_unidade_ensino" class="form-label fw-bold">Unidade de Ensino</label>
+                            <input type="text" name="unidade_ensino" class="form-control shadow-sm" id="id_unidade_ensino" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_ano" class="form-label fw-bold">Ano</label>
+                            <input type="text" name="ano" class="form-control shadow-sm" id="id_ano" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_modalidade" class="form-label fw-bold">Modalidade</label>
+                            <input type="text" name="modalidade" class="form-control shadow-sm" id="id_modalidade" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_formato_letivo" class="form-label fw-bold">Formato Letivo</label>
+                            <input type="text" name="formato_letivo" class="form-control shadow-sm" id="id_formato_letivo" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_turma" class="form-label fw-bold">Turma</label>
+                            <input type="text" name="turma" class="form-control shadow-sm" id="id_turma" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_nome_professor" class="form-label fw-bold">Nome do Professor</label>
+                            <input type="text" name="nome_professor" class="form-control shadow-sm" id="id_nome_professor" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_cpf_professor" class="form-label fw-bold">CPF</label>
+                            <input type="text" name="cpf_professor" class="form-control shadow-sm" id="id_cpf_professor" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_email_professor" class="form-label fw-bold">E-mail</label>
+                            <input type="email" name="email_professor" class="form-control shadow-sm" id="id_email_professor" required>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-success shadow-sm">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+
+        <!-- Módulo de Cadastro de Coordenador -->
+        <div class="col-md-4">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-tie me-2"></i> Cadastro de Coordenador</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="coordenador_submit" value="1">
+                        
+                        <div class="mb-3">
+                            <label for="id_unidade_ensino" class="form-label fw-bold">Unidade de Ensino</label>
+                            <input type="text" name="unidade_ensino" class="form-control shadow-sm" id="id_unidade_ensino" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_ano" class="form-label fw-bold">Ano</label>
+                            <input type="text" name="ano" class="form-control shadow-sm" id="id_ano" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_modalidade" class="form-label fw-bold">Modalidade</label>
+                            <input type="text" name="modalidade" class="form-control shadow-sm" id="id_modalidade" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_formato_letivo" class="form-label fw-bold">Formato Letivo</label>
+                            <input type="text" name="formato_letivo" class="form-control shadow-sm" id="id_formato_letivo" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_nome_Coordenadora" class="form-label fw-bold">Nome da Coordenadora</label>
+                            <input type="text" name="nome_Coordenadora" class="form-control shadow-sm" id="id_nome_Coordenadora" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_cpf_professor" class="form-label fw-bold">CPF</label>
+                            <input type="text" name="cpf_professor" class="form-control shadow-sm" id="id_cpf_professor" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_email_Coordenadora" class="form-label fw-bold">E-mail</label>
+                            <input type="email" name="email_Coordenadora" class="form-control shadow-sm" id="id_email_Coordenadora" required>
+                        </div>
+                        
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-info shadow-sm">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Modal de Confirmação de Cadastro -->
+        <div class="modal fade" id="confirmAddModal" tabindex="-1" aria-labelledby="confirmAddLabel" aria-hidden="true">
+            <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="confirmAddLabel">Confirmar Cadastro</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                </div>
+                <div class="modal-body">
+                Deseja realmente cadastrar este usuário?
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="confirmAddButton">Confirmar</button>
+                </div>
+            </div>
+            </div>
+        </div>
+  
+        
+
+        <!-- Módulo de Cadastro de Usuário -->
+        <div class="col-md-4">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-plus me-2"></i> Cadastro de Usuário</h5>
+                </div>
+                <div class="card-body bg-light">
+                    <form method="post" action="{% url 'adicionar_usuario' %}" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_first_name" class="form-label fw-bold">Primeiro Nome</label>
+                            <input type="text" name="first_name" class="form-control shadow-sm" id="id_first_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_last_name" class="form-label fw-bold">Último Nome</label>
+                            <input type="text" name="last_name" class="form-control shadow-sm" id="id_last_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label fw-bold">E-mail</label>
+                            <input type="email" name="email" class="form-control shadow-sm" id="id_email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label fw-bold">Nome de Usuário</label>
+                            <input type="text" name="username" class="form-control shadow-sm" id="id_username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label fw-bold">Senha</label>
+                            <input type="password" name="password" class="form-control shadow-sm" id="id_password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_is_superuser" class="form-label fw-bold">É Superusuário?</label>
+                            <select name="is_superuser" class="form-control shadow-sm" id="id_is_superuser">
+                                <option value="True">Sim</option>
+                                <option value="False" selected>Não</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_is_staff" class="form-label fw-bold">É Funcionário?</label>
+                            <select name="is_staff" class="form-control shadow-sm" id="id_is_staff">
+                                <option value="True">Sim</option>
+                                <option value="False" selected>Não</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_is_active" class="form-label fw-bold">Está Ativo?</label>
+                            <select name="is_active" class="form-control shadow-sm" id="id_is_active">
+                                <option value="True" selected>Sim</option>
+                                <option value="False">Não</option>
+                            </select>
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary shadow-sm">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        
+
+
+    </div>
 </div>
 {% endblock %}
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const form = document.querySelector('form[action="{% url "adicionar_usuario" %}"]');
+      const confirmAddButton = document.getElementById('confirmAddButton');
+  
+      form.addEventListener('submit', function (event) {
+        event.preventDefault(); // Previne o envio padrão do formulário
+        const confirmAddModal = new bootstrap.Modal(document.getElementById('confirmAddModal'));
+        confirmAddModal.show();
+  
+        confirmAddButton.addEventListener('click', function () {
+          confirmAddModal.hide();
+          form.submit();  // Envia o formulário após a confirmação
+        });
+      });
+    });
+  </script>
+  
+

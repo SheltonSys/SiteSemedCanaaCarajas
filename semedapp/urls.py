@@ -613,6 +613,11 @@ urlpatterns = [
     path('ocorrencias/orientadores/', ocorrencias_orientadores, name='ocorrencias_orientadores'),
     path('orientadores/ocorrencias/', views.orientadores_ocorrencias, name='orientadores_ocorrencias'),
 
+    path('controle-usuarios/editar/<int:user_id>/', views.editar_usuario, name='editar_usuario'),
+    path('controle-usuarios/excluir/<int:user_id>/', views.excluir_usuario, name='excluir_usuario'),
+    path('professores/adicionar/', views.adicionar_professor, name='adicionar_professor'),
+    path('coordenadores/adicionar/', views.adicionar_coordenador, name='adicionar_coordenador'),
+
 ]
 
 if settings.DEBUG:
