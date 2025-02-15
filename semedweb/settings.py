@@ -16,7 +16,7 @@ SECRET_KEY = 'django-insecure-zrvbu@igm3yi3k&l)8tt3=94!#tgo&1io_#s1=tl^apan#w=$0
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 # Hosts permitidos
-ALLOWED_HOSTS = ["portal.semedcanaadoscarajas.pa.gov.br", "54.207.94.5", "localhost", "10.19.34.132"]
+ALLOWED_HOSTS = ["*","portal.semedcanaadoscarajas.pa.gov.br", "54.207.94.5", "127.0.0.1", "10.19.34.132"]
 
 
 # Application definition
@@ -159,6 +159,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000  # Aumente o valor conforme necessário
 
 
+#AUTH_USER_MODEL = 'semedapp.CustomUserProf'
 
 
 

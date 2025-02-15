@@ -3383,18 +3383,22 @@ def listar_curriculos(request):
     return render(request, 'curriculos.html', {'curriculos': curriculos})
 ###***********************************************************************************************************************
 
+from django.http import HttpResponse
+from .models import Diretor
+from weasyprint import HTML
+from django.template.loader import render_to_string
+
 def imprimir_curriculo(request, id):
-    curriculo = Curriculo.objects.get(pk=id)
-    template = get_template('banco_curriculos/curriculo_pdf.html')
-    html = template.render({'curriculo': curriculo})
+    try:
+        diretor = Diretor.objects.get(id=id)
+        html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
+        pdf = HTML(string=html_string).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+        return response
+    except Diretor.DoesNotExist:
+        return HttpResponse("Currículo não encontrado", status=404)
 
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="curriculo_{curriculo.id}.pdf"'
-
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('Erro ao gerar o PDF', status=500)
-    return response
 ###***********************************************************************************************************************
 
 
@@ -3856,6 +3860,9 @@ def cadastrar_diretor(request):
         cidade = request.POST.get('cidade')
         cep = request.POST.get('cep')
         estado_civil = request.POST.get('estado_civil')
+        # Ajusta o estado civil para capitalização correta
+        if estado_civil:
+            estado_civil = estado_civil.capitalize()
         sexo = request.POST.get('sexo')
         data_nascimento = request.POST.get('data_nascimento') or None
         formacao_academica = request.POST.get('formacao_academica')
@@ -3960,22 +3967,20 @@ class DiretorDeleteView(DeleteView):
     template_name = 'semedapp/confirmar_exclusao.html'
 ###***********************************************************************************************************************
 
-def imprimir_curriculo(request, diretor_id):
-    # Obtém o diretor pelo ID
-    try:
-        diretor = Diretor.objects.get(id=diretor_id)
-    except Diretor.DoesNotExist:
-        return HttpResponse("Diretor não encontrado", status=404)
+# def imprimir_curriculo(request, diretor_id):
+#     try:
+#         diretor = Diretor.objects.get(id=diretor_id)
+#     except Diretor.DoesNotExist:
+#         return HttpResponse("Diretor não encontrado", status=404)
 
-    # Renderiza o template em HTML
-    html_string = render_to_string('diretor_curriculo_pdf.html', {'diretor': diretor})
+#     html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
 
-    # Configura o WeasyPrint para gerar o PDF
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+#     pdf = HTML(string=html_string).write_pdf()
 
-    HTML(string=html_string).write_pdf(response)
-    return response
+#     response = HttpResponse(pdf, content_type='application/pdf')
+#     response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+#     return response
+
 ###***********************************************************************************************************************
 
 import qrcode
@@ -4409,6 +4414,10 @@ def cadastrar_candidato(request):
     return render(request, "banco_curriculos/registrar.html")
 ###***********************************************************************************************************************
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import CadastroCandidato
+
 def area_candidato(request):
     candidato_id = request.session.get('candidato_id')
 
@@ -4417,10 +4426,15 @@ def area_candidato(request):
         messages.error(request, "Você precisa estar logado para acessar esta página.")
         return redirect("login_candidato")
 
-    # Busca os dados do candidato
-    candidato = CadastroCandidato.objects.get(id=candidato_id)
+    try:
+        # Busca o candidato ou retorna 404 se não encontrar
+        candidato = get_object_or_404(CadastroCandidato, id=candidato_id)
+    except CadastroCandidato.DoesNotExist:
+        messages.error(request, "Candidato não encontrado.")
+        return redirect("login_candidato")
 
     return render(request, "banco_curriculos/area_candidato.html", {"candidato": candidato})
+
 ###***********************************************************************************************************************
 
 @login_required
@@ -4494,32 +4508,31 @@ def verificar_cpf(request):
     return JsonResponse({'success': False, 'message': 'CPF não encontrado no sistema!'})
 ###***********************************************************************************************************************
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from weasyprint import HTML
-from .models import Diretor
+## aque a impressão de currículo para a ára addministrativa
 
-def imprimir_curriculo(request, cpf):
-    try:
-        # Buscar o diretor pelo CPF
-        diretor = Diretor.objects.get(cpf=cpf)
-        
-        # Gerar o HTML do currículo
-        html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
-        
-        # Gerar o PDF
-        pdf = HTML(string=html_string).write_pdf()
-        
-        # Retornar o PDF como resposta
-        response = HttpResponse(pdf, content_type='application/pdf')
-        response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
-        return response
+# def imprimir_curriculo(request, cpf):
+#     try:
 
-    except Diretor.DoesNotExist:
-        # Retornar um alerta caso o CPF não seja encontrado
-        return render(request, 'semedapp/imprimir_curriculo.html', {
-            'alerta': f'Currículo não encontrado para o CPF: {cpf}.'
-        })
+#         diretor = Diretor.objects.get(cpf=cpf)
+        
+
+#         html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
+        
+
+#         pdf = HTML(string=html_string).write_pdf()
+        
+
+#         response = HttpResponse(pdf, content_type='application/pdf')
+#         response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+#         return response
+
+#     except Diretor.DoesNotExist:
+
+#         return render(request, 'semedapp/imprimir_curriculo.html', {
+#             'alerta': f'Currículo não encontrado para o CPF: {cpf}.'
+#         })
+
+
 ###***********************************************************************************************************************   
 
 from django import forms
@@ -6419,3 +6432,117 @@ def adicionar_coordenador(request):
         return redirect('controle_usuarios')
 
     return render(request, 'semedapp/adicionar_coordenador.html')
+
+
+def imprimir_curriculo_por_cpf(request, cpf):
+    try:
+        diretor = Diretor.objects.get(cpf=cpf)
+        html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
+        pdf = HTML(string=html_string).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+        return response
+    except Diretor.DoesNotExist:
+        return HttpResponse("Currículo não encontrado", status=404)
+
+
+def imprimir_curriculo_por_diretor(request, diretor_id):
+    try:
+        diretor = Diretor.objects.get(id=diretor_id)
+        html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
+        pdf = HTML(string=html_string).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+        return response
+    except Diretor.DoesNotExist:
+        return HttpResponse("Currículo não encontrado", status=404)
+
+
+def imprimir_curriculo_por_candidato(request, candidato_id):
+    try:
+        candidato = CadastroCandidato.objects.get(id=candidato_id)
+        html_string = render_to_string('banco_curriculos/curriculo_pdf.html', {'candidato': candidato})
+        pdf = HTML(string=html_string).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="curriculo_{candidato.nome_completo}.pdf"'
+        return response
+    except CadastroCandidato.DoesNotExist:
+        return HttpResponse("Currículo não encontrado para o candidato.", status=404)
+
+
+def imprimir_curriculo_diretor(request, diretor_id):
+    try:
+        diretor = Diretor.objects.get(id=diretor_id)
+        html_string = render_to_string('semedapp/imprimir_curriculo.html', {'diretor': diretor})
+        pdf = HTML(string=html_string).write_pdf()
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="curriculo_{diretor.nome_completo}.pdf"'
+        return response
+    except Diretor.DoesNotExist:
+        return HttpResponse("Currículo não encontrado", status=404)
+
+
+
+from django.contrib.auth import authenticate, login, logout
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .models import CustomUserProf
+from .forms import CustomUserProfCreationForm
+
+def registrar_professor(request):
+    if request.method == "POST":
+        form = CustomUserProfCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cadastro realizado com sucesso!")
+            return redirect("login_prof")
+    else:
+        form = CustomUserProfCreationForm()
+    return render(request, "semedapp/registrar_professor.html", {"form": form})
+
+def login_prof(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            if user.is_professor:
+                login(request, user)
+                return redirect('modulo_pedagogico')  # Redireciona para o Módulo Pedagógico
+            else:
+                messages.error(request, "Você não tem permissão para acessar esta área.")
+        else:
+            messages.error(request, "Nome de usuário ou senha incorretos.")
+    
+    return render(request, 'semedapp/login_prof.html')
+
+
+@login_required
+def modulo_pedagogico(request):
+    if not request.user.is_professor:
+        messages.error(request, "Você não tem permissão para acessar esta área.")
+        return redirect('login_prof')
+    
+    return render(request, 'semedapp/modulo_pedagogico.html')
+
+
+
+def logout_prof(request):
+    logout(request)
+    messages.success(request, "Você saiu com sucesso.")
+    return redirect('login_prof')
+
+
+
+
+# from django.contrib.auth.decorators import login_required
+# from django.http import HttpResponseForbidden
+
+# @login_required
+# def pagina_professor(request):
+#     if not request.user.is_authenticated:
+#         return HttpResponseForbidden("Acesso negado.")
+#     return render(request, 'semedapp/pagina_professor.html')

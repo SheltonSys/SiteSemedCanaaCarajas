@@ -477,3 +477,29 @@ class CoordenadorForm(forms.ModelForm):
             'cpf_professor': forms.TextInput(attrs={'class': 'form-control'}),
             'email_Coordenadora': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+
+from django import forms
+from django.contrib.auth.forms import AuthenticationForm
+
+class ProfessorLoginForm(AuthenticationForm):
+    username = forms.CharField(label='Nome de Usuário', max_length=150)
+    password = forms.CharField(widget=forms.PasswordInput, label='Senha')
+
+
+from django import forms
+from .models import CustomUserProf
+
+class CustomUserProfCreationForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    class Meta:
+        model = CustomUserProf
+        fields = ['username', 'email', 'matricula', 'telefone', 'especializacao', 'password']
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user

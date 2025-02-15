@@ -58,6 +58,8 @@ from .views import buscar_turmas
 from .views import ocorrencias_synaptic, ocorrencias_synaptic_pdf
 from .views import ocorrencias_autokee
 from .views import ocorrencias_orientadores
+from .views import login_prof, logout_prof
+from .views import login_prof, modulo_pedagogico
 
 # app_name = 'contabilidade'
 # app_name = 'banco_curriculos'
@@ -492,7 +494,7 @@ urlpatterns = [
 
     path('verificar-cpf/', views.verificar_cpf, name='verificar_cpf'),
    
-    path('imprimir-curriculo/<str:cpf>/', views.imprimir_curriculo, name='imprimir_curriculo'),
+    path('imprimir-curriculo-cpf/<str:cpf>/', views.imprimir_curriculo_por_cpf, name='imprimir_curriculo_cpf'),
 
    #path('banco-curriculos/editar-perfil/', views.editar_perfil, name='editar_perfil'),
 
@@ -617,6 +619,34 @@ urlpatterns = [
     path('controle-usuarios/excluir/<int:user_id>/', views.excluir_usuario, name='excluir_usuario'),
     path('professores/adicionar/', views.adicionar_professor, name='adicionar_professor'),
     path('coordenadores/adicionar/', views.adicionar_coordenador, name='adicionar_coordenador'),
+
+    path('imprimir-curriculo-candidato/<int:candidato_id>/', views.imprimir_curriculo_por_candidato, name='imprimir_curriculo_candidato'),
+
+
+    path('imprimir-curriculo-diretor/<int:diretor_id>/', views.imprimir_curriculo_por_diretor, name='imprimir_curriculo_diretor'),
+
+    path('curriculos/<int:id>/imprimir/', views.imprimir_curriculo_por_diretor, name='imprimir_curriculo'),
+
+    #path('curriculos/<str:cpf>/imprimir/', views.imprimir_curriculo_por_cpf, name='imprimir_curriculo'),
+
+    path('banco-curriculos/imprimir-curriculo-diretor/<int:diretor_id>/', views.imprimir_curriculo_diretor, name='imprimir_curriculo_diretor'),
+
+    path('login-prof/', views.login_prof, name='login_prof'),
+
+    path('login-prof/', login_prof, name='login_prof'),
+
+    path('logout-prof/', logout_prof, name='logout_prof'),
+
+    path('modulo-pedagogico/', modulo_pedagogico, name='modulo_pedagogico'),
+
+    path('registrar-professor/', views.registrar_professor, name='registrar_professor'),
+
+    path('login-professor/', views.login_prof, name='login_prof'),
+
+    path('logout-professor/', views.logout_prof, name='logout_prof'),
+
+
+    
 
 ]
 

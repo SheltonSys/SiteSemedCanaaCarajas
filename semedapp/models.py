@@ -471,7 +471,8 @@ class Disciplina(models.Model):
 #**********************************************************************************************************
 
 class Inscricao(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='inscricoes_usuario')
+    #usuario = models.ForeignKey(User, on_delete=models.CASCADE, related_name='inscricoes_usuario')
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     candidato = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name="inscricao")
     data_inscricao = models.DateTimeField(auto_now_add=True)
     responsavel_legal = models.CharField(max_length=255, null=True, blank=True)
@@ -591,7 +592,9 @@ class Inscricao(models.Model):
 #**********************************************************************************************************
 
 class Candidato(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidato')
+    # user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidato')
+    #user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nome_completo = models.CharField(max_length=255)
     nome = models.CharField(max_length=255)
     email = models.EmailField()
@@ -1663,7 +1666,7 @@ class Diretor(models.Model):
     formacao_academica = models.CharField(max_length=100, blank=True, null=True)
     curso = models.CharField(max_length=255, blank=True, null=True)
     instituicao = models.CharField(max_length=255, blank=True, null=True)
-    ano_conclusao = models.CharField(max_length=4, blank=True, null=True)
+    ano_conclusao = models.DateField(null=True, blank=True)
     foto = models.ImageField(upload_to='fotos_diretores/', blank=True, null=True)
     curriculo_pdf = models.FileField(upload_to='diretores_curriculos/', blank=True, null=True)
     certificados_pdf = models.FileField(upload_to='diretores_certificados/', blank=True, null=True)
@@ -1671,7 +1674,7 @@ class Diretor(models.Model):
     estado_civil = models.CharField(max_length=50, choices=ESTADO_CIVIL_CHOICES)
     sexo = models.CharField(max_length=50, choices=SEXO_CHOICES)
 
-    data_cadastro = models.DateTimeField()
+    data_cadastro = models.DateTimeField(default=now)
     empresa = models.CharField(max_length=255, blank=True, null=True)
     cargo = models.CharField(max_length=255, blank=True, null=True)
     data_inicio = models.DateField(blank=True, null=True)
@@ -1792,7 +1795,8 @@ class CadastroCandidato(models.Model):
 from django.db import models
 
 class CandidatoCurriculo(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='candidatos_curriculos')
+    #user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='candidatos_curriculos')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nome_completo = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     cpf = models.CharField(max_length=14, unique=True)
@@ -1806,7 +1810,8 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class CandidatoAutenticado(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil_candidato")
+    #user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil_candidato")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     cpf = models.CharField(max_length=14, unique=True)  # CPF único para o candidato
 
     def __str__(self):
@@ -1825,7 +1830,8 @@ class ModulePermission(models.Model):
 # ********************************************************************************************************************************
     
 class UserModulePermission(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='module_permissions')
+    #user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='module_permissions')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     module = models.ForeignKey(ModulePermission, on_delete=models.CASCADE, related_name='user_permissions')
 
     def __str__(self):
@@ -2241,3 +2247,61 @@ class CoordenadorEI(models.Model):
 
     def __str__(self):
         return self.nome_Coordenadora
+
+
+
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
+from django.db import models
+
+class CustomUserProfManager(BaseUserManager):
+    def create_user(self, username, cpf, password=None, **extra_fields):
+        if not username:
+            raise ValueError("O nome de usuário é obrigatório.")
+        if not cpf:
+            raise ValueError("O CPF é obrigatório.")
+        extra_fields.setdefault('is_active', True)
+        user = self.model(username=username, cpf=cpf, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, cpf, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(username, cpf, password, **extra_fields)
+
+class CustomUserProf(AbstractBaseUser, PermissionsMixin):
+    matricula = models.CharField(max_length=15, unique=True, verbose_name="Matrícula")
+    telefone = models.CharField(max_length=15, blank=True, null=True)
+    especializacao = models.CharField(max_length=100, blank=True, null=True)
+    is_professor = models.BooleanField(default=True)  # Flag para professores
+    username = models.CharField(max_length=150, unique=True)
+    cpf = models.CharField(max_length=11, unique=True)
+    email = models.EmailField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    
+    groups = models.ManyToManyField(
+        Group,
+        related_name='customuserprof_set',  # Adicionando related_name personalizado
+        blank=True,
+        help_text="Os grupos aos quais este usuário pertence.",
+        verbose_name="grupos"
+    )
+    
+    user_permissions = models.ManyToManyField(
+        Permission,
+        related_name='customuserprof_permissions',  # Adicionando related_name personalizado
+        blank=True,
+        help_text="Permissões específicas para este usuário.",
+        verbose_name="permissões de usuário"
+    )
+
+    objects = CustomUserProfManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['cpf']
+
+    def __str__(self):
+        return f"{self.username} ({self.matricula})"
