@@ -1,5 +1,7 @@
 {% load static %}
 
+
+
 <aside class="main-sidebar sidebar-light-primary elevation-4">
 
     <!-- Logo -->
@@ -182,291 +184,131 @@
                     </ul>
                 </li>
 
-                <!-- Pedagógico -->
+                {% if user.is_authenticated %}
+    {% if user.is_superuser %}
+        <!-- Menu para Administrador -->
+        <li class="nav-item">
+            <a href="{% url 'admin:index' %}" class="nav-link">
+                <i class="nav-icon fas fa-user-cog"></i>
+                <p>Administração</p>
+            </a>
+        </li>
+    {% elif user.is_professor %}
+        <!-- Menu Pedagógico para Professores -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'pedagogico-submenu')" data-id="pedagogico">
+                <i class="nav-icon fas fa-book-open"></i>
+                <p>
+                    Pedagógico
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview submenu" id="pedagogico-submenu" style="display: none;">
+                
+                <!-- Setor Pedagógico -->
                 <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'pedagogico-submenu')"
-                        data-id="pedagogico">
-                        <i class="nav-icon fas fa-book-open"></i>
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'setor-pedagogico-submenu')" data-id="spedagogico">
+                        <i class="fas fa-clipboard nav-icon"></i>
                         <p>
-                            Pedagógico
+                            Setor Pedagógico
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
-                    <ul class="nav nav-treeview submenu" id="pedagogico-submenu" style="display: none;">
-                        <!-- Setor Pedagógico -->
+                    <ul class="nav nav-treeview submenu" id="setor-pedagogico-submenu" style="display: none;">
                         <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'setor-pedagogico-submenu')"
-                                data-id="spedagogico">
-                                <i class="fas fa-clipboard nav-icon"></i>
-                                <p>
-                                    Setor Pedagógico
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview submenu" id="setor-pedagogico-submenu" style="display: none;">
-
-                                <li class="nav-item">
-                                    <a href="{% url 'site_pedagogico' %}" class="nav-link"
-                                        data-id="site_setor_pedagogico" target="_blank">
-                                        <i class="fas fa-chalkboard-teacher nav-icon"></i>
-                                        <p>Site Pedagógico</p>
-                                    </a>
-                                </li>
-
-
-                                <li class="nav-item">
-                                    <a href="{% url 'adm_site_pedagogico' %}" class="nav-link" data-id="adm-pedagogico">
-                                        <i class="fas fa-user-cog nav-icon"></i>
-                                        <p>ADM Site</p>
-                                    </a>
-                                </li>
-
-
-
-
-                                <li class="nav-item">
-                                    <a href="{% url 'gestao_habilidades' %}" class="nav-link" data-id="ghabilidade">
-                                        <i class="fas fa-book nav-icon"></i>
-                                        <p>Gestão de Habilidades</p>
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a href="{% url 'indicadores_setor_pedagogico' %}" class="nav-link"
-                                        data-id="pindicadores">
-                                        <i class="fas fa-chart-line nav-icon"></i>
-                                        <p>Indicadores</p>
-                                    </a>
-                                </li>
-
-
-                                <li class="nav-item">
-                                    <a href="{% url 'relatorios_pedagogicos' %}" class="nav-link" data-id="rpedagogico">
-                                        <i class="fas fa-file-alt nav-icon"></i>
-                                        <p>Relatórios</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-                        <!-- Fim do Pedagógico -->
-
-
-                        <!-- Diagnosis -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'diagnosis-submenu')"
-                                data-id="pdiagnosis">
-                                <i class="fas fa-clipboard nav-icon"></i>
-                                <p>
-                                    Diagnosis
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview submenu" id="diagnosis-submenu" style="display: none;">
-
-                                <!-- SAMACC -->
-                                <li class="nav-item">
-                                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'samacc-submenu')"
-                                        data-id="samacc">
-                                        <i class="fas fa-clipboard-list nav-icon"></i>
-                                        <p>
-                                            SAMACC
-                                            <span class="right">
-                                                <i class="fas fa-angle-left"></i>
-                                            </span>
-                                        </p>
-                                    </a>
-
-                                    <ul class="nav nav-treeview submenu" id="samacc-submenu" style="display: none;">
-
-                                        <!-- Prof -->
-                                        <li class="nav-item">
-                                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'prof-submenu')"
-                                                data-id="sprof">
-                                                <i class="fas fa-user-graduate nav-icon"></i>
-                                                <p>
-                                                    Prof
-                                                    <span class="right">
-                                                        <i class="fas fa-angle-left"></i>
-                                                    </span>
-                                                </p>
-                                            </a>
-
-                                            <ul class="nav nav-treeview submenu" id="prof-submenu"
-                                                style="display: none;">
-                                                <li class="nav-item">
-                                                    <a href="{% url 'diagnosis_prof_portugues' %}" class="nav-link"
-                                                        data-id="pportugues">
-                                                        <i class="fas fa-book nav-icon"></i>
-                                                        <p>Português</p>
-                                                    </a>
-                                                </li>
-                                                <li class="nav-item">
-                                                    <a href="{% url 'diagnosis_prof_portugues_finais' %}"
-                                                        class="nav-link" data-id="ppportugues">
-                                                        <i class="fas fa-book nav-icon"></i>
-                                                        <p>Português Finais</p>
-                                                    </a>
-                                                </li>
-
-
-
-                                                <li class="nav-item">
-                                                    <a href="{% url 'diagnosis_prof_matematica' %}" class="nav-link"
-                                                        data-id="pmatematica">
-                                                        <i class="fas fa-calculator nav-icon"></i>
-                                                        <p>Matemática</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-                                        <!-- Aluno -->
-                                        <li class="nav-item">
-                                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'aluno-submenu')"
-                                                data-id="aluno">
-                                                <i class="fas fa-user nav-icon"></i>
-                                                <p>
-                                                    Aluno
-                                                    <i class="right fas fa-angle-left"></i>
-                                                </p>
-                                            </a>
-                                            <ul class="nav nav-treeview submenu" id="aluno-submenu"
-                                                style="display: none;">
-                                                <li class="nav-item">
-                                                    <a href="{% url 'diagnosis_aluno_portugues' %}" class="nav-link"
-                                                        data-id="aportugues">
-                                                        <i class="fas fa-book nav-icon"></i>
-                                                        <p>Português</p>
-                                                    </a>
-                                                </li>
-                                                <li class="nav-item">
-                                                    <a href="{% url 'diagnosis_aluno_matematica' %}" class="nav-link"
-                                                        data-id="amatematica">
-                                                        <i class="fas fa-calculator nav-icon"></i>
-                                                        <p>Matemática</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-
-                                            <!-- Habilidades -->
-                                        <li class="nav-item has-treeview">
-                                            <a href="#" class="nav-link"
-                                                onclick="toggleSubmenu(event, 'habilidades-menu')">
-                                                <i class="nav-icon fas fa-brain"></i>
-                                                <p>
-                                                    Habilidades
-                                                    <i class="right fas fa-angle-left"></i>
-                                                </p>
-                                            </a>
-                                            <ul class="nav nav-treeview submenu" id="habilidades-menu"
-                                                style="display: none;">
-                                                <li class="nav-item">
-                                                    <a href="{% url 'habilidades_portugues_view' %}" class="nav-link">
-                                                        <i class="fas fa-book-open nav-icon"></i>
-                                                        <p>Português 5º e 9º</p>
-                                                    </a>
-                                                </li>
-                                                <li class="nav-item">
-                                                    <a href="{% url 'habilidades_matematica_view' %}" class="nav-link">
-                                                        <i class="fas fa-calculator nav-icon"></i>
-                                                        <p>Matemática 5º e 9º</p>
-                                                    </a>
-                                                </li>
-
-                                                <li class="nav-item">
-                                                    <a href="{% url 'habilidades_pesquisa' %}" class="nav-link">
-                                                        <i class="fas fa-calculator nav-icon"></i>
-                                                        <p>Pesquisa</p>
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </li>
-
-
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- EJA -->
-                        <li class="nav-item">
-                            <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'eja-submenu')" data-id="eja">
-                                <i class="fas fa-school nav-icon"></i>
-                                <p>
-                                    EJA
-                                    <i class="right fas fa-angle-left"></i>
-                                </p>
-                            </a>
-                            <ul class="nav nav-treeview submenu" id="eja-submenu" style="display: none;">
-                                <li class="nav-item">
-                                    <a href="{% url 'diagnosis_eja_site' %}" class="nav-link" data-id="ejasite"
-                                        target="_blank">
-                                        <i class="fas fa-globe nav-icon"></i>
-                                        <p>Site</p>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
-                                    <a href="{% url 'diagnosis_eja_adm' %}" class="nav-link" data-id="ejaadm">
-                                        <i class="fas fa-user-cog nav-icon"></i>
-                                        <p>Adm</p>
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
-
-                        <!-- EMCCEJA -->
-                        <li class="nav-item">
-                            <a href="{% url 'diagnosis_emcceja' %}" class="nav-link" data-id="encceja">
-                                <i class="fas fa-university nav-icon"></i>
-                                <p>EMCCEJA</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Orientação Educacional -->
-                <!-- Orientação Educacional -->
-                <li class="nav-item has-treeview">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-chalkboard-teacher nav-icon"></i>
-                        <p>
-                            S.O.E
-                            <i class="right fas fa-angle-left"></i>
-                        </p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="{% url 'soe_principal' %}" class="nav-link">
-                                <i class="fas fa-home nav-icon"></i> <!-- Ícone para Principal -->
-                                <p>Principal</p>
+                            <a href="{% url 'site_pedagogico' %}" class="nav-link" data-id="site_setor_pedagogico" target="_blank">
+                                <i class="fas fa-chalkboard-teacher nav-icon"></i>
+                                <p>Site Pedagógico</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'soe_gestao' %}" class="nav-link">
-                                <i class="fas fa-cogs nav-icon"></i> <!-- Ícone para Gestão -->
-                                <p>Gestão</p>
+                            <a href="{% url 'adm_site_pedagogico' %}" class="nav-link" data-id="adm-pedagogico">
+                                <i class="fas fa-user-cog nav-icon"></i>
+                                <p>ADM Site</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'soe_servicos' %}" class="nav-link">
-                                <i class="fas fa-tools nav-icon"></i> <!-- Ícone para Serviços -->
-                                <p>Serviços</p>
+                            <a href="{% url 'gestao_habilidades' %}" class="nav-link" data-id="ghabilidade">
+                                <i class="fas fa-book nav-icon"></i>
+                                <p>Gestão de Habilidades</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'soe_uploads' %}" class="nav-link">
-                                <i class="fas fa-upload nav-icon"></i> <!-- Ícone para Uploads -->
-                                <p>Uploads</p>
+                            <a href="{% url 'indicadores_setor_pedagogico' %}" class="nav-link" data-id="pindicadores">
+                                <i class="fas fa-chart-line nav-icon"></i>
+                                <p>Indicadores</p>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="{% url 'soe_relatorios' %}" class="nav-link">
-                                <i class="fas fa-chart-bar nav-icon"></i> <!-- Ícone para Relatórios -->
+                            <a href="{% url 'relatorios_pedagogicos' %}" class="nav-link" data-id="rpedagogico">
+                                <i class="fas fa-file-alt nav-icon"></i>
                                 <p>Relatórios</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
+                <!-- Diagnosis -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'diagnosis-submenu')" data-id="pdiagnosis">
+                        <i class="fas fa-clipboard nav-icon"></i>
+                        <p>
+                            Diagnosis
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview submenu" id="diagnosis-submenu" style="display: none;">
+                        <li class="nav-item">
+                            <a href="{% url 'diagnosis_prof_portugues' %}" class="nav-link" data-id="pportugues">
+                                <i class="fas fa-book nav-icon"></i>
+                                <p>Português</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'diagnosis_prof_matematica' %}" class="nav-link" data-id="pmatematica">
+                                <i class="fas fa-calculator nav-icon"></i>
+                                <p>Matemática</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- EJA -->
+                <li class="nav-item">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'eja-submenu')" data-id="eja">
+                        <i class="fas fa-school nav-icon"></i>
+                        <p>
+                            EJA
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                    <ul class="nav nav-treeview submenu" id="eja-submenu" style="display: none;">
+                        <li class="nav-item">
+                            <a href="{% url 'diagnosis_eja_site' %}" class="nav-link" data-id="ejasite" target="_blank">
+                                <i class="fas fa-globe nav-icon"></i>
+                                <p>Site</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'diagnosis_eja_adm' %}" class="nav-link" data-id="ejaadm">
+                                <i class="fas fa-user-cog nav-icon"></i>
+                                <p>Adm</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- EMCCEJA -->
+                <li class="nav-item">
+                    <a href="{% url 'diagnosis_emcceja' %}" class="nav-link" data-id="encceja">
+                        <i class="fas fa-university nav-icon"></i>
+                        <p>EMCCEJA</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+    {% endif %}
+{% endif %}
 
 
 

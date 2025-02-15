@@ -298,15 +298,25 @@ class EscolaForm(forms.ModelForm):
         }
 # *******************************************************************************************************************
 
+# class ProfessorForm(forms.ModelForm):
+#     class Meta:
+#         model = Professor
+#         fields = [
+#             'nome_completo', 'cpf', 'rg', 'email', 'telefone', 'endereco', 'bairro', 'cidade',
+#             'cep', 'estado_civil', 'sexo', 'data_nascimento', 'formacao_academica', 'curso',
+#             'instituicao', 'ano_conclusao', 'foto', 'curriculo_pdf', 'certificados_pdf',
+#             'experiencia_profissional'
+#         ]
+
+
+from django import forms
+from .models import Professor
+
 class ProfessorForm(forms.ModelForm):
     class Meta:
         model = Professor
-        fields = [
-            'nome_completo', 'cpf', 'rg', 'email', 'telefone', 'endereco', 'bairro', 'cidade',
-            'cep', 'estado_civil', 'sexo', 'data_nascimento', 'formacao_academica', 'curso',
-            'instituicao', 'ano_conclusao', 'foto', 'curriculo_pdf', 'certificados_pdf',
-            'experiencia_profissional'
-        ]
+        fields = ['nome', 'cpf', 'email']  # Inclua apenas os campos existentes no modelo Professor
+
 # *******************************************************************************************************************
 
 class DiretorForm(forms.ModelForm):
@@ -503,3 +513,14 @@ class CustomUserProfCreationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
+
+
+
+from django import forms
+from .models import Aluno
+
+class AlunoForm(forms.ModelForm):
+    class Meta:
+        model = Aluno
+        fields = ['pessoa_nome', 'cpf', 'idade', 'modalidade', 'avaliado', 'professor']  # Use apenas os campos corretos
+

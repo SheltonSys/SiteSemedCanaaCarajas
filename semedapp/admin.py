@@ -22,3 +22,6 @@ class RoleModulePermissionAdmin(admin.ModelAdmin):
     list_display = ('role', 'module')
     list_filter = ('role',)
     search_fields = ('module__module_name',)
+
+
+

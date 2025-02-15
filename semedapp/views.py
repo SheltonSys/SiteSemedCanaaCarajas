@@ -168,24 +168,62 @@ def dashboard_admin(request):
     return render(request, 'dashboardadmin.html', {'user': user})
 # *********************************************************************************************************************
 
+# def login_view(request):
+#     if request.method == 'POST':
+#         username = request.POST.get('username')
+#         password = request.POST.get('password')
+
+#         user = authenticate(request, username=username, password=password)
+#         if user is not None:
+#             login(request, user)
+#             return JsonResponse({
+#                 'status': 'success',
+#                 'message': f'Bem-vindo, {user.first_name}!',
+#                 'redirect_url': '/dashboardadmin/'
+#             })
+#         else:
+#             return JsonResponse({'status': 'error', 'message': 'Usuário ou senha inválidos.'}, status=401)
+
+#     # Para GET, retorne o CSRF token
+#     return JsonResponse({'csrf_token': get_token(request)})
+
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from django.contrib.auth import authenticate, login
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
+        # Autenticar usuário
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            # Realizar login do usuário
             login(request, user)
+            
+            # Redirecionar de acordo com o tipo de usuário
+            if user.is_superuser:
+                redirect_url = '/dashboardadmin/'  # Painel do administrador
+            elif hasattr(user, 'professorescola') and user.professorescola.escolas.exists():
+                redirect_url = '/modulo-pedagogico/'  # Página do módulo pedagógico
+            else:
+                redirect_url = '/pagina-inicial/'  # Página padrão para outros usuários
+            
             return JsonResponse({
                 'status': 'success',
-                'message': f'Bem-vindo, {user.first_name}!',
-                'redirect_url': '/dashboardadmin/'
+                'message': f'Bem-vindo, {user.first_name if user.first_name else user.username}!',
+                'redirect_url': redirect_url
             })
         else:
+            # Retornar erro se as credenciais forem inválidas
             return JsonResponse({'status': 'error', 'message': 'Usuário ou senha inválidos.'}, status=401)
 
-    # Para GET, retorne o CSRF token
+    # Para requisições GET, retorne o token CSRF
     return JsonResponse({'csrf_token': get_token(request)})
+
+
+
 # *********************************************************************************************************************
 
 def definir_permissoes(request):
@@ -5010,9 +5048,14 @@ def cadastro_escola(request):
     modalidade = request.GET.get('modalidade', '')
     turma = request.GET.get('turma', '')
 
-    # Filtra os dados conforme os parâmetros fornecidos
-    escolas = CadastroEI.objects.all()
+    # Verificação se é superuser para mostrar todas as escolas
+    if request.user.is_superuser:
+        escolas = CadastroEI.objects.all()
+    else:
+        # Filtrar apenas as escolas vinculadas ao professor logado
+        escolas = CadastroEI.objects.filter(professor=request.user)
 
+    # Aplicação dos filtros adicionais
     if nome_escola:
         escolas = escolas.filter(unidade_ensino__icontains=nome_escola)
     if ano:
@@ -5037,13 +5080,13 @@ def cadastro_escola(request):
     page_number = request.GET.get('page')
     escolas_paginadas = paginator.get_page(page_number)
 
-    # Obter todas as escolas únicas ordenadas
-    escolas_nomes = CadastroEI.objects.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
+    # Obter todas as escolas únicas ordenadas (apenas as relacionadas ao professor)
+    escolas_nomes = escolas.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
 
     # Obter as turmas relacionadas à escola selecionada
     turmas = (
-        CadastroEI.objects.filter(unidade_ensino=nome_escola).order_by("turma").values_list("turma", flat=True).distinct()
-        if nome_escola else CadastroEI.objects.order_by("turma").values_list("turma", flat=True).distinct()
+        escolas.filter(unidade_ensino=nome_escola).order_by("turma").values_list("turma", flat=True).distinct()
+        if nome_escola else escolas.order_by("turma").values_list("turma", flat=True).distinct()
     )
 
     # Cria a string de query para preservar os filtros na paginação
@@ -5073,6 +5116,7 @@ def cadastro_escola(request):
     }
 
     return render(request, 'webapp/cadastro_escola.html', context)
+
 ###***********************************************************************************************************************
 
 from django.http import JsonResponse
@@ -6520,13 +6564,27 @@ def login_prof(request):
     return render(request, 'semedapp/login_prof.html')
 
 
-@login_required
+
+
+from django.shortcuts import render
+from .models import CadastroEI
+
 def modulo_pedagogico(request):
-    if not request.user.is_professor:
-        messages.error(request, "Você não tem permissão para acessar esta área.")
-        return redirect('login_prof')
+    turma_nome = request.GET.get('turma', '')  # Captura o nome da turma, se estiver nos parâmetros da URL
+
+    # Filtrar alunos pela turma (ajuste de acordo com o campo 'turma' em CadastroEI)
+    if turma_nome:
+        alunos = CadastroEI.objects.filter(turma__icontains=turma_nome)  # Filtrar por nome de turma
+    else:
+        alunos = CadastroEI.objects.all()  # Exibe todos se não houver filtro
+
+    context = {
+        'alunos': alunos,
+        'turma_nome': turma_nome,  # Para mostrar o filtro aplicado
+    }
     
-    return render(request, 'semedapp/modulo_pedagogico.html')
+    return render(request, 'webapp/modulo_pedagogico.html', context)
+
 
 
 
@@ -6546,3 +6604,83 @@ def logout_prof(request):
 #     if not request.user.is_authenticated:
 #         return HttpResponseForbidden("Acesso negado.")
 #     return render(request, 'semedapp/pagina_professor.html')
+
+
+def login_prof_view(request):
+    print("View login_prof_view foi chamada")
+    unidades = CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct()
+    turmas = CadastroEI.objects.values_list('turma', flat=True).distinct()
+    
+    print("Unidades:", unidades)  # Verificação no console
+    print("Turmas:", turmas)      # Verificação no console
+    
+    context = {
+        'unidades': unidades,
+        'turmas': turmas,
+    }
+    return render(request, 'semedapp/login_prof.html', context)
+
+
+
+from django.http import JsonResponse
+from semedapp.models import CadastroEI
+
+def carregar_unidades_turmas(request):
+    unidades = list(CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct())
+    turmas = list(CadastroEI.objects.values_list('turma', flat=True).distinct())
+    
+    return JsonResponse({'unidades': unidades, 'turmas': turmas})
+
+
+
+
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def your_view(request):
+    is_professor = request.user.groups.filter(name="Professor").exists()
+    
+    context = {
+        'is_professor': is_professor,
+    }
+    return render(request, 'your_template.html', context)
+
+
+# user_groups.py
+from django import template
+
+register = template.Library()
+
+@register.filter
+def has_group(user, group_name):
+    return user.groups.filter(name=group_name).exists()
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Aluno  # Certifique-se de importar o modelo correto
+from .forms import AlunoForm  # Certifique-se de criar um formulário correspondente
+
+def editar_aluno(request, id):
+    aluno = get_object_or_404(Aluno, id=id)  # Busca o aluno pelo ID ou retorna 404 se não existir
+    
+    if request.method == "POST":
+        form = AlunoForm(request.POST, instance=aluno)
+        if form.is_valid():
+            form.save()
+            return redirect('semedapp:modulo_pedagogico')  # Redireciona para a lista de alunos ou dashboard
+    else:
+        form = AlunoForm(instance=aluno)
+    
+    return render(request, 'webapp/editar_aluno.html', {'form': form, 'aluno': aluno})
+
+
+
+from django.shortcuts import get_object_or_404, redirect
+from .models import Aluno  # substitua pelo nome correto do seu modelo
+
+def avaliar_aluno(request, id):
+    aluno = get_object_or_404(Aluno, id=id)
+    aluno.avaliado = "SIM"  # atualize o campo para indicar que foi avaliado
+    aluno.save()
+    return redirect('modulo_pedagogico')  # substitua pelo nome correto da sua URL de redirecionamento

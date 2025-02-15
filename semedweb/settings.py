@@ -159,7 +159,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000  # Aumente o valor conforme necessário
 
 
-#AUTH_USER_MODEL = 'semedapp.CustomUserProf'
+AUTH_USER_MODEL = 'semedapp.CustomUserProf'
 
 
 

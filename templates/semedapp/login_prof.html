@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Professores</title>
+    <title>Login - Sistema SEMED</title>
     <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
     <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -19,7 +19,7 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
         }
         .card {
-            background-color: rgba(255, 255, 255, 0.6);
+            background-color: rgba(255, 255, 255, 0.8);
             border-radius: 10px;
             padding: 5px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
@@ -39,9 +39,10 @@
             </div>
             
             <div class="card-body">
-                <p class="login-box-msg"><b>Acesso para Professores</b></p>
+                <p class="login-box-msg"><b>Acesso ao Sistema</b></p>
                 <form action="{% url 'login_prof' %}" method="post" onsubmit="startProcessing(event)">
                     {% csrf_token %}
+                    
                     <div class="input-group mb-3">
                         <input type="text" name="username" class="form-control" placeholder="Usuário" required>
                         <div class="input-group-append">
@@ -50,6 +51,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="input-group mb-3">
                         <input type="password" name="password" id="password" class="form-control" placeholder="Senha" required>
                         <div class="input-group-append">
@@ -58,11 +60,37 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Tipo de Usuário -->
+                    <div class="form-group">
+                        <label for="tipo_usuario">Tipo de Usuário</label>
+                        <select name="tipo_usuario" class="form-control" id="tipo_usuario" required>
+                            <option value="">Selecione o tipo de usuário</option>
+                            <option value="Administrador">Administrador</option>
+                            <option value="Professor">Professor</option>
+                            <option value="Coordenador">Coordenador</option>
+                            <option value="Técnico">Técnico</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="unidade_escolar">Unidade Escolar</label>
+                        <select name="unidade_escolar" class="form-control" id="unidade_escolar" required>
+                            <option value="">Carregando unidades...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="turmas">Selecione as turmas</label>
+                        <select name="turmas" class="form-control" id="turmas" multiple required>
+                            <option value="">Carregando turmas...</option>
+                        </select>
+                        <small class="form-text text-muted">Segure a tecla Ctrl (ou Cmd no Mac) para selecionar várias turmas.</small>
+                    </div>
+                    
                     <div class="row">
                         <div class="col-12">
-                            <button id="submit-button" type="submit" class="btn btn-primary btn-block">
-                                Entrar
-                            </button>
+                            <button id="submit-button" type="submit" class="btn btn-primary btn-block">Entrar</button>
                         </div>
                     </div>
                 </form>
@@ -71,7 +99,69 @@
     </div>
 
     <script>
-        // Função para alternar a visibilidade da senha
+        document.addEventListener("DOMContentLoaded", function() {
+            const tipoUsuarioSelect = document.getElementById('tipo_usuario');
+            const unidadeEscolarGroup = document.querySelector('.form-group:nth-of-type(4)'); // Unidade Escolar
+            const turmasGroup = document.querySelector('.form-group:nth-of-type(5)'); // Turmas
+    
+            // Função para verificar o tipo de usuário e exibir/ocultar campos
+            function verificarTipoUsuario() {
+                if (tipoUsuarioSelect.value === "Administrador") {
+                    unidadeEscolarGroup.style.display = "none";
+                    turmasGroup.style.display = "none";
+                    unidadeEscolarGroup.querySelector('select').required = false;
+                    turmasGroup.querySelector('select').required = false;
+                } else {
+                    unidadeEscolarGroup.style.display = "block";
+                    turmasGroup.style.display = "block";
+                    unidadeEscolarGroup.querySelector('select').required = true;
+                    turmasGroup.querySelector('select').required = true;
+                }
+            }
+    
+            // Verificar tipo de usuário ao mudar a seleção
+            tipoUsuarioSelect.addEventListener('change', verificarTipoUsuario);
+    
+            // Verificar tipo de usuário na inicialização
+            verificarTipoUsuario();
+        });
+    </script>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("{% url 'carregar_unidades_turmas' %}")
+                .then(response => response.json())
+                .then(data => {
+                    // Preencher o select de unidades
+                    const unidadeSelect = document.getElementById('unidade_escolar');
+                    unidadeSelect.innerHTML = '<option value="">Selecione a unidade escolar</option>';
+                    data.unidades.forEach(unidade => {
+                        const option = document.createElement('option');
+                        option.value = unidade;
+                        option.textContent = unidade;
+                        unidadeSelect.appendChild(option);
+                    });
+    
+                    // Preencher o select de turmas
+                    const turmaSelect = document.getElementById('turmas');
+                    turmaSelect.innerHTML = '<option value="">Selecione a turma</option>';
+                    data.turmas.forEach(turma => {
+                        const option = document.createElement('option');
+                        option.value = turma;
+                        option.textContent = turma;
+                        turmaSelect.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Erro ao carregar unidades e turmas:', error);
+                    alert('Erro ao carregar dados. Tente novamente.');
+                });
+        });
+    </script>
+    
+
+    <script>
         function togglePasswordVisibility() {
             const passwordField = document.getElementById('password');
             const toggleIcon = document.querySelector('.toggle-password');
@@ -86,13 +176,11 @@
             }
         }
 
-        // Função para "Processando..." e redirecionamento
         function startProcessing(event) {
             event.preventDefault();
             const submitButton = document.getElementById('submit-button');
             submitButton.disabled = true;
             submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
-
             setTimeout(() => {
                 event.target.submit();
             }, 2000);

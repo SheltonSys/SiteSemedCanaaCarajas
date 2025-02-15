@@ -641,9 +641,18 @@ urlpatterns = [
 
     path('registrar-professor/', views.registrar_professor, name='registrar_professor'),
 
-    path('login-professor/', views.login_prof, name='login_prof'),
+    path('login-prof/', views.login_prof_view, name='login_prof'),
 
     path('logout-professor/', views.logout_prof, name='logout_prof'),
+
+    path('api/unidades-turmas/', views.carregar_unidades_turmas, name='carregar_unidades_turmas'),
+
+    path('editar-aluno/<int:id>/', views.editar_aluno, name='editar_aluno'),
+
+    path('avaliar-aluno/<int:id>/', views.avaliar_aluno, name='avaliar_aluno'),
+
+
+     
 
 
     

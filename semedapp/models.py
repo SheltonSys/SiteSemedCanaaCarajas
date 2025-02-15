@@ -70,15 +70,19 @@ class Acompanhamento(models.Model):
         return f"Acompanhamento para {self.aluno}"
 # ********************************************************************************************************************************
 
+from django.db import models
+
 class Aluno(models.Model):
-    nome = models.CharField(max_length=255)
-    data_nascimento = models.DateField()
-    matricula = models.CharField(max_length=50, unique=True)
-    turma = models.CharField(max_length=100)
-    escola = models.CharField(max_length=255)
+    pessoa_nome = models.CharField(max_length=255)
+    cpf = models.CharField(max_length=14, blank=True, null=True)
+    idade = models.IntegerField(blank=True, null=True)
+    modalidade = models.CharField(max_length=50, blank=True, null=True)
+    avaliado = models.CharField(max_length=10, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
+    professor = models.CharField(max_length=255, blank=True, null=True)  # ou pode ser uma ForeignKey para outro modelo
 
     def __str__(self):
-        return self.nome
+        return self.pessoa_nome
+
     
 
 
@@ -267,6 +271,19 @@ class Escola(models.Model):
 
     def __str__(self):
         return self.nome
+# ********************************************************************************************************************************
+
+
+class Escolas(models.Model):
+    nome = models.CharField(max_length=255)
+    endereco = models.TextField(blank=True, null=True)
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    unidade_educacional = models.CharField(max_length=255, blank=True, null=True)
+
+    def __str__(self):
+        return self.nome
+
+
 
 # ********************************************************************************************************************************
 
@@ -791,14 +808,7 @@ class HabilidadePortugues(models.Model):
         return f"{self.habilidade} - {self.descricao[:30]}"  # Retorno amigável no admin
 ############################################################################################################################
 
-# class Professor(models.Model):
-#     nome = models.CharField(max_length=100)
-#     email = models.EmailField(unique=True)
-#     telefone = models.CharField(max_length=15, blank=True)
-#     disciplina = models.CharField(max_length=50)
 
-#     def __str__(self):
-#         return self.nome
 ############################################################################################################################
     
 class HabilidadeMatematica(models.Model):
@@ -1538,68 +1548,68 @@ def renomear_arquivo(instance, filename):
     return f"fotos/{timestamp}{ext}"
 
 
-class Professor(models.Model):
-    SEXO_CHOICES = [
-        ('Masculino', 'Masculino'),
-        ('Feminino', 'Feminino'),
-        ('Outro', 'Outro'),
-        ('NaoInformar', 'Prefiro não informar'),
-    ]
+# class Professor(models.Model):
+#     SEXO_CHOICES = [
+#         ('Masculino', 'Masculino'),
+#         ('Feminino', 'Feminino'),
+#         ('Outro', 'Outro'),
+#         ('NaoInformar', 'Prefiro não informar'),
+#     ]
 
-    ESTADO_CIVIL_CHOICES = [
-        ('Solteiro', 'Solteiro(a)'),
-        ('Casado', 'Casado(a)'),
-        ('Divorciado', 'Divorciado(a)'),
-        ('Viuvo', 'Viúvo(a)'),
-    ]
+#     ESTADO_CIVIL_CHOICES = [
+#         ('Solteiro', 'Solteiro(a)'),
+#         ('Casado', 'Casado(a)'),
+#         ('Divorciado', 'Divorciado(a)'),
+#         ('Viuvo', 'Viúvo(a)'),
+#     ]
 
-    FORMACAO_CHOICES = [
-        ('FundamentalC', 'Fundamental Completo'),
-        ('FundamentalI', 'Fundamental Incompleto'),
-        ('MedioC', 'Médio Completo'),
-        ('MedioI', 'Médio Incompleto'),
-        ('MedioTecnico', 'Médio e Técnico'),
-        ('TecnicoC', 'Técnico Completo'),
-        ('TecnicoI', 'Técnico Incompleto'),
-        ('TecnologoC', 'Técnólogo Completo'),
-        ('TecnologoI', 'Técnólogo Incompleto'),
-        ('GraduacaoC', 'Graduação Completa'),
-        ('GraduacaoI', 'Graduação Incompleta'),
-        ('PosGraduacaoC', 'Pós-Graduação Completa'),
-        ('PosGraduacaoI', 'Pós-Graduação Incompleta'),
-        ('MestradoC', 'Mestrado Completo'),
-        ('MestradoI', 'Mestrado Incompleto'),
-        ('DoutoradoC', 'Doutorado Completo'),
-        ('DoutoradoI', 'Doutorado Incompleto'),
-        ('phdC', 'PHD Completo'),
-        ('phdI', 'PHD Incompleto'),
-    ]
+#     FORMACAO_CHOICES = [
+#         ('FundamentalC', 'Fundamental Completo'),
+#         ('FundamentalI', 'Fundamental Incompleto'),
+#         ('MedioC', 'Médio Completo'),
+#         ('MedioI', 'Médio Incompleto'),
+#         ('MedioTecnico', 'Médio e Técnico'),
+#         ('TecnicoC', 'Técnico Completo'),
+#         ('TecnicoI', 'Técnico Incompleto'),
+#         ('TecnologoC', 'Técnólogo Completo'),
+#         ('TecnologoI', 'Técnólogo Incompleto'),
+#         ('GraduacaoC', 'Graduação Completa'),
+#         ('GraduacaoI', 'Graduação Incompleta'),
+#         ('PosGraduacaoC', 'Pós-Graduação Completa'),
+#         ('PosGraduacaoI', 'Pós-Graduação Incompleta'),
+#         ('MestradoC', 'Mestrado Completo'),
+#         ('MestradoI', 'Mestrado Incompleto'),
+#         ('DoutoradoC', 'Doutorado Completo'),
+#         ('DoutoradoI', 'Doutorado Incompleto'),
+#         ('phdC', 'PHD Completo'),
+#         ('phdI', 'PHD Incompleto'),
+#     ]
 
-    nome_completo = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=14, unique=False)
-    rg = models.CharField(max_length=12, blank=True, null=True)
-    email = models.EmailField(unique=True)
-    telefone = models.CharField(max_length=15)
-    endereco = models.CharField(max_length=255)
-    bairro = models.CharField(max_length=100, blank=True, null=True)
-    cidade = models.CharField(max_length=100, default='Canaã dos Carajás')
-    cep = models.CharField(max_length=9, blank=True, null=True)
-    estado_civil = models.CharField(max_length=15, choices=ESTADO_CIVIL_CHOICES)
-    sexo = models.CharField(max_length=15, choices=SEXO_CHOICES)
-    data_nascimento = models.DateField(null=True, blank=True)
-    formacao_academica = models.CharField(max_length=20, choices=FORMACAO_CHOICES, blank=True, null=True)
-    curso = models.CharField(max_length=255, blank=True, null=True)
-    instituicao = models.CharField(max_length=255, blank=True, null=True)
-    ano_conclusao = models.PositiveIntegerField(blank=True, null=True)
-    foto = models.ImageField(upload_to=renomear_arquivo, max_length=255, blank=True, null=True)
-    curriculo_pdf = models.FileField(upload_to='curriculos/', blank=True, null=True)
-    certificados_pdf = models.FileField(upload_to='certificados/', blank=True, null=True)
-    experiencia_profissional = models.TextField(blank=True, null=True)
+#     nome_completo = models.CharField(max_length=255)
+#     cpf = models.CharField(max_length=14, unique=False)
+#     rg = models.CharField(max_length=12, blank=True, null=True)
+#     email = models.EmailField(unique=True)
+#     telefone = models.CharField(max_length=15)
+#     endereco = models.CharField(max_length=255)
+#     bairro = models.CharField(max_length=100, blank=True, null=True)
+#     cidade = models.CharField(max_length=100, default='Canaã dos Carajás')
+#     cep = models.CharField(max_length=9, blank=True, null=True)
+#     estado_civil = models.CharField(max_length=15, choices=ESTADO_CIVIL_CHOICES)
+#     sexo = models.CharField(max_length=15, choices=SEXO_CHOICES)
+#     data_nascimento = models.DateField(null=True, blank=True)
+#     formacao_academica = models.CharField(max_length=20, choices=FORMACAO_CHOICES, blank=True, null=True)
+#     curso = models.CharField(max_length=255, blank=True, null=True)
+#     instituicao = models.CharField(max_length=255, blank=True, null=True)
+#     ano_conclusao = models.PositiveIntegerField(blank=True, null=True)
+#     foto = models.ImageField(upload_to=renomear_arquivo, max_length=255, blank=True, null=True)
+#     curriculo_pdf = models.FileField(upload_to='curriculos/', blank=True, null=True)
+#     certificados_pdf = models.FileField(upload_to='certificados/', blank=True, null=True)
+#     experiencia_profissional = models.TextField(blank=True, null=True)
 
-    data_cadastro = models.DateTimeField(auto_now_add=True)
+#     data_cadastro = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.nome_completo
+#     def __str__(self):
+#         return self.nome_completo
 
 # ********************************************************************************************************************************
 
@@ -1956,51 +1966,7 @@ class CurriculoAntigo(models.Model):
         return self.nome.encode('utf-8').decode('utf-8') if self.nome else "Sem Nome"
 # ********************************************************************************************************************************
 
-class CadastroEI(models.Model):
-    id_matricula = models.AutoField(primary_key=True)
-    unidade_ensino = models.CharField(max_length=255)
-    formato_letivo = models.CharField(max_length=255, null=True, blank=True)  # Certifique-se de que o campo existe
-    cpf = models.CharField(max_length=11)
-    data_nascimento = models.DateField()
-    turma = models.CharField(max_length=100)
-    ano = models.CharField(max_length=4)
-    modalidade = models.CharField(max_length=100)
-    pessoa_nome = models.CharField(max_length=255)
-    idade = models.IntegerField()
-    avaliado = models.CharField(max_length=3, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
 
-    # Campos para as questões
-    for i in range(1, 11):
-        locals()[f"questao_matematica_{i}"] = models.CharField(max_length=50, null=True, blank=True)
-    for i in range(11, 21):
-        locals()[f"questao_linguagem_{i}"] = models.CharField(max_length=50, null=True, blank=True)
-# ********************************************************************************************************************************
-
-class CadastroEscola(models.Model):
-    id_matricula = models.CharField(max_length=50, unique=True)
-    unidade_ensino = models.CharField(max_length=255)
-    ano = models.IntegerField()
-    modalidade = models.CharField(max_length=255)
-    formato_letivo = models.CharField(max_length=255)
-    turma = models.CharField(max_length=100)
-    cpf = models.CharField(max_length=14, unique=True)
-    pessoa_nome = models.CharField(max_length=255)
-    data_nascimento = models.DateField()
-    idade = models.IntegerField()
-
-    def __str__(self):
-        return f"{self.pessoa_nome} - {self.unidade_ensino}"
-# ********************************************************************************************************************************
-
-class NotaAluno(models.Model):
-    aluno = models.ForeignKey(CadastroEI, on_delete=models.CASCADE)
-    disciplina = models.CharField(max_length=100)
-    nota = models.DecimalField(max_digits=4, decimal_places=2)  # Exemplo: 9.5
-    bimestre = models.IntegerField(choices=[(1, "1º Bimestre"), (2, "2º Bimestre"), (3, "3º Bimestre"), (4, "4º Bimestre")])
-
-    def __str__(self):
-        return f"{self.aluno.pessoa_nome} - {self.disciplina} - {self.nota}"
-# ********************************************************************************************************************************
 
 class Resposta(models.Model):
     aluno = models.ForeignKey('Aluno', on_delete=models.CASCADE)
@@ -2254,6 +2220,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 
 class CustomUserProfManager(BaseUserManager):
+    is_professor = models.BooleanField(default=False)
     def create_user(self, username, cpf, password=None, **extra_fields):
         if not username:
             raise ValueError("O nome de usuário é obrigatório.")
@@ -2271,6 +2238,8 @@ class CustomUserProfManager(BaseUserManager):
         return self.create_user(username, cpf, password, **extra_fields)
 
 class CustomUserProf(AbstractBaseUser, PermissionsMixin):
+    is_professor = models.BooleanField(default=False)
+    escolas = models.ManyToManyField('Escolas', related_name='professores_customuser', blank=True)
     matricula = models.CharField(max_length=15, unique=True, verbose_name="Matrícula")
     telefone = models.CharField(max_length=15, blank=True, null=True)
     especializacao = models.CharField(max_length=100, blank=True, null=True)
@@ -2305,3 +2274,105 @@ class CustomUserProf(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return f"{self.username} ({self.matricula})"
+
+
+
+from django.db import models
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+from django.db import models
+
+class UnidadeEscolar(models.Model):
+    nome = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=255, blank=True, null=True)
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+
+    def __str__(self):
+        return self.nome
+    
+
+# models.py
+from django.db import models
+
+class Professor(models.Model):
+    nome = models.CharField(max_length=255)
+    cpf = models.CharField(max_length=11, unique=True)
+    email = models.EmailField()
+
+
+class Turma(models.Model):
+    nome = models.CharField(max_length=255)
+    professor = models.ForeignKey(User, on_delete=models.CASCADE)  # Se `User` representa o professor
+    escola = models.ForeignKey(Escolas, on_delete=models.CASCADE, related_name="turmas")
+    ano = models.IntegerField()
+    modalidade = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.nome} - {self.escola.nome}"
+    
+class CadastroEscola(models.Model):
+    unidade_ensino = models.CharField(max_length=255)
+    formato_letivo = models.CharField(max_length=50)
+    cpf = models.CharField(max_length=11)
+    data_nascimento = models.DateField()
+    turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name="escolas")
+    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name="escolas")
+    ano = models.IntegerField()
+    modalidade = models.CharField(max_length=50)
+    pessoa_nome = models.CharField(max_length=255)
+    idade = models.IntegerField()
+    avaliado = models.CharField(max_length=3, choices=[("SIM", "Sim"), ("NÃO", "Não")])
+
+    def __str__(self):
+        return self.unidade_ensino
+
+
+
+class ProfessorEscola(models.Model):
+    professor = models.ForeignKey(User, on_delete=models.CASCADE)
+    escolas = models.ForeignKey(Escolas, on_delete=models.CASCADE)  # Verifique o nome aqui
+    turmas = models.ManyToManyField(Turma)
+    
+
+
+    def __str__(self):
+        return f"{self.professor.username} - {self.escolas.nome}"
+
+
+
+class CadastroEI(models.Model):
+    professor = models.ForeignKey(User, on_delete=models.CASCADE)
+    id_matricula = models.AutoField(primary_key=True)
+    unidade_ensino = models.CharField(max_length=255)
+    formato_letivo = models.CharField(max_length=255, null=True, blank=True)  # Certifique-se de que o campo existe
+    cpf = models.CharField(max_length=11)
+    data_nascimento = models.DateField(null=True, blank=True)  # Permitir valores nulos
+    turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
+    ano = models.CharField(max_length=4)
+    modalidade = models.CharField(max_length=100)
+    pessoa_nome = models.CharField(max_length=255)
+    idade = models.IntegerField()
+    avaliado = models.CharField(max_length=3, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
+
+    # Campos para as questões
+    for i in range(1, 11):
+        locals()[f"questao_matematica_{i}"] = models.CharField(max_length=50, null=True, blank=True)
+    for i in range(11, 21):
+        locals()[f"questao_linguagem_{i}"] = models.CharField(max_length=50, null=True, blank=True)
+# ********************************************************************************************************************************
+
+
+# ********************************************************************************************************************************
+
+class NotaAluno(models.Model):
+    aluno = models.ForeignKey(CadastroEI, on_delete=models.CASCADE)
+    disciplina = models.CharField(max_length=100)
+    nota = models.DecimalField(max_digits=4, decimal_places=2)  # Exemplo: 9.5
+    bimestre = models.IntegerField(choices=[(1, "1º Bimestre"), (2, "2º Bimestre"), (3, "3º Bimestre"), (4, "4º Bimestre")])
+
+    def __str__(self):
+        return f"{self.aluno.pessoa_nome} - {self.disciplina} - {self.nota}"
+# ********************************************************************************************************************************
