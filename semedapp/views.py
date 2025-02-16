@@ -204,7 +204,7 @@ def login_view(request):
             
             # Redirecionar de acordo com o tipo de usuário
             if user.is_superuser:
-                redirect_url = '/dashboardadmin/'  # Painel do administrador
+                redirect_url = '/modulo-pedagogico/'  # Painel do administrador
             elif hasattr(user, 'professorescola') and user.professorescola.escolas.exists():
                 redirect_url = '/modulo-pedagogico/'  # Página do módulo pedagógico
             else:
@@ -5037,67 +5037,58 @@ def educacao_infantil(request):
     return render(request, 'webapp/educacao_infantil.html')
 ###***********************************************************************************************************************
 
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render
 from django.core.paginator import Paginator
 from .models import CadastroEI
 
 def cadastro_escola(request):
-    # Captura os filtros da URL
     nome_escola = request.GET.get('nome_escola', '')
     ano = request.GET.get('ano', '')
     modalidade = request.GET.get('modalidade', '')
     turma = request.GET.get('turma', '')
 
-    # Verificação se é superuser para mostrar todas as escolas
+    # Verificação se o usuário é superuser
     if request.user.is_superuser:
         escolas = CadastroEI.objects.all()
     else:
-        # Filtrar apenas as escolas vinculadas ao professor logado
         escolas = CadastroEI.objects.filter(professor=request.user)
 
-    # Aplicação dos filtros adicionais
+    # Aplicar os filtros
     if nome_escola:
         escolas = escolas.filter(unidade_ensino__icontains=nome_escola)
     if ano:
         escolas = escolas.filter(ano=ano)
     if modalidade:
-        escolas = escolas.filter(modalidade=modalidade)
+        escolas = escolas.filter(modalidade__icontains=modalidade)
     if turma:
-        escolas = escolas.filter(turma=turma)
+        escolas = escolas.filter(turma__nome__icontains=turma)  # Corrigido para buscar pelo nome da turma
 
-    # Divisão entre alunos avaliados e não avaliados
+    # Contagem de registros
     escolas_avaliadas = escolas.filter(avaliado="SIM")
     escolas_nao_avaliadas = escolas.exclude(avaliado="SIM")
-
-    # Contagem dinâmica
     total_alunos = escolas.count()
-    total_turmas = escolas.values("turma").distinct().count()
+    total_turmas = escolas.values("turma__nome").distinct().count()  # Contar turmas distintas pelo nome
     total_escolas = escolas.values("unidade_ensino").distinct().count()
     total_avaliados = escolas_avaliadas.count()
 
-    # Paginação para alunos não avaliados
-    paginator = Paginator(escolas_nao_avaliadas, 50)  # Mostra 50 registros por página
+    # Paginação
+    paginator = Paginator(escolas_nao_avaliadas, 50)
     page_number = request.GET.get('page')
     escolas_paginadas = paginator.get_page(page_number)
 
-    # Obter todas as escolas únicas ordenadas (apenas as relacionadas ao professor)
+    # Listar nomes de escolas e turmas únicas
     escolas_nomes = escolas.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
+    turmas = escolas.order_by("turma__nome").values_list("turma__nome", flat=True).distinct()  # Buscar pelo nome da turma
 
-    # Obter as turmas relacionadas à escola selecionada
-    turmas = (
-        escolas.filter(unidade_ensino=nome_escola).order_by("turma").values_list("turma", flat=True).distinct()
-        if nome_escola else escolas.order_by("turma").values_list("turma", flat=True).distinct()
-    )
-
-    # Cria a string de query para preservar os filtros na paginação
+    # Criar query string para manter filtros na paginação
     query_params = request.GET.copy()
     if 'page' in query_params:
         del query_params['page']
     query_string = query_params.urlencode()
 
     context = {
-        'escolas': escolas_paginadas,  # Alunos não avaliados
-        'escolas_avaliadas': escolas_avaliadas,  # Alunos avaliados
+        'escolas': escolas_paginadas,
+        'escolas_avaliadas': escolas_avaliadas,
         'escolas_nomes': escolas_nomes,
         'turmas': turmas,
         'filtros': {
@@ -5111,11 +5102,14 @@ def cadastro_escola(request):
         'total_escolas': total_escolas,
         'total_avaliados': total_avaliados,
         'query_string': query_string,
-        'range_matematica': range(1, 11),  # QUESTÕES DE 1 A 10 PARA MATEMÁTICA
-        'range_linguagem': range(11, 21),  # QUESTÕES DE 11 A 20 PARA LINGUAGEM
+        'range_matematica': range(1, 11),
+        'range_linguagem': range(11, 21),
     }
 
     return render(request, 'webapp/cadastro_escola.html', context)
+
+
+
 
 ###***********************************************************************************************************************
 
@@ -5581,60 +5575,54 @@ def lancar_conceito(request):
     }
     return render(request, 'lancar_conceito.html', context)
 ###***********************************************************************************************************************
-
-from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .models import CadastroEI
 
+@login_required
 def gestao_alunos(request):
+    usuario_logado = request.user
     nome_escola = request.GET.get('nome_escola', '')
     ano = request.GET.get('ano', '')
     modalidade = request.GET.get('modalidade', '')
     turma = request.GET.get('turma', '')
 
-    registros = CadastroEI.objects.all()
+    # Verificação de superuser para acesso a todos os registros
+    if usuario_logado.is_superuser:
+        registros = CadastroEI.objects.all()
+    else:
+        registros = CadastroEI.objects.filter(professor=usuario_logado)
+
+    # Aplicação dos filtros
     if nome_escola:
         registros = registros.filter(unidade_ensino__icontains=nome_escola)
     if ano:
         registros = registros.filter(ano=ano)
     if modalidade:
-        registros = registros.filter(modalidade=modalidade)
+        registros = registros.filter(modalidade__icontains=modalidade)
     if turma:
-        registros = registros.filter(turma=turma)
+        registros = registros.filter(turma__nome__icontains=turma)  # Filtrar pelo nome da turma
 
-    escolas_nomes = CadastroEI.objects.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
-    turmas = (
-        CadastroEI.objects.filter(unidade_ensino=nome_escola).order_by("turma").values_list("turma", flat=True).distinct()
-        if nome_escola else CadastroEI.objects.order_by("turma").values_list("turma", flat=True).distinct()
-    )
+    # Listar escolas e turmas
+    escolas_nomes = registros.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
+    turmas = registros.order_by("turma__nome").values_list("turma__nome", flat=True).distinct()  # Retornar o nome das turmas
 
     total_alunos = registros.count()
-    total_turmas = registros.values("turma").distinct().count()
+    total_turmas = registros.values("turma__nome").distinct().count()
     total_escolas = registros.values("unidade_ensino").distinct().count()
 
     registros_com_questoes = []
     for registro in registros:
         questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
-
-        questoes_linguagem = []
-        desempenho_linguagem = 0
-        for i in range(11, 21):
-            resposta = getattr(registro, f"questao_linguagem_{i}", "BRANCO")
-            # Ignorar avaliações cognitivas das questões específicas (1 e 3)
-            if i == 11 and resposta in ["CC", "SC"]:
-                resposta = "SEA"
-            elif i == 13 and resposta in ["PSI", "PSII", "SSVS", "SCVS", "SA", "ALF"]:
-                resposta = "SEA"
-            else:
-                # Somente as questões não cognitivas serão contabilizadas
-                desempenho_linguagem += 2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0
-            questoes_linguagem.append(resposta)
+        questoes_linguagem = [getattr(registro, f"questao_linguagem_{i}", "BRANCO") for i in range(11, 21)]
 
         pontuacao_matematica = sum(2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0 for resposta in questoes_matematica)
+        pontuacao_linguagem = sum(2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0 for resposta in questoes_linguagem)
+
         max_pontuacao_matematica = 20
-        max_pontuacao_linguagem = 16  # Apenas as questões não cognitivas contam
+        max_pontuacao_linguagem = 20
 
         desempenho_matematica = (pontuacao_matematica / max_pontuacao_matematica) * 100 if max_pontuacao_matematica > 0 else 0
-        desempenho_linguagem = (desempenho_linguagem / max_pontuacao_linguagem) * 100 if max_pontuacao_linguagem > 0 else 0
+        desempenho_linguagem = (pontuacao_linguagem / max_pontuacao_linguagem) * 100 if max_pontuacao_linguagem > 0 else 0
 
         avaliacao_matematica = "Excelente" if desempenho_matematica >= 90 else "Bom" if desempenho_matematica >= 70 else "Regular" if desempenho_matematica >= 50 else "INSUFICIENTE"
         avaliacao_linguagem = "Excelente" if desempenho_linguagem >= 90 else "Bom" if desempenho_linguagem >= 70 else "Regular" if desempenho_linguagem >= 50 else "INSUFICIENTE"
@@ -5667,28 +5655,50 @@ def gestao_alunos(request):
     return render(request, 'semedapp/gestao_alunos.html', context)
 
 
+
+
+
 ###***********************************************************************************************************************
 
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .models import CadastroEI
 
+@login_required
 def gestao_relatorios(request):
-    # Captura os filtros da URL
+    usuario_logado = request.user
     nome_escola = request.GET.get('nome_escola', '')
     turma = request.GET.get('turma', '')
     ano = request.GET.get('ano', '')
     modalidade = request.GET.get('modalidade', '')
 
-    # Filtrar registros com base nos filtros fornecidos
-    registros = CadastroEI.objects.all()
+    # Se for superuser, mostrar todos os registros
+    if usuario_logado.is_superuser:
+        registros = CadastroEI.objects.all()
+    else:
+        registros = CadastroEI.objects.filter(professor=usuario_logado)  # Apenas registros vinculados ao professor logado
+
+    # Aplicar filtros
     if nome_escola:
         registros = registros.filter(unidade_ensino__icontains=nome_escola)
     if turma:
-        registros = registros.filter(turma__icontains=turma)
+        registros = registros.filter(turma__nome__icontains=turma)  # Ajuste para campo 'nome' no modelo Turma
     if ano:
         registros = registros.filter(ano=ano)
     if modalidade:
         registros = registros.filter(modalidade__icontains=modalidade)
+
+    # Obter apenas as turmas vinculadas ao professor logado
+    turmas = (
+        registros
+        .select_related('turma')
+        .order_by('turma__nome')
+        .values_list('turma__nome', flat=True)
+        .distinct()
+    )
+
+    # Obter todas as escolas disponíveis nos registros filtrados
+    escolas = registros.order_by('unidade_ensino').values_list('unidade_ensino', flat=True).distinct()
 
     # Processamento das questões
     relatorios = []
@@ -5702,13 +5712,11 @@ def gestao_relatorios(request):
         questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
         questoes_linguagem = [getattr(registro, f"questao_linguagem_{i}", "BRANCO") for i in range(11, 21)]
 
-        # Cálculo do desempenho
         total_pontos = sum(pontuacao.get(resposta, 0) for resposta in questoes_matematica + questoes_linguagem)
         total_pontos_geral += total_pontos
         max_pontos = 40
         desempenho = (total_pontos / max_pontos) * 100 if max_pontos > 0 else 0
 
-        # Classificação de desempenho
         if desempenho >= 90:
             avaliacao = "Excelente"
             total_excelente += 1
@@ -5728,12 +5736,7 @@ def gestao_relatorios(request):
             'questoes_linguagem': questoes_linguagem,
         })
 
-    # Cálculo da média de desempenho
     media_desempenho = (total_pontos_geral / (total_alunos_avaliados * 40) * 100) if total_alunos_avaliados > 0 else 0
-
-    # Filtragem das escolas e turmas
-    escolas = CadastroEI.objects.order_by('unidade_ensino').values_list('unidade_ensino', flat=True).distinct()
-    turmas = CadastroEI.objects.filter(unidade_ensino=nome_escola).order_by('turma').values_list('turma', flat=True).distinct() if nome_escola else []
 
     context = {
         'relatorios': relatorios,
@@ -5750,7 +5753,11 @@ def gestao_relatorios(request):
         'total_excelente': total_excelente,
         'total_necessita_melhorar': total_necessita_melhorar,
     }
+
     return render(request, 'webapp/gestao_relatorios.html', context)
+
+
+
 ###***********************************************************************************************************************
 
 from django.http import HttpResponse
@@ -6567,23 +6574,32 @@ def login_prof(request):
 
 
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 from .models import CadastroEI
 
+@login_required
 def modulo_pedagogico(request):
+    usuario_logado = request.user
     turma_nome = request.GET.get('turma', '')  # Captura o nome da turma, se estiver nos parâmetros da URL
 
-    # Filtrar alunos pela turma (ajuste de acordo com o campo 'turma' em CadastroEI)
-    if turma_nome:
-        alunos = CadastroEI.objects.filter(turma__icontains=turma_nome)  # Filtrar por nome de turma
+    # Se for superuser, mostrar todos os alunos
+    if usuario_logado.is_superuser:
+        alunos = CadastroEI.objects.all()
     else:
-        alunos = CadastroEI.objects.all()  # Exibe todos se não houver filtro
+        professor_id = usuario_logado.id  # Ajuste conforme o campo que identifica o professor no usuário
+        alunos = CadastroEI.objects.filter(professor_id=professor_id)
+
+    # Aplicar filtro de turma, se especificado
+    if turma_nome:
+        alunos = alunos.filter(turma__icontains=turma_nome)
 
     context = {
         'alunos': alunos,
         'turma_nome': turma_nome,  # Para mostrar o filtro aplicado
     }
-    
+
     return render(request, 'webapp/modulo_pedagogico.html', context)
+
 
 
 
@@ -6608,28 +6624,38 @@ def logout_prof(request):
 
 def login_prof_view(request):
     print("View login_prof_view foi chamada")
-    unidades = CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct()
-    turmas = CadastroEI.objects.values_list('turma', flat=True).distinct()
     
-    print("Unidades:", unidades)  # Verificação no console
-    print("Turmas:", turmas)      # Verificação no console
+    # Obter as unidades distintas
+    unidades = CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct()
+    
+    # Obter os nomes das turmas distintas usando o campo `nome` da relação de turma
+    turmas = CadastroEI.objects.order_by('turma__nome').values_list('turma__nome', flat=True).distinct()
+    
+    print("Unidades:", list(unidades))
+    print("Turmas:", list(turmas))
     
     context = {
-        'unidades': unidades,
-        'turmas': turmas,
+        'unidades': list(unidades),  # Converter para lista explícita para evitar erros no template
+        'turmas': list(turmas),
     }
     return render(request, 'semedapp/login_prof.html', context)
 
 
 
+
 from django.http import JsonResponse
-from semedapp.models import CadastroEI
+from .models import CadastroEI
 
 def carregar_unidades_turmas(request):
-    unidades = list(CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct())
-    turmas = list(CadastroEI.objects.values_list('turma', flat=True).distinct())
+    unidades = CadastroEI.objects.values_list('unidade_ensino', flat=True).distinct()
+    turmas = CadastroEI.objects.order_by('turma__nome').values_list('turma__nome', flat=True).distinct()
     
-    return JsonResponse({'unidades': unidades, 'turmas': turmas})
+    data = {
+        "unidades": list(unidades),
+        "turmas": list(turmas)
+    }
+    return JsonResponse(data)
+
 
 
 

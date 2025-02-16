@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container mt-5">
     <div class="text-center mb-4">
-        <h2 class="display-5 fw-bold text-primary">📊 Avaliação de Desempenho dos Alunos88</h2>
+        <h2 class="display-5 fw-bold text-primary">📊 Avaliação de Desempenho dos Alunos</h2>
         <p class="text-muted fs-5">Acompanhe o desempenho detalhado dos alunos nas avaliações de Matemática e Linguagem.</p>
         <hr class="mt-3 mb-5 stylish-divider">
     </div>
@@ -163,7 +163,7 @@
                         <td>
                             <ul class="list-unstyled">
                                 {% for resposta in item.questoes_linguagem %}
-                                <li>Q{{ forloop.counter|add:10 }}: 
+                                <li>Q{{ forloop.counter }}: 
                                     <span class="badge {% if resposta == 'CERTO' %}bg-success{% elif resposta == 'ERRADO' %}bg-danger{% elif resposta == 'PARCIAL' %}bg-warning{% elif resposta == 'BRANCO' %}bg-secondary{% else %}bg-info{% endif %}">
                                         {{ resposta }}
                                     </span>

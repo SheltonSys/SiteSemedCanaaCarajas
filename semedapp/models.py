@@ -2237,23 +2237,29 @@ class CustomUserProfManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         return self.create_user(username, cpf, password, **extra_fields)
 
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
 class CustomUserProf(AbstractBaseUser, PermissionsMixin):
     is_professor = models.BooleanField(default=False)
     escolas = models.ManyToManyField('Escolas', related_name='professores_customuser', blank=True)
     matricula = models.CharField(max_length=15, unique=True, verbose_name="Matrícula")
     telefone = models.CharField(max_length=15, blank=True, null=True)
     especializacao = models.CharField(max_length=100, blank=True, null=True)
-    is_professor = models.BooleanField(default=True)  # Flag para professores
     username = models.CharField(max_length=150, unique=True)
+    first_name = models.CharField(max_length=30, blank=True, null=True)  # Nome
+    last_name = models.CharField(max_length=30, blank=True, null=True)   # Sobrenome
     cpf = models.CharField(max_length=11, unique=True)
     email = models.EmailField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
     
+
     groups = models.ManyToManyField(
         Group,
-        related_name='customuserprof_set',  # Adicionando related_name personalizado
+        related_name='customuserprof_set',
         blank=True,
         help_text="Os grupos aos quais este usuário pertence.",
         verbose_name="grupos"
@@ -2261,7 +2267,7 @@ class CustomUserProf(AbstractBaseUser, PermissionsMixin):
     
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name='customuserprof_permissions',  # Adicionando related_name personalizado
+        related_name='customuserprof_permissions',
         blank=True,
         help_text="Permissões específicas para este usuário.",
         verbose_name="permissões de usuário"
@@ -2270,10 +2276,11 @@ class CustomUserProf(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserProfManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['cpf']
+    REQUIRED_FIELDS = ['cpf', 'first_name', 'last_name']  # Campos necessários ao criar um usuário
 
     def __str__(self):
-        return f"{self.username} ({self.matricula})"
+        return f"{self.first_name} {self.last_name} ({self.username})"
+
 
 
 

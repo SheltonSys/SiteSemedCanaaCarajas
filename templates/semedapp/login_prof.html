@@ -39,7 +39,7 @@
             </div>
             
             <div class="card-body">
-                <p class="login-box-msg"><b>Acesso ao Sistema</b></p>
+                <p class="login-box-msg"><b>Professor e Coordenador Acesso ao Sistema</b></p>
                 <form action="{% url 'login_prof' %}" method="post" onsubmit="startProcessing(event)">
                     {% csrf_token %}
                     
@@ -86,6 +86,7 @@
                             <option value="">Carregando turmas...</option>
                         </select>
                         <small class="form-text text-muted">Segure a tecla Ctrl (ou Cmd no Mac) para selecionar várias turmas.</small>
+                        
                     </div>
                     
                     <div class="row">
@@ -129,35 +130,36 @@
     
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            fetch("{% url 'carregar_unidades_turmas' %}")
-                .then(response => response.json())
-                .then(data => {
-                    // Preencher o select de unidades
-                    const unidadeSelect = document.getElementById('unidade_escolar');
-                    unidadeSelect.innerHTML = '<option value="">Selecione a unidade escolar</option>';
-                    data.unidades.forEach(unidade => {
-                        const option = document.createElement('option');
-                        option.value = unidade;
-                        option.textContent = unidade;
-                        unidadeSelect.appendChild(option);
-                    });
-    
-                    // Preencher o select de turmas
-                    const turmaSelect = document.getElementById('turmas');
-                    turmaSelect.innerHTML = '<option value="">Selecione a turma</option>';
-                    data.turmas.forEach(turma => {
-                        const option = document.createElement('option');
-                        option.value = turma;
-                        option.textContent = turma;
-                        turmaSelect.appendChild(option);
-                    });
-                })
-                .catch(error => {
-                    console.error('Erro ao carregar unidades e turmas:', error);
-                    alert('Erro ao carregar dados. Tente novamente.');
-                });
+        document.addEventListener("DOMContentLoaded", function () {
+    fetch("{% url 'carregar_unidades_turmas' %}")
+        .then(response => response.json())
+        .then(data => {
+            // Preencher o select de unidades escolares
+            const unidadeSelect = document.getElementById('unidade_escolar');
+            unidadeSelect.innerHTML = '<option value="">Selecione a unidade escolar</option>';
+            data.unidades.forEach(unidade => {
+                const option = document.createElement('option');
+                option.value = unidade;  // Usar o nome da unidade como valor
+                option.textContent = unidade;
+                unidadeSelect.appendChild(option);
+            });
+
+            // Preencher o select de turmas
+            const turmaSelect = document.getElementById('turmas');
+            turmaSelect.innerHTML = '';  // Limpar as opções de turmas
+            data.turmas.forEach(turma => {
+                const option = document.createElement('option');
+                option.value = turma;  // Usar o nome da turma como valor
+                option.textContent = turma;
+                turmaSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Erro ao carregar unidades e turmas:', error);
+            alert('Erro ao carregar dados. Tente novamente.');
         });
+});
+
     </script>
     
 

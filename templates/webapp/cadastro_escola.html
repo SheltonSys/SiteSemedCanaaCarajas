@@ -152,8 +152,8 @@
                     <strong>Ano:</strong> {{ escola.ano }}<br>
                     <strong>Modalidade:</strong> {{ escola.modalidade }}<br>
                     <strong>Turma:</strong> {{ escola.turma }}<br>
-                    <strong>Professor:</strong> {{ escola.professor.nome }}<br>
-                    <strong>Aluno:</strong> {{ escola.pessoa_nome }}<br>
+                    <!-- <strong>Professor:</strong> {{ escola.professor.nome }}<br> -->
+                    <strong>Aluno(a):</strong> {{ escola.pessoa_nome }}<br>
                     <strong>Idade:</strong> {{ escola.idade }} anos
                 </p>
                 
@@ -169,15 +169,16 @@
                 
                 <div class="d-flex justify-content-between mt-3">
                     {% if escola.id_matricula %}
-                    <a href="{% url 'editar_turma' escola.id_matricula %}" class="btn btn-warning btn-sm">
+                    <!-- <a href="{% url 'editar_turma' escola.id_matricula %}" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i> Editar
-                    </a>
-                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#avaliacaoModal{{ escola.id_matricula }}">
+                    </a> -->
+                    <button class="btn btn-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#avaliacaoModal{{ escola.id_matricula }}">
                         <i class="fas fa-file-alt"></i> Avaliação
                     </button>
-                    <a href="{% url 'excluir_escola' escola.id_matricula %}" class="btn btn-danger btn-sm">
+                    
+                    <!-- <a href="{% url 'excluir_escola' escola.id_matricula %}" class="btn btn-danger btn-sm" disabled>
                         <i class="fas fa-trash"></i> Excluir
-                    </a>
+                    </a> -->
                     {% else %}
                     <button class="btn btn-secondary btn-sm" disabled>
                         <i class="fas fa-edit"></i> Indisponível
@@ -241,6 +242,7 @@
                                         <option value="PARCIAL">PARCIAL</option>
                                         <option value="BRANCO">BRANCO</option>
                                         <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                        <option value="FALTOU">FALTOU</option>
                                     </select>
                                 </div>
                                 {% endfor %}
@@ -277,6 +279,7 @@
                                                     <option value="PARCIAL">PARCIAL</option>
                                                     <option value="BRANCO">BRANCO</option>
                                                     <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                                    <option value="FALTOU">FALTOU</option>
                                                 {% endif %}
                                             </select>
                                         </div>
@@ -305,7 +308,7 @@
     </div>
 
 
-     
+     <br><br>
 
 </div>
 
