@@ -353,21 +353,36 @@
             </a>
         </div>
     </section>
+    
+
+
+
 
     <!-- Cards Section 1 -->
     <div class="container my-5">
         <div class="row text-center">
+
+
+
+
+
+
+
+            <!-- Calendário Escolar -->
             <div class="col-md-4">
                 <div class="card p-4 shadow text-center">
-                    <i class="fas fa-file-alt fa-3x text-danger"></i>
-                    <h5 class="mt-3 text-uppercase font-weight-bold">Exame de Suplência 2024</h5>
-                    <p style="text-align: justify;">Acompanhe o andamento e as informações sobre o Exame de Suplência
-                        2024.</p>
-                    <a href="https://eja.semedcanaadoscarajas.pa.gov.br/" class="btn btn-danger btn-sm" target="_blank">
-                        <i class="fas fa-external-link-alt"></i> Acesse Agora
+                    <i class="fas fa-calendar-alt fa-3x text-success"></i>
+                    <h5 class="mt-3 text-uppercase font-weight-bold">Calendário Escolar</h5>
+                    <p style="text-align: justify;">Confira as datas e eventos importantes do ano letivo.</p>
+                    <a href="{% url 'calendario_escolar' %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-calendar-check"></i> Acesse o Calendário
                     </a>
+
                 </div>
             </div>
+
+
+
             <div class="col-md-4">
                 <div class="card p-4 shadow text-center">
                     <i class="fas fa-globe fa-3x text-info"></i>
@@ -394,6 +409,115 @@
     </div>
     <!-- FIM Cards Section 1 -->
 
+
+
+
+        <!-- Seção de Notícias -->
+        <section id="noticias" class="py-5 bg-light">
+            <div class="container">
+                <h2 class="text-center text-primary mb-4">Fique por Dentro</h2>
+                <div class="row">
+    
+                    <!-- Notícia 1 -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/seloOuro.png' %}" class="card-img-top" alt="Notícia 1">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Ouro do Selo Nacional</h5>
+                                <p class="card-text text-center">Canaã dos Carajás é premiada na categoria Ouro do Selo
+                                    Nacional Compromisso com a Alfabetização.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-e-premiada-na-categoria-ouro-do-selo-nacional-compromisso-com-a-alfabetizacao/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Notícia 2 -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/seloUnicef4.png' %}" class="card-img-top" alt="Notícia 2">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Selo Unicef</h5>
+                                <p class="card-text text-center">Canaã dos Carajás recebe Certificação do Selo Unicef Edição
+                                    2021-2024.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-recebe-certificacao-do-selo-unicef-edicao-2021-2024/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Notícia 3 -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm">
+                            <img src="{% static 'assets/dist/img/flacc2024.png' %}" class="card-img-top" alt="Notícia 3">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">5ª edição do FLACC</h5>
+                                <p class="card-text text-center">5ª edição do FLACC terá como foco a Educação Antirracista.
+                                </p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/5a-edicao-do-flacc-tera-como-foco-a-educacao-antirracista/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="container">
+                <!-- <h2 class="text-center text-primary mb-4">Últimas Notícias</h2> -->
+                <div class="row">
+    
+                    <!-- Notícia 1 -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/rematricula.png' %}" class="card-img-top" alt="Notícia 1">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Prazo para Rematrícula</h5>
+                                <p class="card-text text-center">Aberto o prazo para rematrícula na educação infantil e
+                                    ensino fundamental.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/aberto-o-prazo-para-rematricula-na-educacao-infantil-e-ensino-fundamental/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Notícia 2 -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/escolarTransporte.png' %}" class="card-img-top"
+                                alt="Notícia 2">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Transporte Universitário</h5>
+                                <p class="card-text text-center">Transporte Universitário: Prefeitura divulga datas para
+                                    recadastro e novos cadastros.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/transporte-universitario-prefeitura-divulga-datas-para-recadastro-e-novos-cadastros/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Notícia 3 -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm">
+                            <img src="{% static 'assets/dist/img/alimentar.png' %}" class="card-img-top" alt="Notícia 3">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Educação Alimentar</h5>
+                                <p class="card-text text-center">Canaã dos Carajás ganha destaque pela educação alimentar
+                                    nas escolas.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-ganha-destaque-pela-educacao-alimentar-nas-escolas/"
+                                    class="btn btn-primary btn-sm d-block mx-auto">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- FIM Seção de Notícias -->
+
+
+
+
+
+
     <!-- Cards Section 2 -->
     <div class="container my-5">
         <div class="row text-center">
@@ -410,18 +534,30 @@
                 </div>
             </div>
 
-            <!-- Calendário Escolar -->
+
+
+
+
+
+
+
             <div class="col-md-4 mt-4">
                 <div class="card p-4 shadow text-center">
-                    <i class="fas fa-calendar-alt fa-3x text-success"></i>
-                    <h5 class="mt-3 text-uppercase font-weight-bold">Calendário Escolar</h5>
-                    <p style="text-align: justify;">Confira as datas e eventos importantes do ano letivo.</p>
-                    <a href="{% url 'calendario_escolar' %}" class="btn btn-success btn-sm">
-                        <i class="fas fa-calendar-check"></i> Acesse o Calendário
+                    <i class="fas fa-file-alt fa-3x text-danger"></i>
+                    <h5 class="mt-3 text-uppercase font-weight-bold">Exame de Suplência 2024</h5>
+                    <p style="text-align: justify;">Acompanhe o andamento e as informações sobre o Exame de Suplência
+                        2024.</p>
+                    <a href="https://eja.semedcanaadoscarajas.pa.gov.br/" class="btn btn-danger btn-sm" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Acesse Agora
                     </a>
-
                 </div>
             </div>
+
+
+
+
+
+
 
             <!-- Repositório -->
             <div class="col-md-4 mt-4">
@@ -439,6 +575,14 @@
         </div>
     </div>
     <!-- FIM Cards Section 2 -->
+
+
+
+
+
+
+
+
 
     <!-- Galeria de Imagens -->
     <section id="galeria" class="py-5 bg-light">
@@ -472,7 +616,7 @@
                             <p class="card-text text-center">ESPLANADA</p>
                             <div class="progress" style="height: 25px; margin-top: 15px;">
                                 <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
-                                    data-final-value="90" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                    data-final-value="100" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
                                 </div>
                             </div>
                         </div>
@@ -506,7 +650,7 @@
                             <p class="card-text text-center">RECANTO DOS PÁSSAROS</p>
                             <div class="progress" style="height: 25px; margin-top: 15px;">
                                 <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
-                                    data-final-value="87" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                    data-final-value="94" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
                                 </div>
                             </div>
                         </div>
@@ -523,7 +667,7 @@
                             <p class="card-text text-center">BAIRRO CIDADE NOVA</p>
                             <div class="progress" style="height: 25px; margin-top: 15px;">
                                 <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
-                                    data-final-value="39" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                    data-final-value="46" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
                                 </div>
                             </div>
                         </div>
@@ -540,7 +684,7 @@
                             <p class="card-text text-center">BAIRRO MARANHENSES</p>
                             <div class="progress" style="height: 25px; margin-top: 15px;">
                                 <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
-                                    data-final-value="32" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                    data-final-value="29" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
                                 </div>
                             </div>
                         </div>
@@ -576,7 +720,7 @@
                             <p class="card-text text-center">BAIRRO BELA VISTA</p>
                             <div class="progress" style="height: 25px; margin-top: 15px;">
                                 <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
-                                    data-final-value="70" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                    data-final-value="72" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
                                 </div>
                             </div>
                         </div>
@@ -835,106 +979,17 @@
     <!-- FIM Seção de Vídeos -->
 
 
-    <!-- Seção de Notícias -->
-    <section id="noticias" class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center text-primary mb-4">Fique por Dentro</h2>
-            <div class="row">
 
-                <!-- Notícia 1 -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <img src="{% static 'assets/dist/img/seloOuro.png' %}" class="card-img-top" alt="Notícia 1">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">Ouro do Selo Nacional</h5>
-                            <p class="card-text text-center">Canaã dos Carajás é premiada na categoria Ouro do Selo
-                                Nacional Compromisso com a Alfabetização.</p>
-                            <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-e-premiada-na-categoria-ouro-do-selo-nacional-compromisso-com-a-alfabetizacao/"
-                                class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Notícia 2 -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <img src="{% static 'assets/dist/img/seloUnicef4.png' %}" class="card-img-top" alt="Notícia 2">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">Selo Unicef</h5>
-                            <p class="card-text text-center">Canaã dos Carajás recebe Certificação do Selo Unicef Edição
-                                2021-2024.</p>
-                            <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-recebe-certificacao-do-selo-unicef-edicao-2021-2024/"
-                                class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Notícia 3 -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
-                        <img src="{% static 'assets/dist/img/flacc2024.png' %}" class="card-img-top" alt="Notícia 3">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">5ª edição do FLACC</h5>
-                            <p class="card-text text-center">5ª edição do FLACC terá como foco a Educação Antirracista.
-                            </p>
-                            <a href="https://www.canaadoscarajas.pa.gov.br/novo/5a-edicao-do-flacc-tera-como-foco-a-educacao-antirracista/"
-                                class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <br />
-        <div class="container">
-            <!-- <h2 class="text-center text-primary mb-4">Últimas Notícias</h2> -->
-            <div class="row">
 
-                <!-- Notícia 1 -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <img src="{% static 'assets/dist/img/rematricula.png' %}" class="card-img-top" alt="Notícia 1">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">Prazo para Rematrícula</h5>
-                            <p class="card-text text-center">Aberto o prazo para rematrícula na educação infantil e
-                                ensino fundamental.</p>
-                            <a href="https://www.canaadoscarajas.pa.gov.br/novo/aberto-o-prazo-para-rematricula-na-educacao-infantil-e-ensino-fundamental/"
-                                class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Notícia 2 -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm h-100">
-                        <img src="{% static 'assets/dist/img/escolarTransporte.png' %}" class="card-img-top"
-                            alt="Notícia 2">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">Transporte Universitário</h5>
-                            <p class="card-text text-center">Transporte Universitário: Prefeitura divulga datas para
-                                recadastro e novos cadastros.</p>
-                            <a href="https://www.canaadoscarajas.pa.gov.br/novo/transporte-universitario-prefeitura-divulga-datas-para-recadastro-e-novos-cadastros/"
-                                class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Notícia 3 -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow-sm">
-                        <img src="{% static 'assets/dist/img/alimentar.png' %}" class="card-img-top" alt="Notícia 3">
-                        <div class="card-body">
-                            <h5 class="card-title text-center">Educação Alimentar</h5>
-                            <p class="card-text text-center">Canaã dos Carajás ganha destaque pela educação alimentar
-                                nas escolas.</p>
-                            <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-ganha-destaque-pela-educacao-alimentar-nas-escolas/"
-                                class="btn btn-primary btn-sm d-block mx-auto">Leia Mais</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- FIM Seção de Notícias -->
+
+
+
+
+
 
     <!-- Footer -->
     <footer class="footer-bg py-5">

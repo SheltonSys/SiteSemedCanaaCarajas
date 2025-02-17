@@ -6710,3 +6710,16 @@ def avaliar_aluno(request, id):
     aluno.avaliado = "SIM"  # atualize o campo para indicar que foi avaliado
     aluno.save()
     return redirect('modulo_pedagogico')  # substitua pelo nome correto da sua URL de redirecionamento
+
+
+
+
+from django.http import JsonResponse
+from .models import Escola, Turma  # Certifique-se de que esses modelos existem
+
+def carregar_turmas_por_escola(request):
+    escola_nome = request.GET.get('escola')
+    if escola_nome:
+        turmas = Turma.objects.filter(escola__nome=escola_nome).values_list('nome', flat=True).distinct()
+        return JsonResponse({'turmas': list(turmas)})
+    return JsonResponse({'turmas': []})

@@ -2313,7 +2313,7 @@ class Professor(models.Model):
 class Turma(models.Model):
     nome = models.CharField(max_length=255)
     professor = models.ForeignKey(User, on_delete=models.CASCADE)  # Se `User` representa o professor
-    escola = models.ForeignKey(Escolas, on_delete=models.CASCADE, related_name="turmas")
+    escola = models.ForeignKey(Escolas, on_delete=models.CASCADE)
     ano = models.IntegerField()
     modalidade = models.CharField(max_length=50)
 

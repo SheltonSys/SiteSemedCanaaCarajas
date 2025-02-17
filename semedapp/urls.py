@@ -60,6 +60,7 @@ from .views import ocorrencias_autokee
 from .views import ocorrencias_orientadores
 from .views import login_prof, logout_prof
 from .views import login_prof, modulo_pedagogico
+from .views import carregar_turmas_por_escola
 
 # app_name = 'contabilidade'
 # app_name = 'banco_curriculos'
@@ -650,6 +651,10 @@ urlpatterns = [
     path('editar-aluno/<int:id>/', views.editar_aluno, name='editar_aluno'),
 
     path('avaliar-aluno/<int:id>/', views.avaliar_aluno, name='avaliar_aluno'),
+
+    path('carregar-turmas/', carregar_turmas_por_escola, name='carregar_turmas_por_escola'),
+
+    path('carregar-turmas/', carregar_turmas_por_escola, name='carregar_turmas'),
 
 
      
