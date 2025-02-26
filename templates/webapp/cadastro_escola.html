@@ -10,30 +10,6 @@
         <!-- <hr class="mt-4 mb-5" style="width: 1300px; border: 3px solid #007BFF; opacity: 0.8;"> -->
     </div>
 
-    <!-- Botão de Bate-Papo via WhatsApp -->
-<!-- Botão Flutuante -->
-<!-- <div class="chat-btn" onclick="toggleChat()">
-    <i class="fab fa-whatsapp"></i>
-</div> -->
-
-<!-- Janela de Chat -->
-<!-- <div class="chat-box" id="chatBox">
-    <div class="chat-header bg-success text-white p-2">
-        <span>📞 Atendimento via WhatsApp</span>
-        <button class="btn-close btn-close-white" onclick="toggleChat()"></button>
-    </div>
-    <div class="chat-body p-3">
-        <p class="text-muted">Olá! Como podemos ajudar você hoje?</p>
-        <p class="text-muted">Digite sua mensagem abaixo:</p>
-        <textarea id="chatMessage" class="form-control" rows="3" placeholder="Digite sua mensagem..."></textarea>
-    </div>
-    <div class="chat-footer p-2 text-end">
-        <button class="btn btn-success" onclick="sendMessage()">Enviar</button>
-    </div>
-</div> -->
-
-    
-
     <div class="row mb-4">
         <!-- Card Total de Alunos -->
         <div class="col-md-4">
@@ -151,7 +127,7 @@
                 <p class="card-text">
                     <strong>Ano:</strong> {{ escola.ano }}<br>
                     <strong>Modalidade:</strong> {{ escola.modalidade }}<br>
-                    <strong>Turma:</strong> {{ escola.turma }}<br>
+                    <strong>Turma:</strong> {{ escola.turma.nome }}<br>
                     <!-- <strong>Professor:</strong> {{ escola.professor.nome }}<br> -->
                     <strong>Aluno(a):</strong> {{ escola.pessoa_nome }}<br>
                     <strong>Idade:</strong> {{ escola.idade }} anos
@@ -172,9 +148,12 @@
                     <!-- <a href="{% url 'editar_turma' escola.id_matricula %}" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i> Editar
                     </a> -->
-                    <button class="btn btn-info btn-sm w-100" data-bs-toggle="modal" data-bs-target="#avaliacaoModal{{ escola.id_matricula }}">
+                    <button class="btn btn-info btn-sm w-100" data-bs-toggle="modal" 
+                        data-bs-target="#avaliacaoModal{{ escola.id_matricula }}" 
+                        {% if is_coordenador %}disabled{% endif %}>
                         <i class="fas fa-file-alt"></i> Avaliação
                     </button>
+
                     
                     <!-- <a href="{% url 'excluir_escola' escola.id_matricula %}" class="btn btn-danger btn-sm" disabled>
                         <i class="fas fa-trash"></i> Excluir
@@ -211,7 +190,7 @@
                                         <li class="list-group-item"><strong>Unidade de Ensino:</strong> {{ escola.unidade_ensino }}</li>
                                         <li class="list-group-item"><strong>Ano:</strong> {{ escola.ano }}</li>
                                         <li class="list-group-item"><strong>Modalidade:</strong> {{ escola.modalidade }}</li>
-                                        <li class="list-group-item"><strong>Turma:</strong> {{ escola.turma }}</li>
+                                        <li class="list-group-item"><strong>Turma:</strong> {{ escola.turma.nome }}</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
@@ -230,12 +209,21 @@
                     <div class="row">
                         <!-- Avaliação de Matemática -->
                         <div class="col-md-6">
+                            <!-- Checkbox para marcar todas como 'FALTOU' -->
+                            <div class="form-check mb-2">
+                                <input type="checkbox" class="form-check-input" id="selecionarFaltou">
+                                <label class="form-check-label text-red fw-bold" for="selecionarFaltou">
+                                    📘 Aluno "FALTOU CLICK"
+                                </label>
+                            </div>
+                        
                             <h6 class="text-primary border-bottom pb-2">📘 <strong>Caderno de Avaliação – Matemática</strong></h6>
+                            
                             <div class="row">
                                 {% for i in range_matematica %}
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label">Questão {{ i }}</label>
-                                    <select class="form-select" name="questao_matematica_{{ i }}" required>
+                                    <select class="form-select questao-matematica" name="questao_matematica_{{ i }}" required>
                                         <option value="">Selecione...</option>
                                         <option value="CERTO">CERTO</option>
                                         <option value="ERRADO">ERRADO</option>
@@ -252,18 +240,28 @@
                                 <!-- Avaliação de Linguagem -->
                                 <!-- Avaliação de Linguagem -->
                                 <div class="col-md-6">
+                                    <!-- Checkbox para marcar todas como 'FALTOU' -->
+                                    <div class="form-check mb-2">
+                                        <input type="checkbox" class="form-check-input" id="selecionarFaltouLinguagem">
+                                        <label class="form-check-label text-red fw-bold" for="selecionarFaltouLinguagem">
+                                            📗 Aluno "FALTOU CLICK"
+                                        </label>
+                                    </div>
+
                                     <h6 class="text-success border-bottom pb-2">📗 <strong>Caderno de Avaliação – Linguagem</strong></h6>
+                                    
                                     <div class="row">
                                         {% for i in range_linguagem %}
                                         <div class="col-md-6 mb-3">
                                             <label class="form-label">Questão {{ forloop.counter }}</label>
-                                            <select class="form-select" name="questao_linguagem_{{ i }}" required>
+                                            <select class="form-select questao-linguagem" name="questao_linguagem_{{ i }}" required>
                                                 <option value="">Selecione...</option>
                                                 {% if i == 11 %}
                                                     <option value="CC">CC</option>
                                                     <option value="SC">SC</option>
                                                     <option value="BRANCO">BRANCO</option>
                                                     <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                                    <option value="FALTOU">FALTOU</option>
                                                 {% elif i == 13 %}
                                                     <option value="PSI">PSI</option>
                                                     <option value="PSII">PSII</option>
@@ -273,6 +271,7 @@
                                                     <option value="ALF">ALF</option>
                                                     <option value="BRANCO">BRANCO</option>
                                                     <option value="CRIANÇA COM LAUDO">CRIANÇA COM LAUDO</option>
+                                                    <option value="FALTOU">FALTOU</option>
                                                 {% else %}
                                                     <option value="CERTO">CERTO</option>
                                                     <option value="ERRADO">ERRADO</option>
@@ -286,6 +285,9 @@
                                         {% endfor %}
                                     </div>
                                 </div>
+
+
+                                
                             </div>
                         </div>
                         <div class="modal-footer bg-light">
@@ -400,6 +402,34 @@
         });
     });
 </script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Pega o checkbox e os selects das questões de Matemática
+        const checkboxMatematica = document.getElementById("selecionarFaltou");
+        const selectQuestoesMatematica = document.querySelectorAll(".questao-matematica");
+
+        // Evento de clique no checkbox de Matemática
+        checkboxMatematica.addEventListener("change", function() {
+            selectQuestoesMatematica.forEach(select => {
+                select.value = checkboxMatematica.checked ? "FALTOU" : "";
+            });
+        });
+
+        // Pega o checkbox e os selects das questões de Linguagem
+        const checkboxLinguagem = document.getElementById("selecionarFaltouLinguagem");
+        const selectQuestoesLinguagem = document.querySelectorAll(".questao-linguagem");
+
+        // Evento de clique no checkbox de Linguagem
+        checkboxLinguagem.addEventListener("change", function() {
+            selectQuestoesLinguagem.forEach(select => {
+                select.value = checkboxLinguagem.checked ? "FALTOU" : "";
+            });
+        });
+    });
+</script>
+
 
 
 

@@ -1,7 +1,7 @@
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
-
 from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBaseUser
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -18,17 +18,33 @@ from io import BytesIO
 import io
 from django.utils import timezone
 
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
+from functools import wraps
 
+from django.apps import apps
+
+class UserModulePermission(models.Model):
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    module = models.ForeignKey('semedapp.Module', on_delete=models.CASCADE)
+
+
+
+from django.db import models
+from django.conf import settings
 
 class Module(models.Model):
     """
     Representa um módulo no sistema que pode ser acessado por usuários.
     """
-    name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
+    nome = models.CharField(max_length=100, unique=True)
+    url = models.CharField(max_length=255, unique=True)
+
+    class Meta:
+        db_table = "semedapp_module"
 
     def __str__(self):
-        return self.name
+        return self.nome
 # ********************************************************************************************************************************
 
 
@@ -36,6 +52,9 @@ class Module(models.Model):
 # ********************************************************************************************************************************
 
 class ModuleAccess(models.Model):
+    """
+    Registra os acessos dos usuários aos módulos do sistema.
+    """
     MODULE_CHOICES = [
         ('configuracao', 'Configuração'),
         ('indicadores', 'Indicadores'),
@@ -48,8 +67,34 @@ class ModuleAccess(models.Model):
     module = models.CharField(max_length=50, choices=MODULE_CHOICES)
     accessed_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        db_table = "semedapp_module_access"
+
     def __str__(self):
         return f"{self.user.username} - {self.get_module_display()}"
+    
+
+
+
+
+def module_required(module_name):
+    """
+    Restringe o acesso a usuários com permissão para determinado módulo.
+    """
+    def decorator(view_func):
+        @wraps(view_func)
+        def _wrapped_view(request, *args, **kwargs):
+            module = get_object_or_404(Module, nome=module_name)
+            has_permission = UserModulePermission.objects.filter(user=request.user, module=module).exists()
+
+            if not has_permission:
+                raise PermissionDenied  # Retorna erro 403 se não tiver acesso
+
+            return view_func(request, *args, **kwargs)
+        return _wrapped_view
+    return decorator
+
+
     
 # ********************************************************************************************************************************
 
@@ -79,6 +124,7 @@ class Aluno(models.Model):
     modalidade = models.CharField(max_length=50, blank=True, null=True)
     avaliado = models.CharField(max_length=10, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
     professor = models.CharField(max_length=255, blank=True, null=True)  # ou pode ser uma ForeignKey para outro modelo
+    turma = models.ForeignKey('Turma', on_delete=models.CASCADE, related_name='alunos')
 
     def __str__(self):
         return self.pessoa_nome
@@ -273,15 +319,41 @@ class Escola(models.Model):
         return self.nome
 # ********************************************************************************************************************************
 
+from django.db import models
+from django.conf import settings  # Corrige a referência ao usuário customizado
 
 class Escolas(models.Model):
-    nome = models.CharField(max_length=255)
-    endereco = models.TextField(blank=True, null=True)
-    telefone = models.CharField(max_length=20, blank=True, null=True)
+    nome = models.CharField(max_length=255, unique=True)
     unidade_educacional = models.CharField(max_length=255, blank=True, null=True)
+    endereco = models.TextField()
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    diretor = models.CharField(max_length=255, blank=True, null=True)
+    # 🔹 Correção: referenciar o AUTH_USER_MODEL dinamicamente
+    coordenador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Usa o modelo configurado em settings.py
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="escolas_coordenadas"
+    )
 
     def __str__(self):
         return self.nome
+
+
+
+    
+
+
+
+# class Escolas(models.Model):
+#     nome = models.CharField(max_length=255)
+#     endereco = models.TextField(blank=True, null=True)
+#     telefone = models.CharField(max_length=20, blank=True, null=True)
+#     unidade_educacional = models.CharField(max_length=255, blank=True, null=True)
+
+#     def __str__(self):
+#         return self.nome
 
 
 
@@ -1828,24 +1900,32 @@ class CandidatoAutenticado(models.Model):
         return self.user.first_name
 # ********************************************************************************************************************************
 
-from django.contrib.auth.models import AbstractUser
-from django.db import models
-
 class ModulePermission(models.Model):
-    module_name = models.CharField(max_length=100)
+    """
+    Define permissões específicas para os módulos.
+    """
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="permissions")
     description = models.TextField(null=True, blank=True)
 
+    class Meta:
+        db_table = "semedapp_module_permission"
+
     def __str__(self):
-        return self.module_name
+        return f"{self.module.nome} - {self.description}"
 # ********************************************************************************************************************************
     
 class UserModulePermission(models.Model):
-    #user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='module_permissions')
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    module = models.ForeignKey(ModulePermission, on_delete=models.CASCADE, related_name='user_permissions')
+    """
+    Relaciona os usuários aos módulos permitidos.
+    """
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="module_permissions")
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="user_permissions")
+
+    class Meta:
+        db_table = "semedapp_user_module_permission"
 
     def __str__(self):
-        return f"{self.user.username} - {self.module.name}"
+        return f"{self.user.username} - {self.module.nome}"
 # ********************************************************************************************************************************
 
 from django.contrib.auth.models import AbstractUser, Group, Permission
@@ -1890,23 +1970,24 @@ class User(AbstractUser):
 
 # ********************************************************************************************************************************
 
-from django.db import models
-from .models import ModulePermission, User  # Ajuste o caminho conforme necessário
-
 class RoleModulePermission(models.Model):
-    role = models.CharField(
-        max_length=15,
-        choices=User.ROLE_CHOICES,  # Use os ROLE_CHOICES do modelo User
-        verbose_name="Função",
-    )
-    module = models.ForeignKey(
-        ModulePermission,
-        on_delete=models.CASCADE,
-        related_name="role_permissions",
-    )
+    """
+    Relaciona funções a permissões específicas de módulos.
+    """
+    ROLE_CHOICES = [
+        ('administrador', 'Administrador'),
+        ('coordenador', 'Coordenador'),
+        ('professor', 'Professor'),
+        ('secretaria', 'Secretaria'),
+    ]
+    role = models.CharField(max_length=15, choices=ROLE_CHOICES, verbose_name="Função")
+    module = models.ForeignKey(Module, on_delete=models.CASCADE, related_name="role_permissions")
+
+    class Meta:
+        db_table = "semedapp_role_module_permission"
 
     def __str__(self):
-        return f"{self.role} - {self.module.module_name}"
+        return f"{self.get_role_display()} - {self.module.nome}"
 # ********************************************************************************************************************************
 
 from django.db import models
@@ -2218,44 +2299,57 @@ class CoordenadorEI(models.Model):
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
 
 class CustomUserProfManager(BaseUserManager):
-    is_professor = models.BooleanField(default=False)
-    def create_user(self, username, cpf, password=None, **extra_fields):
+    """ Gerenciador de usuários personalizados """
+    
+    
+    def create_user(self, username, cpf, first_name, last_name, password=None, **extra_fields):
         if not username:
-            raise ValueError("O nome de usuário é obrigatório.")
+            raise ValueError(_("O campo de usuário é obrigatório"))
         if not cpf:
-            raise ValueError("O CPF é obrigatório.")
-        extra_fields.setdefault('is_active', True)
-        user = self.model(username=username, cpf=cpf, **extra_fields)
+            raise ValueError(_("O CPF é obrigatório"))
+
+        extra_fields.setdefault("is_active", True)
+        user = self.model(username=username, cpf=cpf, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, cpf, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        return self.create_user(username, cpf, password, **extra_fields)
+    def create_superuser(self, username, cpf, first_name, last_name, password=None, **extra_fields):
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission
+        return self.create_user(username, cpf, first_name, last_name, password, **extra_fields)
+    
+
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 
-class CustomUserProf(AbstractBaseUser, PermissionsMixin):
+class CustomUserProf(AbstractUser):
+    is_coordenador = models.BooleanField(default=False)  # Indica se o usuário é coordenador
     is_professor = models.BooleanField(default=False)
     escolas = models.ManyToManyField('Escolas', related_name='professores_customuser', blank=True)
+    escola = models.ForeignKey(
+        Escolas, 
+        on_delete=models.SET_NULL, 
+        blank=True, 
+        null=True, 
+        related_name='professores'
+    )
     matricula = models.CharField(max_length=15, unique=True, verbose_name="Matrícula")
     telefone = models.CharField(max_length=15, blank=True, null=True)
     especializacao = models.CharField(max_length=100, blank=True, null=True)
     username = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=30, blank=True, null=True)  # Nome
-    last_name = models.CharField(max_length=30, blank=True, null=True)   # Sobrenome
+    first_name = models.CharField(max_length=30, blank=True, null=True)
+    last_name = models.CharField(max_length=30, blank=True, null=True)
     cpf = models.CharField(max_length=11, unique=True)
     email = models.EmailField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
-    
 
     groups = models.ManyToManyField(
         Group,
@@ -2276,10 +2370,28 @@ class CustomUserProf(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserProfManager()
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['cpf', 'first_name', 'last_name']  # Campos necessários ao criar um usuário
+    REQUIRED_FIELDS = ['cpf', 'first_name', 'last_name']
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.username})"
+
+
+class Permissao(models.Model):
+    """ Define permissões personalizadas para os usuários """
+    nome = models.CharField(max_length=50, unique=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class UserPermissao(models.Model):
+    """ Relaciona usuários com permissões específicas """
+    usuario = models.ForeignKey(CustomUserProf, on_delete=models.CASCADE)
+    permissao = models.ForeignKey(Permissao, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.permissao.nome}"
+
 
 
 
@@ -2303,7 +2415,7 @@ class UnidadeEscolar(models.Model):
 
 # models.py
 from django.db import models
-
+alunos = Aluno
 class Professor(models.Model):
     nome = models.CharField(max_length=255)
     cpf = models.CharField(max_length=11, unique=True)
@@ -2311,7 +2423,8 @@ class Professor(models.Model):
 
 
 class Turma(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=255, unique=True)  # Esse campo deve existir
+    ano_letivo = models.IntegerField(default=2025)  # Garante que tenha um valor padrão
     professor = models.ForeignKey(User, on_delete=models.CASCADE)  # Se `User` representa o professor
     escola = models.ForeignKey(Escolas, on_delete=models.CASCADE)
     ano = models.IntegerField()
@@ -2351,24 +2464,61 @@ class ProfessorEscola(models.Model):
 
 
 class CadastroEI(models.Model):
-    professor = models.ForeignKey(User, on_delete=models.CASCADE)
+    professor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     id_matricula = models.AutoField(primary_key=True)
     unidade_ensino = models.CharField(max_length=255)
-    formato_letivo = models.CharField(max_length=255, null=True, blank=True)  # Certifique-se de que o campo existe
+    formato_letivo = models.CharField(max_length=255, null=True, blank=True)
     cpf = models.CharField(max_length=11)
-    data_nascimento = models.DateField(null=True, blank=True)  # Permitir valores nulos
-    turma = models.ForeignKey(Turma, on_delete=models.CASCADE)
+    data_nascimento = models.DateField(null=True, blank=True)
     ano = models.CharField(max_length=4)
     modalidade = models.CharField(max_length=100)
     pessoa_nome = models.CharField(max_length=255)
     idade = models.IntegerField()
-    avaliado = models.CharField(max_length=3, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
+    avaliado = models.CharField(
+        max_length=3, choices=[("SIM", "Sim"), ("NAO", "Não")], default="NAO"
+    )
 
-    # Campos para as questões
+    turma = models.ForeignKey(
+        "semedapp.Turma", 
+        on_delete=models.CASCADE, 
+        related_name="cadastros_ei",
+        db_column="turma_id"  # 🔹 Garante que o nome da coluna no banco de dados seja correto
+    )
+    # Campos para as questões de Matemática e Linguagem
+    questao_matematica_1 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_2 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_3 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_4 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_5 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_6 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_7 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_8 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_9 = models.CharField(max_length=50, null=True, blank=True)
+    questao_matematica_10 = models.CharField(max_length=50, null=True, blank=True)
+
+    questao_linguagem_11 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_12 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_13 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_14 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_15 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_16 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_17 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_18 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_19 = models.CharField(max_length=50, null=True, blank=True)
+    questao_linguagem_20 = models.CharField(max_length=50, null=True, blank=True)
+
+    # Campos para as questões de Matemática e Linguagem
     for i in range(1, 11):
         locals()[f"questao_matematica_{i}"] = models.CharField(max_length=50, null=True, blank=True)
+
     for i in range(11, 21):
         locals()[f"questao_linguagem_{i}"] = models.CharField(max_length=50, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.pessoa_nome} - {self.unidade_ensino}"
+
 # ********************************************************************************************************************************
 
 
@@ -2383,3 +2533,30 @@ class NotaAluno(models.Model):
     def __str__(self):
         return f"{self.aluno.pessoa_nome} - {self.disciplina} - {self.nota}"
 # ********************************************************************************************************************************
+
+from django.db import models
+from semedapp.models import CustomUserProf  # 🔹 Confirme que este é o modelo correto
+
+
+
+class ModuleModulosPermitidos(models.Model):
+    customuserprof = models.ForeignKey(
+        CustomUserProf,  # 🔹 Referenciando corretamente o modelo CustomUserProf
+        on_delete=models.CASCADE,
+        db_column="customuserprof_id",  # 🔹 Ajustado para o nome correto da coluna no banco de dados
+        related_name="modulos_permitidos"  # 🔹 Evita conflitos no relacionamento reverso
+    )
+    module = models.ForeignKey(
+        Module, 
+        on_delete=models.CASCADE,
+        db_column="module_id"  # 🔹 Define explicitamente a referência correta ao módulo
+    )
+
+    class Meta:
+        db_table = "semedapp_modulemodulospermitidos"  # 🔹 Nome correto da tabela no banco
+
+    def __str__(self):
+        return f"{self.customuserprof.username} - {self.module.nome}"  # 🔹 Melhor debug
+
+
+

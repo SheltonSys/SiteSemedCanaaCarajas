@@ -6,52 +6,128 @@
     <p class="text-center text-muted">Resultados detalhados das avaliações dos alunos.</p>
 
     <!-- Cards Estatísticos -->
-    <div class="row mb-4">
+<!-- Cards Estatísticos -->
+<div class="row mb-4">
+    <!-- Card Total de Alunos Avaliados -->
+    <div class="row row-cols-1 row-cols-md-4 g-4">
         <!-- Card Total de Alunos Avaliados -->
-        <div class="col-md-3 d-flex align-items-stretch">
-            <div class="card border-0 shadow-sm w-100">
-                <div class="card-body text-center bg-gradient-primary text-white rounded">
-                    <h5 class="card-title">👩‍🎓 Alunos Avaliados</h5>
-                    <h2 class="display-6 fw-bold">{{ total_alunos_avaliados }}</h2>
-                    <p class="card-text">Total de alunos avaliados</p>
+        <div class="col">
+            <div class="card border-0 shadow-lg h-100 d-flex flex-column">
+                <div class="card-body text-center bg-gradient-primary text-white rounded flex-grow-1">
+                    <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                    <h5 class="card-title fw-bold">👩‍🎓 Alunos Avaliados</h5>
+                    <h2 class="display-4 fw-bold text-light">{{ total_alunos_avaliados }}</h2>
+                    <p class="card-text fs-6 text-light">Total de alunos avaliados</p>
                 </div>
             </div>
         </div>
     
         <!-- Card Média de Desempenho -->
-        <div class="col-md-3 d-flex align-items-stretch">
-            <div class="card border-0 shadow-sm w-100">
-                <div class="card-body text-center bg-gradient-info text-white rounded">
-                    <h5 class="card-title">📈 Média de Desempenho</h5>
-                    <h2 class="display-6 fw-bold">{{ media_desempenho }}%</h2>
-                    <p class="card-text">Desempenho médio dos alunos</p>
+        <div class="col">
+            <div class="card border-0 shadow-lg h-100 d-flex flex-column">
+                <div class="card-body text-center bg-gradient-info text-white rounded flex-grow-1">
+                    <i class="fas fa-users-class fa-3x mb-3"></i>
+                    <h5 class="card-title fw-bold">🏫 Total de Turmas</h5>
+                    <h2 class="display-4 fw-bold text-light">{{ total_turmas }}</h2>
+                    <p class="card-text fs-6 text-light">Quantidade de turmas analisadas</p>
                 </div>
             </div>
         </div>
+        
     
         <!-- Card Avaliação Excelente -->
-        <div class="col-md-3 d-flex align-items-stretch">
-            <div class="card border-0 shadow-sm w-100">
-                <div class="card-body text-center bg-gradient-success text-white rounded">
-                    <h5 class="card-title">🌟 Avaliação Excelente</h5>
-                    <h2 class="display-6 fw-bold">{{ total_excelente }}</h2>
-                    <p class="card-text">Total de avaliações excelentes</p>
+        <div class="col">
+            <div class="card border-0 shadow-lg h-100 d-flex flex-column">
+                <div class="card-body text-center bg-gradient-success text-white rounded flex-grow-1">
+                    <i class="fas fa-star fa-3x mb-3"></i>
+                    <h5 class="card-title fw-bold">🌟 Avaliação Excelente</h5>
+                    <h2 class="display-4 fw-bold text-light">{{ total_excelente }}</h2>
+                    <p class="card-text fs-6 text-light">Total de avaliações excelentes</p>
                 </div>
             </div>
         </div>
     
         <!-- Card Avaliação Necessita Melhorar -->
-        <div class="col-md-3 d-flex align-items-stretch">
-            <div class="card border-0 shadow-sm w-100">
-                <div class="card-body text-center bg-gradient-danger text-white rounded">
-                    <h5 class="card-title">🚨 Necessita Melhorar</h5>
-                    <h2 class="display-6 fw-bold">{{ total_necessita_melhorar }}</h2>
-                    <p class="card-text">Total de avaliações abaixo de 50%</p>
+        <div class="col">
+            <div class="card border-0 shadow-lg h-100 d-flex flex-column">
+                <div class="card-body text-center bg-gradient-danger text-white rounded flex-grow-1">
+                    <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                    <h5 class="card-title fw-bold">🚨 Necessita Melhorar</h5>
+                    <h2 class="display-4 fw-bold text-light">{{ total_necessita_melhorar }}</h2>
+                    <p class="card-text fs-6 text-light">Total de avaliações abaixo de 50%</p>
                 </div>
             </div>
         </div>
     </div>
     
+
+<div class="row mb-4">
+    <!-- Card Avaliação Regular -->
+    <div class="col-md-3 d-flex align-items-stretch">
+        <div class="card border-0 shadow-lg w-100">
+            <div class="card-body text-center bg-gradient-warning text-white rounded position-relative">
+                <i class="fas fa-equals fa-3x position-absolute top-0 start-50 translate-middle-x mt-2"></i>
+                <h5 class="card-title mt-5 fw-bold">📉 Avaliação Regular</h5>
+                <h2 class="display-4 fw-bold text-light">{{ total_regular }}</h2>
+                <p class="card-text fs-6 text-light">Total de avaliações regulares</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card Avaliação Necessita Melhorar -->
+    <!-- Card Total de Turmas Avaliadas -->
+<!-- Card Alunos Faltantes em Matemática -->
+<div class="col-md-3 d-flex align-items-stretch">
+    <div class="card border-0 shadow-lg w-100">
+        <div class="card-body text-center bg-gradient-warning text-white rounded position-relative">
+            <i class="fas fa-user-slash fa-3x position-absolute top-0 start-50 translate-middle-x mt-2"></i>
+            <h5 class="card-title mt-5 fw-bold">🧮 Faltou em Matemática</h5>
+            <h2 class="display-4 fw-bold text-light">{{ total_faltantes_matematica }}</h2>
+            <p class="card-text fs-6 text-light">Total de alunos que não fizeram a prova de Matemática</p>
+        </div>
+    </div>
+</div>
+
+<!-- Card Alunos Faltantes em Linguagem -->
+<div class="col-md-3 d-flex align-items-stretch">
+    <div class="card border-0 shadow-lg w-100">
+        <div class="card-body text-center bg-gradient-secondary text-white rounded position-relative">
+            <i class="fas fa-user-slash fa-3x position-absolute top-0 start-50 translate-middle-x mt-2"></i>
+            <h5 class="card-title mt-5 fw-bold">📚 Faltou em Linguagem</h5>
+            <h2 class="display-4 fw-bold text-light">{{ total_faltantes_linguagem }}</h2>
+            <p class="card-text fs-6 text-light">Total de alunos que não fizeram a prova de Linguagem</p>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Card Maior Desempenho -->
+<!-- <div class="col-md-3 d-flex align-items-stretch">
+    <div class="card border-0 shadow-lg w-100">
+        <div class="card-body text-center bg-gradient-primary text-white rounded position-relative">
+            <i class="fas fa-trophy fa-3x position-absolute top-0 start-50 translate-middle-x mt-2"></i>
+            <h5 class="card-title mt-5 fw-bold">🏆 Maior Desempenho</h5>
+            <h2 class="display-4 fw-bold text-light">{{ maior_desempenho_qtd }}</h2>
+            <p class="card-text fs-6 text-light">Alunos com 100% de desempenho</p>
+        </div>
+    </div>
+</div> -->
+
+<!-- Card Menor Desempenho -->
+<div class="col-md-3 d-flex align-items-stretch">
+    <div class="card border-0 shadow-lg w-100">
+        <div class="card-body text-center bg-gradient-danger text-white rounded position-relative">
+            <i class="fas fa-thumbs-down fa-3x position-absolute top-0 start-50 translate-middle-x mt-2"></i>
+            <h6 class="card-title mt-5 fw-bold">📉 Desempenho</h6>
+            <h4 class="display-4 fw-bold text-light">{{ menor_desempenho_qtd }}</h4>
+            <p class="card-text fs-6 text-light">Alunos com desempenho abaixo de 50%</p>
+        </div>
+    </div>
+</div>
+
+
 
 
     <div class="col-md-2 align-self-end">
@@ -75,15 +151,19 @@
                 {% endfor %}
             </select>
         </div>
+        
         <div class="col-md-3">
             <label for="turma" class="form-label fw-bold">📖 Turma</label>
             <select id="turmaSelect" name="turma" class="form-select">
                 <option value="">Todas</option>
                 {% for turma in turmas %}
-                <option value="{{ turma }}" {% if filtros.turma == turma %}selected{% endif %}>{{ turma }}</option>
+                <option value="{{ turma }}" {% if filtros.turma == turma %}selected{% endif %}>
+                    {{ turma }}
+                </option>                
                 {% endfor %}
             </select>
         </div>
+        
         
         <div class="col-md-2">
             <label for="ano" class="form-label fw-bold">📅 Ano</label>
@@ -169,3 +249,6 @@
     });
 </script>
 
+<style>
+    
+</style>
