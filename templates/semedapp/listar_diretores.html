@@ -11,27 +11,58 @@
         </p>
     </div>
 
-    <!-- Search and Filter -->
-    <!-- Search and Filter -->
-    <div class="row justify-content-center mb-5">
-        <div class="col-lg-6 col-md-8 mb-3">
-            <div class="input-group shadow">
-                <input type="text" id="searchInput" class="form-control form-control-lg"
-                    placeholder="Pesquise por Nome ou CPF" aria-label="Search">
-                <button class="btn btn-primary btn-lg" id="searchButton" type="button">
-                    <i class="fas fa-search"></i> Buscar
+ <!-- Search and Filter -->
+<div class="row justify-content-center mb-4">
+    <form method="GET" action="{% url 'listar_diretores' %}" class="col-lg-10">
+        <div class="row g-3 align-items-center">
+            <!-- Campo de busca por Nome ou CPF -->
+            <div class="col-lg-6 col-md-6">
+                <div class="input-group shadow">
+                    <input type="text" name="search" id="searchInput" class="form-control form-control-lg"
+                        placeholder="Pesquise por Nome ou CPF" value="{{ search_query }}" aria-label="Search">
+                    <button class="btn btn-primary btn-lg" type="submit">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtro por Cargo -->
+            <div class="col-lg-3 col-md-6">
+                <select id="filterCargo" name="cargo" class="form-select form-select-lg shadow">
+                    <option value="" {% if not cargo_filtro %}selected{% endif %}>Filtrar por Cargo</option>
+                    {% for cargo in cargos_disponiveis %}
+                        <option value="{{ cargo }}" {% if cargo_filtro == cargo %}selected{% endif %}>{{ cargo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Filtro por Cidade -->
+            <div class="col-lg-3 col-md-6">
+                <select id="filterCidade" name="cidade" class="form-select form-select-lg shadow">
+                    <option value="" {% if not cidade_filtro %}selected{% endif %}>Filtrar por Cidade</option>
+                    {% for cidade in cidades_disponiveis %}
+                        <option value="{{ cidade }}" {% if cidade_filtro == cidade %}selected{% endif %}>{{ cidade }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            
+
+            <!-- Botões de ação -->
+            <div class="col-lg-12 text-center mt-3">
+                <button type="submit" class="btn btn-success btn-lg px-4">
+                    <i class="fas fa-filter"></i> Aplicar Filtros
                 </button>
+                <a href="{% url 'listar_diretores' %}" class="btn btn-danger btn-lg px-4">
+                    <i class="fas fa-times"></i> Limpar Filtros
+                </a>
             </div>
         </div>
-        <div class="col-lg-4 col-md-6">
-            <select id="filterSelect" class="form-select form-select-lg shadow">
-                <option value="" selected>Filtrar por Cidade</option>
-                <option value="Canaã dos Carajás">Canaã dos Carajás</option>
-                <option value="Outro Lugar">Outro Lugar</option>
-            </select>
-        </div>
-    </div>
+    </form>
+</div>
 
+    
+    
 
     <!-- Statistics Section -->
     <div class="row text-center mb-5 g-4">
@@ -53,21 +84,21 @@
                 <div class="card-body">
                     <i class="fas fa-graduation-cap fa-3x text-success mb-3"></i>
                     <h5 class="card-title fw-bold text-dark">Formação Acadêmica</h5>
-                    <p class="card-text display-5 fw-bold text-success">80%</p>
+                    <p class="card-text display-5 fw-bold text-success">{{ total_formacoes }}</p>
                 </div>
             </div>
         </div>
-
+        
         <div class="col-lg-4 col-md-6">
             <div class="card border-0 shadow-lg hover-card">
                 <div class="card-body">
                     <i class="fas fa-city fa-3x text-warning mb-3"></i>
                     <h5 class="card-title fw-bold text-dark">Cidades Atendidas</h5>
-                    <p class="card-text display-5 fw-bold text-warning">10</p>
+                    <p class="card-text display-5 fw-bold text-warning">{{ total_cidades }}</p>
                 </div>
             </div>
         </div>
-
+        
     </div>
 
 
@@ -273,3 +304,38 @@
     });
 </script>
 {% endif %}
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let searchInput = document.getElementById("searchInput");
+        let searchButton = document.getElementById("searchButton");
+        let filterCidade = document.getElementById("filterCidade");
+        let filterCargo = document.getElementById("filterCargo");
+
+        function aplicarFiltros() {
+            let params = new URLSearchParams(window.location.search);
+            params.set('search', searchInput.value);
+            params.set('cidade', filterCidade.value);
+            params.set('cargo', filterCargo.value);
+
+            // Atualiza a URL com os novos filtros
+            window.location.href = window.location.pathname + '?' + params.toString();
+        }
+
+        // Executa a busca ao clicar no botão
+        searchButton.addEventListener("click", aplicarFiltros);
+
+        // Executa a busca ao pressionar Enter no campo de pesquisa
+        searchInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+                aplicarFiltros();
+            }
+        });
+
+        // Aplica filtros ao mudar o select de Cidade ou Cargo
+        filterCidade.addEventListener("change", aplicarFiltros);
+        filterCargo.addEventListener("change", aplicarFiltros);
+    });
+</script>

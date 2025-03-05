@@ -3858,21 +3858,93 @@ def criar_professor(request):
 
     return render(request, 'semedapp/criar_professor.html')
 ###***********************************************************************************************************************
-# View para listar diretores
+from django.db.models import Count
+from django.db.models.functions import Lower
+from django.shortcuts import render
+from .models import Diretor
+import unicodedata
+from django.db.models import Value
+
+
+# Função para normalizar texto e evitar erro com NoneType
+def normalizar_texto(valor):
+    return valor.strip().title() if valor else ""
+
 def listar_diretores(request):
-    # Obtem todos os diretores
+    # Obtém todos os diretores
     diretores = Diretor.objects.all()
 
-    # Calcula o total de currículos
+    # 📌 Obtém as formações acadêmicas disponíveis sem valores duplicados ou vazios
+    formacoes_disponiveis = sorted(
+        set(
+            normalizar_texto(diretor.formacao_academica)
+            for diretor in diretores.exclude(formacao_academica__isnull=True)
+            .exclude(formacao_academica__exact='')
+        )
+    )
+
+    # 📌 Obtém os filtros da URL
+    search_query = request.GET.get('search', '').strip()
+    cidade_filtro = request.GET.get('cidade', '').strip()
+    cargo_filtro = request.GET.get('cargo', '').strip()
+
+    # 📌 Obtém cidades e cargos distintos do banco, removendo valores vazios e ordenando
+    cidades_disponiveis = sorted(
+        set(
+            normalizar_texto(cidade)
+            for cidade in Diretor.objects.exclude(cidade__isnull=True)
+            .exclude(cidade__exact='')
+            .values_list('cidade', flat=True)
+            .distinct()
+        )
+    )
+
+    cargos_disponiveis = sorted(
+        set(
+            normalizar_texto(cargo)
+            for cargo in Diretor.objects.exclude(cargo__isnull=True)
+            .exclude(cargo__exact='')
+            .values_list('cargo', flat=True)
+            .distinct()
+        )
+    )
+
+    # 📌 Aplicação dos filtros
+    if search_query:
+        diretores = diretores.filter(nome_completo__icontains=search_query) | diretores.filter(cpf__icontains=search_query)
+
+    if cidade_filtro:
+        diretores = diretores.filter(cidade__iexact=cidade_filtro)
+
+    if cargo_filtro:
+        diretores = diretores.filter(cargo__iexact=cargo_filtro)
+
+    # 📌 Total de currículos filtrados
     total_curriculos = diretores.count()
+
+    # 📌 Total de formações acadêmicas distintas
+    total_formacoes = len(formacoes_disponiveis)
+
+    # 📌 Contagem de cidades únicas atendidas
+    total_cidades = len(cidades_disponiveis)
 
     # Contexto para o template
     context = {
         'diretores': diretores,
-        'total_curriculos': total_curriculos,  # Adiciona o total de currículos ao contexto
+        'formacoes_disponiveis': formacoes_disponiveis,  # Lista única de formações acadêmicas
+        'total_curriculos': total_curriculos,  # Total de currículos filtrados
+        'search_query': search_query,  # Mantém a pesquisa após o filtro
+        'cidade_filtro': cidade_filtro,  # Mantém a cidade selecionada
+        'cargo_filtro': cargo_filtro,  # Mantém o cargo selecionado
+        'cidades_disponiveis': cidades_disponiveis,  # Lista única de cidades ordenadas
+        'cargos_disponiveis': cargos_disponiveis,  # Lista única de cargos ordenados
+        'total_formacoes': total_formacoes,  # Total de formações acadêmicas
+        'total_cidades': total_cidades,  # Total de cidades atendidas
     }
 
     return render(request, 'semedapp/listar_diretores.html', context)
+
+
 
 ###***********************************************************************************************************************
 # View para cadastrar diretor
@@ -4450,24 +4522,30 @@ def cadastrar_candidato(request):
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import CadastroCandidato
+from .models import CadastroCandidato, Diretor
 
 def area_candidato(request):
+    """Exibe a área do candidato e busca seu currículo na tabela Diretor"""
+
+    # 🔍 Obtém o ID do candidato da sessão
     candidato_id = request.session.get('candidato_id')
 
     if not candidato_id:
-        # Redireciona para o login se não estiver logado
         messages.error(request, "Você precisa estar logado para acessar esta página.")
         return redirect("login_candidato")
 
-    try:
-        # Busca o candidato ou retorna 404 se não encontrar
-        candidato = get_object_or_404(CadastroCandidato, id=candidato_id)
-    except CadastroCandidato.DoesNotExist:
-        messages.error(request, "Candidato não encontrado.")
-        return redirect("login_candidato")
+    # 🔍 Busca o candidato e verifica se existe
+    candidato = get_object_or_404(CadastroCandidato, id=candidato_id)
 
-    return render(request, "banco_curriculos/area_candidato.html", {"candidato": candidato})
+    # 🔍 Busca o diretor associado pelo CPF do candidato
+    diretor = Diretor.objects.filter(cpf=candidato.cpf).first()
+
+    return render(request, 'banco_curriculos/area_candidato.html', {
+        'candidato': candidato,
+        'diretor': diretor  # Passa os dados do diretor para o template
+    })
+
+
 
 ###***********************************************************************************************************************
 
@@ -6816,3 +6894,93 @@ from semedapp.decorators import module_required
 def minha_view_pedagogica(request):
     return render(request, "pedagogico.html")
 ###***********************************************************************************************************************
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Diretor, CadastroCandidato
+
+def editar_curriculo(request, diretor_id):
+    # Buscar o currículo na tabela `semedapp_diretor` usando o ID
+    diretor = get_object_or_404(Diretor, id=diretor_id)
+
+    # Buscar o candidato pelo CPF na tabela `semedapp_cadastrocandidato`
+    candidato = CadastroCandidato.objects.filter(cpf=diretor.cpf).first()
+
+    if request.method == "POST":
+        try:
+            # Capturar os valores do formulário e atualizar o objeto `diretor`
+            diretor.nome_completo = request.POST.get("nome_completo", diretor.nome_completo)
+            diretor.cpf = request.POST.get("cpf", diretor.cpf)
+            diretor.rg = request.POST.get("rg", diretor.rg)
+            diretor.email = request.POST.get("email", diretor.email)
+            diretor.telefone = request.POST.get("telefone", diretor.telefone)
+            diretor.endereco = request.POST.get("endereco", diretor.endereco)
+            diretor.bairro = request.POST.get("bairro", diretor.bairro)
+            diretor.cidade = request.POST.get("cidade", diretor.cidade)
+            diretor.cep = request.POST.get("cep", diretor.cep)
+            diretor.estado_civil = request.POST.get("estado_civil", diretor.estado_civil)
+            diretor.sexo = request.POST.get("sexo", diretor.sexo)
+            diretor.data_nascimento = request.POST.get("data_nascimento") or diretor.data_nascimento
+            diretor.formacao_academica = request.POST.get("formacao_academica", diretor.formacao_academica)
+            diretor.curso = request.POST.get("curso", diretor.curso)
+            diretor.instituicao = request.POST.get("instituicao", diretor.instituicao)
+            diretor.ano_conclusao = request.POST.get("ano_conclusao") or diretor.ano_conclusao
+            diretor.experiencia_profissional = request.POST.get("experiencia_profissional", diretor.experiencia_profissional)
+            diretor.empresa = request.POST.get("empresa", diretor.empresa)
+            diretor.cargo = request.POST.get("cargo", diretor.cargo)  # Atualiza o cargo
+            diretor.data_inicio = request.POST.get("data_inicio") or diretor.data_inicio
+            diretor.data_fim = request.POST.get("data_fim") or diretor.data_fim
+
+            # Processar arquivos enviados (caso haja upload de novos arquivos)
+            if "foto" in request.FILES:
+                diretor.foto = request.FILES["foto"]
+            if "curriculo_pdf" in request.FILES:
+                diretor.curriculo_pdf = request.FILES["curriculo_pdf"]
+            if "certificados_pdf" in request.FILES:
+                diretor.certificados_pdf = request.FILES["certificados_pdf"]
+
+            # **Salvar no banco de dados**
+            diretor.save()
+
+            # Mensagem de sucesso
+            messages.success(request, "Currículo atualizado com sucesso!")
+            return redirect("area_candidato")
+
+        except Exception as e:
+            # Mensagem de erro e print do erro no console
+            print(f"Erro ao atualizar currículo: {e}")
+            messages.error(request, f"Erro ao atualizar currículo: {str(e)}")
+            return redirect("editar_curriculo", diretor_id=diretor.id)
+
+    return render(request, "banco_curriculos/editar_curriculo.html", {
+        "candidato": candidato,
+        "diretor": diretor,
+    })
+
+
+
+from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+from .models import Diretor
+
+def imprimir_curriculo_alternativo(request, diretor_id):
+    # 🔍 Busca o diretor pelo ID
+    diretor = get_object_or_404(Diretor, id=diretor_id)
+
+    # 🔍 Renderiza o HTML com os dados do diretor
+    html_content = render_to_string("banco_curriculos/curriculo_pdf_alternativo.html", {"diretor": diretor})
+
+    # 🔍 Gera o PDF com WeasyPrint
+    pdf = HTML(string=html_content).write_pdf()
+
+    # 🔍 Retorna o PDF como resposta
+    response = HttpResponse(pdf, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="curriculo_alternativo_{diretor_id}.pdf"'
+
+    return response
+
+
+
+

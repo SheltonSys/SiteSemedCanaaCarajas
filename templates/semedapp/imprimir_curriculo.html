@@ -125,7 +125,7 @@
         <div class="section">
             <h3 class="section-title">Formação Acadêmica</h3>
             <ul>
-                <li><strong>Formação:</strong> {{ diretor.formacao_academica }}</li>
+                <li><strong>Formação:</strong> {{ diretor.formacao_academica|default:"Não informado" }}</li>
                 <li><strong>Curso:</strong> {{ diretor.curso }}</li>
                 <li><strong>Instituição:</strong> {{ diretor.instituicao }}</li>
                 <li><strong>Ano de Conclusão:</strong> {{ diretor.ano_conclusao }}</li>

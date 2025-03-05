@@ -61,6 +61,10 @@ from .views import ocorrencias_orientadores
 from .views import login_prof, logout_prof
 from .views import login_prof, modulo_pedagogico
 from .views import carregar_turmas_por_escola
+from semedapp.views import editar_curriculo
+from .views import imprimir_curriculo_alternativo
+from .views import imprimir_curriculo_alternativo
+from .views import listar_diretores
 
 # app_name = 'contabilidade'
 # app_name = 'banco_curriculos'
@@ -656,7 +660,13 @@ urlpatterns = [
 
     path('carregar-turmas/', carregar_turmas_por_escola, name='carregar_turmas'),
 
+    path('banco-curriculos/editar-curriculo/<int:diretor_id>/', editar_curriculo, name='editar_curriculo'),
+    path('banco-curriculos/editar-curriculo/<int:candidato_id>/', editar_curriculo, name='editar_curriculo'),
 
+    path("imprimir-curriculo-alternativo/<int:candidato_id>/", imprimir_curriculo_alternativo, name="imprimir_curriculo_alternativo"),
+    path('banco-curriculos/imprimir-curriculo-alternativo/<int:diretor_id>/', imprimir_curriculo_alternativo, name='imprimir_curriculo_alternativo'),
+
+    path('listar-diretores/', listar_diretores, name='listar_diretores'),
      
 
 

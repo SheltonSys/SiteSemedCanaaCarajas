@@ -4,177 +4,601 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Currículo</title>
-    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>Editar Currículo - SEMED Canaã dos Carajás</title>
+    
+    <!-- Estilos -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: #0d2a4d;
+            color: white;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #0056b3, #007bff);
+            color: white;
+            padding: 50px 15px;
+            text-align: center;
+            border-bottom: 5px solid #00458a;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .footer {
+            background: #0d2a4d;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            margin-top: auto;
+        }
+
+        .btn {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="card">
-            <div class="card-header bg-primary text-white text-center">
-                <h4><i class="fas fa-edit"></i> Editar Currículo</h4>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'area_candidato' %}">
+                <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED" style="height: 40px; margin-right: 10px;">
+                Currículos SEMED
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'site_curriculos' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'logout_candidato' %}">Sair</a></li>
+                </ul>
             </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
+        </div>
+    </nav>
 
-                    <div class="form-group">
-                        <label for="nome_completo">Nome Completo</label>
-                        <input type="text" class="form-control" id="nome_completo" name="nome_completo" value="{{ candidato.nome_completo }}" required>
+      <!-- Hero Section -->
+      <section class="hero-section">
+        <div class="container">
+            <h1>Editar Currículo</h1>
+            <p class="lead">Atualize suas informações e mantenha seu perfil atualizado.</p>
+        </div>
+    </section>
+
+
+    <!-- Formulário -->
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card p-4">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4><i class="fas fa-edit"></i> Formulário de Edição</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" enctype="multipart/form-data" id="formEditarCurriculo">
+                            {% csrf_token %}
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="nome_completo" class="fas fa-user text-primary me-2"> Nome Completo</label>
+                                    <input type="text" class="form-control" id="nome_completo" name="nome_completo" value="{{ diretor.nome_completo }}" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="cpf" class="fas fa-id-card text-primary me-2"> CPF</label>
+                                    <input type="text" class="form-control" id="cpf" name="cpf" value="{{ diretor.cpf }}" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="rg" class="fas fa-id-badge text-primary me-2"> RG</label>
+                                    <input type="text" class="form-control" id="rg" name="rg" value="{{ diretor.rg }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="email" class="fas fa-envelope text-primary me-2"> E-mail</label>
+                                    <input type="email" class="form-control" id="email" name="email" value="{{ diretor.email }}" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="telefone" class="fas fa-phone text-primary me-2"> Telefone</label>
+                                    <input type="text" class="form-control" id="telefone" name="telefone" value="{{ diretor.telefone }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="endereco" class="fas fa-map-marker-alt text-primary me-2"> Endereco</label>
+                                    <input type="text" class="form-control" id="endereco" name="endereco" value="{{ diretor.endereco }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="bairro" class="fas fa-map-marked-alt text-primary me-2"> Bairro</label>
+                                    <input type="text" class="form-control" id="bairro" name="bairro" value="{{ diretor.bairro }}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="cidade" class="fas fa-map-marked-alt text-primary me-2"> Cidade</label>
+                                    <input type="text" class="form-control" id="cidade" name="cidade" value="{{ diretor.cidade }}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="cep" class="fas fa-map-marked-alt text-primary me-2"> CEP</label>
+                                    <input type="text" class="form-control" id="cep" name="cep" value="{{ diretor.cep }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="data_nascimento" class="fas fa-map-marked-alt text-primary me-2"> Data de Nascimento</label>
+                                    <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ diretor.data_nascimento|date:'Y-m-d' }}">
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="sexo" class="form-label fw-bold text-uppercase">
+                                        <i class="fas fa-genderless text-primary me-2"></i> Sexo <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select border-2 shadow-sm" id="sexo" name="sexo" required>
+                                        <option value="" disabled>Selecione</option>
+                                        <option value="Masculino" {% if diretor.sexo == "Masculino" %}selected{% endif %}>Masculino</option>
+                                        <option value="Feminino" {% if diretor.sexo == "Feminino" %}selected{% endif %}>Feminino</option>
+                                        <option value="Outro" {% if diretor.sexo == "Outro" %}selected{% endif %}>Outro</option>
+                                        <option value="NaoInformar" {% if diretor.sexo == "NaoInformar" %}selected{% endif %}>Prefiro não informar</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="formacao_academica" class="fas fa-map-marked-alt text-primary me-2"> Formacao Academica</label>
+                                    <select class="form-control" id="formacao_academica" name="formacao_academica">
+                                        <option value="" disabled {% if not diretor.formacao_academica %}selected{% endif %}>Selecione</option>
+                                        <option value="FundamentalC" {% if diretor.formacao_academica == "FundamentalC" %}selected{% endif %}>Fundamental Completo</option>
+                                        <option value="FundamentalI" {% if diretor.formacao_academica == "FundamentalI" %}selected{% endif %}>Fundamental Incompleto</option>
+                                        <option value="MedioC" {% if diretor.formacao_academica == "MedioC" %}selected{% endif %}>Médio Completo</option>
+                                        <option value="MedioI" {% if diretor.formacao_academica == "MedioI" %}selected{% endif %}>Médio Incompleto</option>
+                                        <option value="MedioTecnico" {% if diretor.formacao_academica == "MedioTecnico" %}selected{% endif %}>Médio e Técnico</option>
+                                        <option value="TecnicoC" {% if diretor.formacao_academica == "TecnicoC" %}selected{% endif %}>Técnico Completo</option>
+                                        <option value="TecnicoI" {% if diretor.formacao_academica == "TecnicoI" %}selected{% endif %}>Técnico Incompleto</option>
+                                        <option value="TecnologoC" {% if diretor.formacao_academica == "TecnologoC" %}selected{% endif %}>Tecnólogo Completo</option>
+                                        <option value="TecnologoI" {% if diretor.formacao_academica == "TecnologoI" %}selected{% endif %}>Tecnólogo Incompleto</option>
+                                        <option value="GraduacaoC" {% if diretor.formacao_academica == "GraduacaoC" %}selected{% endif %}>Graduação Completa</option>
+                                        <option value="GraduacaoI" {% if diretor.formacao_academica == "GraduacaoI" %}selected{% endif %}>Graduação Incompleta</option>
+                                        <option value="PosGraduacaoC" {% if diretor.formacao_academica == "PosGraduacaoC" %}selected{% endif %}>Pós-Graduação Completa</option>
+                                        <option value="PosGraduacaoI" {% if diretor.formacao_academica == "PosGraduacaoI" %}selected{% endif %}>Pós-Graduação Incompleta</option>
+                                        <option value="MestradoC" {% if diretor.formacao_academica == "MestradoC" %}selected{% endif %}>Mestrado Completo</option>
+                                        <option value="MestradoI" {% if diretor.formacao_academica == "MestradoI" %}selected{% endif %}>Mestrado Incompleto</option>
+                                        <option value="DoutoradoC" {% if diretor.formacao_academica == "DoutoradoC" %}selected{% endif %}>Doutorado Completo</option>
+                                        <option value="DoutoradoI" {% if diretor.formacao_academica == "DoutoradoI" %}selected{% endif %}>Doutorado Incompleto</option>
+                                        <option value="phdC" {% if diretor.formacao_academica == "phdC" %}selected{% endif %}>PHD Completo</option>
+                                        <option value="phdI" {% if diretor.formacao_academica == "phdI" %}selected{% endif %}>PHD Incompleto</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="curso" class="fas fa-map-marked-alt text-primary me-2"> Curso</label>
+                                    <input type="text" class="form-control" id="curso" name="curso" value="{{ diretor.curso }}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="instituicao" class="fas fa-map-marked-alt text-primary me-2"> Instituicao</label>
+                                    <input type="text" class="form-control" id="instituicao" name="instituicao" value="{{ diretor.instituicao }}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="ano_conclusao" class="fas fa-map-marked-alt text-primary me-2"> Ano de Conclusao</label>
+                                    <input type="date" class="form-control" id="ano_conclusao" name="ano_conclusao" value="{{ diretor.ano_conclusao}}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="experiencia_profissional" class="fas fa-map-marked-alt text-primary me-2"> Experiencia Profissional</label>
+                                    <textarea class="form-control" id="experiencia_profissional" name="experiencia_profissional">{{ diretor.experiencia_profissional }}</textarea>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="estado_civil" class="fas fa-map-marked-alt text-primary me-2"> Estado Civil</label>
+                                    <select class="form-control" id="estado_civil" name="estado_civil" required>
+                                        <option value="Solteiro" {% if diretor.estado_civil == "Solteiro" %}selected{% endif %}>Solteiro(a)</option>
+                                        <option value="Casado" {% if diretor.estado_civil == "Casado" %}selected{% endif %}>Casado(a)</option>
+                                        <option value="Divorciado" {% if diretor.estado_civil == "Divorciado" %}selected{% endif %}>Divorciado(a)</option>
+                                        <option value="Viuvo" {% if diretor.estado_civil == "Viuvo" %}selected{% endif %}>Viúvo(a)</option>
+                                        <option value="UniaoEstavel" {% if diretor.estado_civil == "UniaoEstavel" %}selected{% endif %}>União Estável</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="empresa" class="fas fa-map-marked-alt text-primary me-2"> Empresa</label>
+                                    <input type="text" class="form-control" id="empresa" name="empresa" value="{{ diretor.empresa }}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="cargo" class="fas fa-map-marked-alt text-primary me-2"> Cargo</label>
+                                    <select class="form-control" id="cargo" name="cargo">
+                                        <option value="" disabled>Selecione o Cargo</option>
+                                        <option value="ALUNO" {% if diretor.cargo == "ALUNO" %}selected{% endif %}>ALUNO</option>
+                                        <option value="ADMINISTRADOR - PCCR/QP" {% if diretor.cargo == "ADMINISTRADOR - PCCR/QP" %}selected{% endif %}>ADMINISTRADOR - PCCR/QP</option>
+                                        <option value="ADVOGADO - PCCR/QP" {% if diretor.cargo == "ADVOGADO - PCCR/QP" %}selected{% endif %}>ADVOGADO - PCCR/QP</option>
+                                        <option value="AG. SERV. MONITOR ESCOLAR" {% if diretor.cargo == "AG. SERV. MONITOR ESCOLAR" %}selected{% endif %}>AG. SERV. MONITOR ESCOLAR</option>
+                                        <option value="AG. SERV. TRANSPORTE ESCOLAR" {% if diretor.cargo == "AG. SERV. TRANSPORTE ESCOLAR" %}selected{% endif %}>AG. SERV. TRANSPORTE ESCOLAR</option>
+                                        <option value="AGENTE ADMINISTRATIVO EDUCACIONAL" {% if diretor.cargo == "AGENTE ADMINISTRATIVO EDUCACIONAL" %}selected{% endif %}>AGENTE ADMINISTRATIVO EDUCACIONAL</option>
+                                        <option value="AGENTE DE SERVIÇOS ADMINISTRATIVOS" {% if diretor.cargo == "AGENTE DE SERVIÇOS ADMINISTRATIVOS" %}selected{% endif %}>AGENTE DE SERVIÇOS ADMINISTRATIVOS</option>
+                                        <option value="AGENTE DE SERVIÇOS ADMINISTRATIVOS - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS ADMINISTRATIVOS - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS ADMINISTRATIVOS - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE AUXILIAR DE SALA - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE AUXILIAR DE SALA - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE AUXILIAR DE SALA - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE BIBLIOTECA ESCOLAR - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE BIBLIOTECA ESCOLAR - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE BIBLIOTECA ESCOLAR - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE CONDUTOR DE TRANSPORTE ESCOLAR - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE CONDUTOR DE TRANSPORTE ESCOLAR - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE CONDUTOR DE TRANSPORTE ESCOLAR - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE CONDUTOR VEICULOS LEVES - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE CONDUTOR VEICULOS LEVES - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE CONDUTOR VEICULOS LEVES - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE COZINHEIRO ESCOLAR - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE COZINHEIRO ESCOLAR - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE COZINHEIRO ESCOLAR - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE INFORMÁTICA - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE INFORMÁTICA - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE INFORMÁTICA - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE MONITOR ESCOLAR - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE MONITOR ESCOLAR - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE MONITOR ESCOLAR - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS DE SEGURANÇA PATRIMONIAL - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS DE SEGURANÇA PATRIMONIAL - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS DE SEGURANÇA PATRIMONIAL - PCCR/QP</option>
+                                        <option value="AGENTE DE SERVIÇOS GERAIS - PCCR/QP" {% if diretor.cargo == "AGENTE DE SERVIÇOS GERAIS - PCCR/QP" %}selected{% endif %}>AGENTE DE SERVIÇOS GERAIS - PCCR/QP</option>
+                                        <option value="ANALISTA DE SISTEMAS DE INFORMAÇÃO - PCCR/QP" {% if diretor.cargo == "ANALISTA DE SISTEMAS DE INFORMAÇÃO - PCCR/QP" %}selected{% endif %}>ANALISTA DE SISTEMAS DE INFORMAÇÃO - PCCR/QP</option>
+                                        <option value="APOIO ESCOLAR / KSS" {% if diretor.cargo == "APOIO ESCOLAR / KSS" %}selected{% endif %}>APOIO ESCOLAR / KSS</option>
+                                        <option value="APOIO PEDAGÓGICO" {% if diretor.cargo == "APOIO PEDAGÓGICO" %}selected{% endif %}>APOIO PEDAGÓGICO</option>
+                                        <option value="ASSESSOR DE COMUNICAÇÃO - PCCR/QC" {% if diretor.cargo == "ASSESSOR DE COMUNICAÇÃO - PCCR/QC" %}selected{% endif %}>ASSESSOR DE COMUNICAÇÃO - PCCR/QC</option>
+                                        <option value="ASSESSOR I - PCCR/QC" {% if diretor.cargo == "ASSESSOR I - PCCR/QC" %}selected{% endif %}>ASSESSOR I - PCCR/QC</option>
+                                        <option value="ASSESSOR IX - PCCR/QC" {% if diretor.cargo == "ASSESSOR IX - PCCR/QC" %}selected{% endif %}>ASSESSOR IX - PCCR/QC</option>
+                                        <option value="ASSISTENTE SOCIAL - PCCR/QP" {% if diretor.cargo == "ASSISTENTE SOCIAL - PCCR/QP" %}selected{% endif %}>ASSISTENTE SOCIAL - PCCR/QP</option>
+                                        <option value="AUXILIAR ADMINISTRATIVO" {% if diretor.cargo == "AUXILIAR ADMINISTRATIVO" %}selected{% endif %}>AUXILIAR ADMINISTRATIVO</option>
+                                        <option value="AUXILIAR DE SERVIÇOS GERAIS" {% if diretor.cargo == "AUXILIAR DE SERVIÇOS GERAIS" %}selected{% endif %}>AUXILIAR DE SERVIÇOS GERAIS</option>
+                                        <option value="BIBLIOTECÁRIA(O) - PCCR/QP" {% if diretor.cargo == "BIBLIOTECÁRIA(O) - PCCR/QP" %}selected{% endif %}>BIBLIOTECÁRIA(O) - PCCR/QP</option>
+                                        <option value="CONTADOR(A) - PCCR/QP" {% if diretor.cargo == "CONTADOR(A) - PCCR/QP" %}selected{% endif %}>CONTADOR(A) - PCCR/QP</option>
+                                        <option value="COORDENADOR TECNICO PEDAGOGICO" {% if diretor.cargo == "COORDENADOR TECNICO PEDAGOGICO" %}selected{% endif %}>COORDENADOR TECNICO PEDAGOGICO</option>
+                                        <option value="COORDENADOR TECNICO PEDAGOGICO - PCCR-QC" {% if diretor.cargo == "COORDENADOR TECNICO PEDAGOGICO - PCCR-QC" %}selected{% endif %}>COORDENADOR TECNICO PEDAGOGICO - PCCR-QC</option>
+                                        <option value="COORDENADOR(A) PEDAGOGICO" {% if diretor.cargo == "COORDENADOR(A) PEDAGOGICO" %}selected{% endif %}>COORDENADOR(A) PEDAGOGICO</option>
+                                        <option value="COORDENADOR(A) PEDAGÓGICO ED. INFANTIL" {% if diretor.cargo == "COORDENADOR(A) PEDAGÓGICO ED. INFANTIL" %}selected{% endif %}>COORDENADOR(A) PEDAGÓGICO ED. INFANTIL</option>
+                                        <option value="COORDENADOR(A) PEDAGÓGICO(A) - PCCR/QC" {% if diretor.cargo == "COORDENADOR(A) PEDAGÓGICO(A) - PCCR/QC" %}selected{% endif %}>COORDENADOR(A) PEDAGÓGICO(A) - PCCR/QC</option>
+                                        <option value="COORDENADOR(A) TÉCNICO - PCCR/QC" {% if diretor.cargo == "COORDENADOR(A) TÉCNICO - PCCR/QC" %}selected{% endif %}>COORDENADOR(A) TÉCNICO - PCCR/QC</option>
+                                        <option value="DIRETOR(A) ESCOLAR" {% if diretor.cargo == "DIRETOR(A) ESCOLAR" %}selected{% endif %}>DIRETOR(A) ESCOLAR</option>
+                                        <option value="ENGENHEIRO CIVIL - PCCR/QP" {% if diretor.cargo == "ENGENHEIRO CIVIL - PCCR/QP" %}selected{% endif %}>ENGENHEIRO CIVIL - PCCR/QP</option>
+                                        <option value="GESTOR COORDENADOR - SUPERIOR - PCCR/QC" {% if diretor.cargo == "GESTOR COORDENADOR - SUPERIOR - PCCR/QC" %}selected{% endif %}>GESTOR COORDENADOR - SUPERIOR - PCCR/QC</option>
+                                        <option value="GESTOR DE DIRETORIA - PCCR/QFG" {% if diretor.cargo == "GESTOR DE DIRETORIA - PCCR/QFG" %}selected{% endif %}>GESTOR DE DIRETORIA - PCCR/QFG</option>
+                                        <option value="GESTOR DE SETOR - MÉDIO - PCCR/QC" {% if diretor.cargo == "GESTOR DE SETOR - MÉDIO - PCCR/QC" %}selected{% endif %}>GESTOR DE SETOR - MÉDIO - PCCR/QC</option>
+                                        <option value="GESTOR DE SETOR - SUPERIOR - PCCR/QC" {% if diretor.cargo == "GESTOR DE SETOR - SUPERIOR - PCCR/QC" %}selected{% endif %}>GESTOR DE SETOR - SUPERIOR - PCCR/QC</option>
+                                        <option value="MEDIADOR DE APRENDIZAGEM / KSS" {% if diretor.cargo == "MEDIADOR DE APRENDIZAGEM / KSS" %}selected{% endif %}>MEDIADOR DE APRENDIZAGEM / KSS</option>
+                                        <option value="MONITOR DE ESCOLA DE TEMPO INTEGRAL / KSS" {% if diretor.cargo == "MONITOR DE ESCOLA DE TEMPO INTEGRAL / KSS" %}selected{% endif %}>MONITOR DE ESCOLA DE TEMPO INTEGRAL / KSS</option>
+                                        <option value="NUTRICIONISTA - PCCR/QP" {% if diretor.cargo == "NUTRICIONISTA - PCCR/QP" %}selected{% endif %}>NUTRICIONISTA - PCCR/QP</option>
+                                        <option value="ORIENTADOR EDUCACIONAL" {% if diretor.cargo == "ORIENTADOR EDUCACIONAL" %}selected{% endif %}>ORIENTADOR EDUCACIONAL</option>
+                                        <option value="OUTROS" {% if diretor.cargo == "OUTROS" %}selected{% endif %}>OUTROS</option>
+                                        <option value="PEDAGOGO(A) - PCCR/QP" {% if diretor.cargo == "PEDAGOGO(A) - PCCR/QP" %}selected{% endif %}>PEDAGOGO(A) - PCCR/QP</option>
+                                        <option value="PROFESSOR(A)" {% if diretor.cargo == "PROFESSOR(A)" %}selected{% endif %}>PROFESSOR(A)</option>
+                                        <option value="PROFESSOR CIENCIAS" {% if diretor.cargo == "PROFESSOR CIENCIAS" %}selected{% endif %}>PROFESSOR CIENCIAS</option>
+                                        <option value="PROFESSOR DE ARTES - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE ARTES - PCCR/QP" %}selected{% endif %}>PROFESSOR DE ARTES - PCCR/QP</option>
+                                        <option value="PROFESSOR DE CIÊNCIAS NATURAIS - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE CIÊNCIAS NATURAIS - PCCR/QP" %}selected{% endif %}>PROFESSOR DE CIÊNCIAS NATURAIS - PCCR/QP</option>
+                                        <option value="PROFESSOR DE EDUCAÇÃO BASICA - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE EDUCAÇÃO BASICA - PCCR/QP" %}selected{% endif %}>PROFESSOR DE EDUCAÇÃO BASICA - PCCR/QP</option>
+                                        <option value="PROFESSOR DE EDUCAÇÃO DO CAMPO - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE EDUCAÇÃO DO CAMPO - PCCR/QP" %}selected{% endif %}>PROFESSOR DE EDUCAÇÃO DO CAMPO - PCCR/QP</option>
+                                        <option value="PROFESSOR DE EDUCAÇÃO ESPECIAL - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE EDUCAÇÃO ESPECIAL - PCCR/QP" %}selected{% endif %}>PROFESSOR DE EDUCAÇÃO ESPECIAL - PCCR/QP</option>
+                                        <option value="PROFESSOR DE EDUCAÇÃO FISICA - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE EDUCAÇÃO FISICA - PCCR/QP" %}selected{% endif %}>PROFESSOR DE EDUCAÇÃO FISICA - PCCR/QP</option>
+                                        <option value="PROFESSOR DE EDUCAÇÃO INFANTIL - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE EDUCAÇÃO INFANTIL - PCCR/QP" %}selected{% endif %}>PROFESSOR DE EDUCAÇÃO INFANTIL - PCCR/QP</option>
+                                        <option value="PROFESSOR DE GEOGRAFIA - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE GEOGRAFIA - PCCR/QP" %}selected{% endif %}>PROFESSOR DE GEOGRAFIA - PCCR/QP</option>
+                                        <option value="PROFESSOR DE HISTÓRIA - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE HISTÓRIA - PCCR/QP" %}selected{% endif %}>PROFESSOR DE HISTÓRIA - PCCR/QP</option>
+                                        <option value="PROFESSOR DE INGLÊS - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE INGLÊS - PCCR/QP" %}selected{% endif %}>PROFESSOR DE INGLÊS - PCCR/QP</option>
+                                        <option value="PROFESSOR DE LINGUA PORTUGUESA - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE LINGUA PORTUGUESA - PCCR/QP" %}selected{% endif %}>PROFESSOR DE LINGUA PORTUGUESA - PCCR/QP</option>
+                                        <option value="PROFESSOR DE MATEMATICA - PCCR/QP" {% if diretor.cargo == "PROFESSOR DE MATEMATICA - PCCR/QP" %}selected{% endif %}>PROFESSOR DE MATEMATICA - PCCR/QP</option>
+                                        <option value="PROFESSOR ENSINO RELIGIOSO - PCCR/QP" {% if diretor.cargo == "PROFESSOR ENSINO RELIGIOSO - PCCR/QP" %}selected{% endif %}>PROFESSOR ENSINO RELIGIOSO - PCCR/QP</option>
+                                        <option value="PROFESSOR MAGISTÉRIO / 1º AO 5º ANO" {% if diretor.cargo == "PROFESSOR MAGISTÉRIO / 1º AO 5º ANO" %}selected{% endif %}>PROFESSOR MAGISTÉRIO / 1º AO 5º ANO</option>
+                                        <option value="PSICOLOGO ESCOLAR/EDUCACIONAL - PCCR/QP" {% if diretor.cargo == "PSICOLOGO ESCOLAR/EDUCACIONAL - PCCR/QP" %}selected{% endif %}>PSICOLOGO ESCOLAR/EDUCACIONAL - PCCR/QP</option>
+                                        <option value="PSICOPEDAGOGO(A) - PCCR/QP" {% if diretor.cargo == "PSICOPEDAGOGO(A) - PCCR/QP" %}selected{% endif %}>PSICOPEDAGOGO(A) - PCCR/QP</option>
+                                        <option value="SECRETARIO NÃO ESCOLAR - PCCR/QC" {% if diretor.cargo == "SECRETARIO NÃO ESCOLAR - PCCR/QC" %}selected{% endif %}>SECRETARIO NÃO ESCOLAR - PCCR/QC</option>
+                                        <option value="SECRETÁRIO(A) ESCOLAR" {% if diretor.cargo == "SECRETÁRIO(A) ESCOLAR" %}selected{% endif %}>SECRETÁRIO(A) ESCOLAR</option>
+                                        <option value="SECRETÁRIO(A) GERAL" {% if diretor.cargo == "SECRETÁRIO(A) GERAL" %}selected{% endif %}>SECRETÁRIO(A) GERAL</option>
+                                        <option value="VICE DIRETOR(A) DE ESCOLA - PCCR/QC" {% if diretor.cargo == "VICE DIRETOR(A) DE ESCOLA - PCCR/QC" %}selected{% endif %}>VICE DIRETOR(A) DE ESCOLA - PCCR/QC</option>
+                                        <!-- Adicione os demais cargos aqui seguindo o mesmo padrão -->
+                                    </select>
+                                </div>
+
+            
+                                <div class="col-md-6">
+                                    <label for="data_inicio" class="fas fa-map-marked-alt text-primary me-2"> Data de Inicio</label>
+                                    <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ diretor.data_inicio|date:'Y-m-d' }}">
+                                </div>
+            
+                                <div class="col-md-6">
+                                    <label for="data_fim" class="fas fa-map-marked-alt text-primary me-2"> Data de Fim</label>
+                                    <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ diretor.data_fim|date:'Y-m-d' }}">
+                                </div>
+            
+                                <div class="text-center mt-4">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-save"></i> Salvar Alterações
+                                    </button>
+                                    <a href="{% url 'area_candidato' %}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> Voltar
+                                    </a>
+                                </div>
+                                
+                                
+                            </div>
+                        </form>
                     </div>
 
-                    <div class="form-group">
-                        <label for="cpf">CPF</label>
-                        <input type="text" class="form-control" id="cpf" name="cpf" value="{{ candidato.cpf }}" required>
-                    </div>
 
-                    <div class="form-group">
-                        <label for="rg">RG</label>
-                        <input type="text" class="form-control" id="rg" name="rg" value="{{ candidato.rg }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="email">E-mail</label>
-                        <input type="email" class="form-control" id="email" name="email" value="{{ candidato.email }}" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="telefone">Telefone</label>
-                        <input type="text" class="form-control" id="telefone" name="telefone" value="{{ candidato.telefone }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="endereco">Endereço</label>
-                        <input type="text" class="form-control" id="endereco" name="endereco" value="{{ candidato.endereco }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="bairro">Bairro</label>
-                        <input type="text" class="form-control" id="bairro" name="bairro" value="{{ candidato.bairro }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cidade">Cidade</label>
-                        <input type="text" class="form-control" id="cidade" name="cidade" value="{{ candidato.cidade }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cep">CEP</label>
-                        <input type="text" class="form-control" id="cep" name="cep" value="{{ candidato.cep }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="data_nascimento">Data de Nascimento</label>
-                        <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ candidato.data_nascimento|date:'Y-m-d' }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="data_nascimento">Sexo</label>
-                        <input type="text" class="form-control" id="sexo" name="sexo" value="{{ candidato.sexo }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="formacao_academica">Formação Acadêmica</label>
-                        <select class="form-control" id="formacao_academica" name="formacao_academica">
-                            <option value="" disabled {% if not candidato.formacao_academica %}selected{% endif %}>Selecione</option>
-                            <option value="FundamentalC" {% if candidato.formacao_academica == "FundamentalC" %}selected{% endif %}>Fundamental Completo</option>
-                            <option value="FundamentalI" {% if candidato.formacao_academica == "FundamentalI" %}selected{% endif %}>Fundamental Incompleto</option>
-                            <option value="MedioC" {% if candidato.formacao_academica == "MedioC" %}selected{% endif %}>Médio Completo</option>
-                            <option value="MedioI" {% if candidato.formacao_academica == "MedioI" %}selected{% endif %}>Médio Incompleto</option>
-                            <option value="MedioTecnico" {% if candidato.formacao_academica == "MedioTecnico" %}selected{% endif %}>Médio e Técnico</option>
-                            <option value="TecnicoC" {% if candidato.formacao_academica == "TecnicoC" %}selected{% endif %}>Técnico Completo</option>
-                            <option value="TecnicoI" {% if candidato.formacao_academica == "TecnicoI" %}selected{% endif %}>Técnico Incompleto</option>
-                            <option value="TecnologoC" {% if candidato.formacao_academica == "TecnologoC" %}selected{% endif %}>Tecnólogo Completo</option>
-                            <option value="TecnologoI" {% if candidato.formacao_academica == "TecnologoI" %}selected{% endif %}>Tecnólogo Incompleto</option>
-                            <option value="GraduacaoC" {% if candidato.formacao_academica == "GraduacaoC" %}selected{% endif %}>Graduação Completa</option>
-                            <option value="GraduacaoI" {% if candidato.formacao_academica == "GraduacaoI" %}selected{% endif %}>Graduação Incompleta</option>
-                            <option value="PosGraduacaoC" {% if candidato.formacao_academica == "PosGraduacaoC" %}selected{% endif %}>Pós-Graduação Completa</option>
-                            <option value="PosGraduacaoI" {% if candidato.formacao_academica == "PosGraduacaoI" %}selected{% endif %}>Pós-Graduação Incompleta</option>
-                            <option value="MestradoC" {% if candidato.formacao_academica == "MestradoC" %}selected{% endif %}>Mestrado Completo</option>
-                            <option value="MestradoI" {% if candidato.formacao_academica == "MestradoI" %}selected{% endif %}>Mestrado Incompleto</option>
-                            <option value="DoutoradoC" {% if candidato.formacao_academica == "DoutoradoC" %}selected{% endif %}>Doutorado Completo</option>
-                            <option value="DoutoradoI" {% if candidato.formacao_academica == "DoutoradoI" %}selected{% endif %}>Doutorado Incompleto</option>
-                            <option value="phdC" {% if candidato.formacao_academica == "phdC" %}selected{% endif %}>PHD Completo</option>
-                            <option value="phdI" {% if candidato.formacao_academica == "phdI" %}selected{% endif %}>PHD Incompleto</option>
-                        </select>
-                    </div>
-                    
-
-                    <div class="form-group">
-                        <label for="curso">Curso</label>
-                        <input type="text" class="form-control" id="curso" name="curso" value="{{ candidato.curso }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="instituicao">Instituição</label>
-                        <input type="text" class="form-control" id="instituicao" name="instituicao" value="{{ candidato.instituicao }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ano_conclusao">Ano de Conclusão</label>
-                        <input type="date" class="form-control" id="ano_conclusao" name="ano_conclusao" value="{{ candidato.ano_conclusao}}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="experiencia_profissional">Experiência Profissional</label>
-                        <textarea class="form-control" id="experiencia_profissional" name="experiencia_profissional">{{ candidato.experiencia_profissional }}</textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="estado_civil">Estado Civil</label>
-                        <select class="form-control" id="estado_civil" name="estado_civil" required>
-                            <option value="" disabled>Selecione</option>
-                            <option value="Solteiro" {% if candidato.estado_civil == "Solteiro" %}selected{% endif %}>Solteiro</option>
-                            <option value="Casado" {% if candidato.estado_civil == "Casado" %}selected{% endif %}>Casado</option>
-                            <option value="Divorciado" {% if candidato.estado_civil == "Divorciado" %}selected{% endif %}>Divorciado</option>
-                            <option value="Viuvo" {% if candidato.estado_civil == "Viuvo" %}selected{% endif %}>Viúvo</option>
-                            <option value="UniaoEstavel" {% if candidato.estado_civil == "UniaoEstavel" %}selected{% endif %}>União Estável</option>
-                        </select>
-                    </div>
-                    
-
-                    <div class="form-group">
-                        <label for="estado_civil">Estado Civil</label>
-                        <select class="form-control" id="estado_civil" name="estado_civil" required>
-                            <option value="" disabled>Selecione</option>
-                            <option value="Solteiro" {% if candidato.estado_civil == "Solteiro" %}selected{% endif %}>Solteiro(a)</option>
-                            <option value="Casado" {% if candidato.estado_civil == "Casado" %}selected{% endif %}>Casado(a)</option>
-                            <option value="Divorciado" {% if candidato.estado_civil == "Divorciado" %}selected{% endif %}>Divorciado(a)</option>
-                            <option value="Viuvo" {% if candidato.estado_civil == "Viuvo" %}selected{% endif %}>Viúvo(a)</option>
-                            <option value="UniaoEstavel" {% if candidato.estado_civil == "UniaoEstavel" %}selected{% endif %}>União Estável</option>
-                        </select>
-                    </div>
-                    
-
-                    <div class="form-group">
-                        <label for="empresa">Empresa</label>
-                        <input type="text" class="form-control" id="empresa" name="empresa" value="{{ candidato.empresa }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="cargo">Cargo</label>
-                        <input type="text" class="form-control" id="cargo" name="cargo" value="{{ candidato.cargo }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="data_inicio">Data de Início</label>
-                        <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ candidato.data_inicio|date:'Y-m-d' }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="data_fim">Data de Fim</label>
-                        <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ candidato.data_fim|date:'Y-m-d' }}">
-                    </div>
-
-                    <div class="text-center mt-4">
-                        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Salvar Alterações</button>
-                        <a href="{% url 'area_candidato' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
+
+
+        <!-- Footer -->
+        <footer class="footer-bg py-5">
+            <div class="container">
+                <!-- Linhas principais -->
+                <div class="row">
+                    <!-- Destaques -->
+                    <div class="col-md-4 mb-4">
+                        <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-4 d-flex align-items-start">
+                                <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                                    style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                        class="text-white text-decoration-none" target="_blank">
+                                        <p style="text-align: justify; color: #ffffff;">
+                                            <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                        </p>
+                                    </a>
+                                    <small class="d-block text-muted;">27 de novembro de 2024</small>
+                                </div>
+                            </li>
+                            <li class="mb-4 d-flex align-items-start">
+                                <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                                    class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                        class="text-white text-decoration-none" target="_blank">
+                                        <p style="text-align: justify; color: #ffffff;">
+                                            <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                                profissionalizante</strong>
+                                        </p>
+                                    </a>
+                                    <small class="d-block text-muted;">27 de novembro de 2024</small>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-start">
+                                <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                                    class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                        class="text-white text-decoration-none" target="_blank">
+                                        <p style="text-align: justify; color: #ffffff;">
+                                            <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                                dos Carajás</strong>
+                                        </p>
+                                    </a>
+                                    <small class="d-block text-muted;">27 de novembro de 2024</small>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Mais Acessados -->
+                    <div class="col-md-4 mb-4">
+                        <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-4 d-flex align-items-start">
+                                <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                                    class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                        class="text-white text-decoration-none" target="_blank">
+                                        <p style="text-align: justify;">
+                                            <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                                Vice-diretor de unidade escolar</strong>
+                                        </p>
+                                    </a>
+                                    <small class="d-block text-muted">18 de outubro de 2023</small>
+                                </div>
+                            </li>
+                            <li class="mb-4 d-flex align-items-start">
+                                <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                                    class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                        class="text-white text-decoration-none" target="_blank">
+                                        <p style="text-align: justify;">
+                                            <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                                Carajás</strong>
+                                        </p>
+                                    </a>
+                                    <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                                </div>
+                            </li>
+                            <li class="d-flex align-items-start">
+                                <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                                    class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                                <div>
+                                    <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                        class="text-white text-decoration-none" target="_blank">
+                                        <p style="text-align: justify;">
+                                            <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                                Fundamental</strong>
+                                        </p>
+                                    </a>
+                                    <small class="d-block text-muted">1 de março de 2023</small>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- Temas Mais Acessados -->
+                    <div class="col-md-4 mb-4">
+                        <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                        <div class="d-flex flex-wrap align-items-baseline">
+                            <span class="badge bg-primary m-1">Educação <span
+                                    class="badge bg-light text-dark ms-1">243</span></span>
+                            <span class="badge bg-primary m-1">Destaque <span
+                                    class="badge bg-light text-dark ms-1">234</span></span>
+                            <span class="badge bg-primary m-1">Ensino Superior <span
+                                    class="badge bg-light text-dark ms-1">58</span></span>
+                            <span class="badge bg-primary m-1">Polo Educacional <span
+                                    class="badge bg-light text-dark ms-1">42</span></span>
+                            <span class="badge bg-primary m-1">Ensino Infantil <span
+                                    class="badge bg-light text-dark ms-1">42</span></span>
+                            <span class="badge bg-primary m-1">Jovens e Adultos <span
+                                    class="badge bg-light text-dark ms-1">37</span></span>
+                            <span class="badge bg-primary m-1">Cultura <span
+                                    class="badge bg-light text-dark ms-1">36</span></span>
+                            <span class="badge bg-primary m-1">Ensino Integral <span
+                                    class="badge bg-light text-dark ms-1">27</span></span>
+                            <span class="badge bg-primary m-1">Governo <span
+                                    class="badge bg-light text-dark ms-1">26</span></span>
+                            <span class="badge bg-primary m-1">Esportes <span
+                                    class="badge bg-light text-dark ms-1">19</span></span>
+                            <span class="badge bg-primary m-1">Saúde Escolar <span
+                                    class="badge bg-light text-dark ms-1">15</span></span>
+                            <span class="badge bg-primary m-1">Inclusão Digital <span
+                                    class="badge bg-light text-dark ms-1">12</span></span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Linha inferior -->
+                <hr class="border-secondary">
+                <div class="row align-items-center">
+                    <!-- Logo -->
+                    <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                        <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                            style="width: 150px; height: 150px; object-fit: contain;">
+                    </div>
+    
+                    <!-- Informações de Contato -->
+                    <div class="col-md-4 mb-4 mb-md-0 text-center">
+                        <p style="text-align: justify;">
+                            <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                            14:00 às 18:00 (expediente interno).
+                        </p>
+                        <p style="text-align: justify;">
+                            <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                                class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                        </p>
+                    </div>
+                    <!-- Redes Sociais -->
+                    <div class="col-md-4 text-center text-md-end">
+                        <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                        <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                            style="text-decoration: none;">
+                            <i class="fab fa-facebook fa-2x"></i>
+                        </a>
+                        <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                            style="text-decoration: none;">
+                            <i class="fab fa-instagram fa-2x"></i>
+                        </a>
+                        <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                            target="_blank">
+                            <i class="fab fa-youtube fa-2x"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.getElementById("formEditarCurriculo");
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault(); // Impede o envio automático do formulário
+
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: "POST",
+                body: formData
+            })
+            .then(response => {
+                if (response.ok) {
+                    Swal.fire({
+                        icon: "success",
+                        title: "Sucesso!",
+                        text: "Currículo atualizado com sucesso!",
+                        confirmButtonText: "OK",
+                        confirmButtonColor: "#28a745"
+                    }).then(() => {
+                        window.location.href = "{% url 'area_candidato' %}";
+                    });
+                } else {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Erro!",
+                        text: "Não foi possível atualizar o currículo. Tente novamente.",
+                        confirmButtonText: "Fechar",
+                        confirmButtonColor: "#d33"
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("Erro:", error);
+                Swal.fire({
+                    icon: "error",
+                    title: "Erro de Conexão",
+                    text: "Houve um problema na conexão. Tente novamente.",
+                    confirmButtonText: "Fechar",
+                    confirmButtonColor: "#d33"
+                });
+            });
+        });
+    });
+</script>
+
 
     <script>
         document.addEventListener("DOMContentLoaded", function () {
@@ -228,6 +652,7 @@
             });
         });
     </script>
+
     
 
 </body>
