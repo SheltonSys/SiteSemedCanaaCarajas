@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastrar Bens Adquiridos</h1>
+            <p class="text-muted">Registre os bens adquiridos para a prestação de contas.</p>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-box"></i> Informações do Bem</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="row">
+
+                        <!-- Escola -->
+                        <div class="col-md-6">
+                            <label for="escola">Escolha a Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma escola</option>
+                                {% for escola in escolas %}
+                                    <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Nome do Conselho -->
+                        <div class="col-md-6">
+                            <label for="nome_conselho">Nome do Conselho:</label>
+                            <input type="text" id="nome_conselho" name="nome_conselho" class="form-control" readonly>
+                        </div>
+
+                        <!-- Nome do Bem -->
+                        <div class="col-md-6 mt-3">
+                            <label for="nome">Nome do Bem:</label>
+                            <input type="text" id="nome" name="nome" class="form-control" required>
+                        </div>
+
+                        <!-- Documento de Aquisição -->
+                        <!-- Documento de Aquisição -->
+                        <div class="col-md-6 mt-3">
+
+                            {% if form.instance.documento %}
+                                <div class="mt-2">
+                                    <a href="{{ form.instance.documento.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-file"></i> Ver Documento Atual (Bem)
+                                    </a>
+                                </div>
+                            {% endif %}
+
+                            {% if documentos %}
+                                <div class="mt-3">
+                                    <label><i class="fas fa-folder-open"></i> Documentos Cadastrados:</label>
+                                    <ul class="list-group">
+                                        {% for doc in documentos %}
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            {{ doc.tipo }} - {{ doc.numero }}
+                                            <a href="{{ doc.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-file-download"></i> Ver Documento
+                                            </a>
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            {% endif %}
+                        </div>
+
+
+
+                        <!-- Quantidade -->
+                        <div class="col-md-6 mt-3">
+                            <label for="quantidade">Quantidade:</label>
+                            <input type="number" id="quantidade" name="quantidade" class="form-control" required>
+                        </div>
+
+                        <!-- Valor Unitário -->
+                        <div class="col-md-6 mt-3">
+                            <label for="valor_unitario">Valor Unitário (R$):</label>
+                            <input type="text" id="valor_unitario" name="valor_unitario" class="form-control" required placeholder="Ex: 150.00">
+
+                        </div>
+
+                        <!-- Valor Total -->
+                        <div class="col-md-6 mt-3">
+                            <label for="valor_total">Valor Total (R$):</label>
+                            <input type="text" id="valor_total" name="valor_total_preview" class="form-control" readonly>
+
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar</button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById("quantidade").addEventListener("input", calcularValorTotal);
+    document.getElementById("valor_unitario").addEventListener("input", calcularValorTotal);
+
+    function calcularValorTotal() {
+        let quantidade = parseFloat(document.getElementById("quantidade").value) || 0;
+        let valorUnitario = parseFloat(document.getElementById("valor_unitario").value.replace(",", ".")) || 0;
+        let valorTotal = quantidade * valorUnitario;
+        document.getElementById("valor_total").value = valorTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // Buscar automaticamente o nome do conselho da escola
+    document.getElementById("escola").addEventListener("change", function () {
+        const escolaId = this.value;
+        if (!escolaId) return;
+
+        fetch(`/get-escola-dados/${escolaId}/`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById("nome_conselho").value = data.nome_conselho || "Não informado";
+            })
+            .catch(err => console.error("Erro ao buscar conselho:", err));
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+        th { background-color: #ddd; }
+    </style>
+</head>
+<body>
+
+    <h2>{{ titulo }}</h2>
+    <p>{{ descricao }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Proponente</th>
+                <th>Preço (R$)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proposta in propostas %}
+            <tr>
+                <td>{{ proposta.item.nome }}</td>
+                <td>{{ proposta.proponente.nome }}</td>
+                <td>R$ {{ proposta.preco }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center">Nenhuma proposta registrada.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</body>
+</html>

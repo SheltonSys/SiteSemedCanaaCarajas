@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-gradient-primary text-white">
+            <h2 class="h5 mb-0"><i class="fas fa-link"></i> Vincular Escola a Programas</h2>
+        </div>
+        <div class="card-body bg-light">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.escola.id_for_label }}" class="form-label"><strong>Escolha a Escola:</strong></label>
+                    {{ form.escola }}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.programas.id_for_label }}" class="form-label"><strong>Escolha os Programas:</strong></label>
+                    {{ form.programas }}
+                </div>
+
+                <div class="text-end">
+                    <button type="submit" class="btn btn-success shadow-sm">
+                        <i class="fas fa-save"></i> Vincular
+                    </button>
+                    <a href="{% url 'lista_escolas_pdde' %}" class="btn btn-secondary shadow-sm">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

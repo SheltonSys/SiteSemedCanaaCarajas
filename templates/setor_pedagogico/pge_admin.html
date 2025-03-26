@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="display-6 text-primary fw-bold mb-0">
+                    <i class="fas fa-file-alt me-2"></i> Planos de Gestão Escolar
+                </h1>
+                <small class="text-muted">Lista de planos enviados pelas unidades escolares.</small>
+            </div>
+
+        </div>
+
+        <!-- Filtro -->
+        <form method="get" class="row g-2 align-items-end mb-4">
+            <div class="col-md-6">
+                <label for="filtro_unidade" class="form-label text-muted">
+                    <i class="fas fa-school me-1"></i> Filtrar por Unidade
+                </label>
+                <select name="filtro_unidade" class="form-select" id="filtro_unidade">
+                    <option value="">Todas as Unidades</option>
+                    {% for unidade in unidades %}
+                        <option value="{{ unidade }}" {% if filtro == unidade %}selected{% endif %}>{{ unidade }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+            </div>
+        </form>
+
+        <!-- Tabela -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body bg-light">
+        
+                <!-- Botão de envio do PGE dentro do card -->
+                <!-- <div class="d-flex justify-content-end mb-3">
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#envioPgeModal">
+                        <i class="fas fa-plus me-1"></i> Enviar Novo Plano
+                    </button>
+                </div> -->
+        
+                <!-- Tabela de planos -->
+                <div class="table-responsive">
+                    <table id="tabela-planos" class="table table-striped table-bordered align-middle">
+                        <thead class="table-primary text-center">
+                            <tr>
+                                <th>Unidade</th>
+                                <th>Cargo</th>
+                                <th>Servidor</th>
+                                <th>Telefone</th>
+                                <!-- <th>Enviado</th> -->
+                                <th>Status</th>
+                                <th>Arquivo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for plano in planos %}
+                            <tr class="{% if not plano.deferido_indeferido %}table-warning{% endif %}">
+                                <td>{{ plano.unidade_ensino }}</td>
+                                <td>{{ plano.cargo }}</td>
+                                <td>{{ plano.servidor }}</td>
+                                <td>{{ plano.telefone }}</td>
+                                <!-- <td>{{ plano.enviado|yesno:"Sim,Não" }}</td> -->
+                                <td>
+                                    {% if plano.deferido_indeferido == "Deferido" %}
+                                        <span class="badge bg-success">{{ plano.deferido_indeferido }}</span>
+                                    {% elif plano.deferido_indeferido == "Indeferido" %}
+                                        <span class="badge bg-danger">{{ plano.deferido_indeferido }}</span>
+                                    {% elif plano.deferido_indeferido %}
+                                        <span class="badge bg-secondary">{{ plano.deferido_indeferido }}</span>
+                                    {% else %}
+                                        <span class="badge bg-warning text-dark">Pendente</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if plano.arquivo %}
+                                        <a href="{{ plano.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-file-pdf me-1"></i> Ver
+                                        </a>
+                                    {% else %}
+                                        Nenhum
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-success btn-sm btn-confirmar-status"
+                                            data-id="{{ plano.id }}"
+                                            data-status="Deferido">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm btn-confirmar-status"
+                                            data-id="{{ plano.id }}"
+                                            data-status="Indeferido">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form escondido para submissão -->
+        <form id="statusForm" method="POST" enctype="multipart/form-data" style="display: none;">
+            {% csrf_token %}
+            <input type="hidden" name="status" id="statusInputHidden">
+        </form>
+        
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        $('#tabela-planos').DataTable({
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.5/i18n/pt-BR.json'
+            },
+            order: [[5, 'asc']]
+        });
+
+        const botoes = document.querySelectorAll('.btn-confirmar-status');
+        botoes.forEach(botao => {
+            botao.addEventListener('click', function () {
+                const planoId = this.dataset.id;
+                const status = this.dataset.status;
+                const form = document.getElementById('statusForm');
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                Swal.fire({
+                    title: `Confirmar ${status}?`,
+                    text: `Você deseja realmente marcar este plano como "${status}"?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: status === 'Deferido' ? '#198754' : '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: `Sim, ${status}`,
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const formData = new FormData();
+                        formData.append("status", status);
+
+                        fetch(`/planos-gestao/${planoId}/atualizar/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire('Sucesso!', `Status atualizado para "${status}".`, 'success')
+                                    .then(() => window.location.reload());
+                            } else {
+                                Swal.fire('Erro!', data.error || 'Não foi possível atualizar o status.', 'error');
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire('Erro!', 'Erro ao conectar com o servidor.', 'error');
+                        });
+                    }
+                });
+            });
+        });
+    });
+</script>
+
+
+{% endblock %}

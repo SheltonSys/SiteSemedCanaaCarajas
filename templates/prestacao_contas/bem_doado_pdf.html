@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Declaração de Doação</title>
+    <style>
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            margin: 40px;
+            font-size: 14px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a237e;
+        }
+        p {
+            text-align: justify;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #e3f2fd;
+        }
+        .assinatura {
+            margin-top: 60px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Declaração de Doação</h1>
+
+    <p>
+        Pelo presente instrumento a(o) <strong>{{ bem.conselho }}</strong> da Escola <strong>{{ bem.escola.nome }}</strong> faz, em conformidade com a legislação aplicável ao Programa <strong>PDDE</strong> e demais normas pertinentes à matéria, a doação do(s) bem(ns), conforme discriminado(s) abaixo, adquirido(s) ou produzido(s) com recursos do referido Programa, ao(à) <strong>SECRETARIA MUNICIPAL DE EDUCAÇÃO DE CANAÃ DOS CARAJÁS - PARÁ</strong>, para que seja(m) tombado(s) e incorporado(s) ao seu patrimônio público e destinado(s) à escola acima identificada, à qual cabe a responsabilidade pela guarda e conservação do(s) mesmo(s).
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Descrição do Bem</th>
+                <th>Quantidade</th>
+                <th>Nº Nota Fiscal</th>
+                <th>Data</th>
+                <th>Valor Unitário (R$)</th>
+                <th>Valor Total (R$)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ bem.descricao }}</td>
+                <td>{{ bem.quantidade }}</td>
+                <td>{{ bem.numero_nota }}</td>
+                <td>{{ bem.data_nota|date:"d/m/Y" }}</td>
+                <td>R$ {{ bem.valor_unitario|floatformat:2 }}</td>
+                <td>R$ {{ bem.valor_total|floatformat:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="assinatura">Canaã dos Carajás - PA, {{ data_atual|date:"d/m/Y" }}</p>
+
+</body>
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Demonstrativo de Execução - PDDE</title>
+    <style>
+        @page { size: A4 portrait; margin: 25mm 20mm; }
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #000; line-height: 1.5; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header h1 { font-size: 16px; text-transform: uppercase; margin: 0; }
+        .header h2 { font-size: 14px; margin-top: 5px; background: #f0f0f0; text-align: center; padding: 5px; }
+        .identificacao { border: 1px solid #000; padding: 10px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
+        th, td { border: 1px solid black; padding: 8px; }
+        th { background: #d9d9d9; text-align: center; font-weight: bold; }
+        .text-center { text-align: center; font-weight: bold; }
+        .total-geral { font-weight: bold; background: #e6e6e6; text-align: right; }
+        .valor { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Fundo Nacional de Desenvolvimento da Educação</h1>
+        <h2>Demonstrativo da Execução da Receita e da Despesa</h2>
+    </div>
+
+    <div class="identificacao">
+        <p><strong>Entidade Executora:</strong> {{ entidade }}</p>
+        <p><strong>CNPJ:</strong> {{ cnpj }}</p>
+        <p><strong>Município:</strong> {{ municipio }}</p>
+        <p><strong>Estado:</strong> {{ estado }}</p>
+        <p><strong>Período:</strong> {{ periodo }}</p>
+    </div>
+
+    <!-- Tabela de Receitas e Despesas -->
+    <h2>1. Síntese da Execução da Receita e da Despesa</h2>
+    <table>
+        <tr>
+            <th>Campo</th>
+            <th class="valor">Valor (R$)</th>
+        </tr>
+        <tr><td>Data Início</td><td class="valor">{{ receita.data_inicio|date:"d/m/Y" }}</td></tr>
+        <tr><td>Data Fim</td><td class="valor">{{ receita.data_fim|date:"d/m/Y" }}</td></tr>
+        <tr><td>08 – Saldo Reprogramado (Custeio)</td><td class="valor">{{ receita.saldo_anterior_custeio }}</td></tr>
+        <tr><td>08 – Saldo Reprogramado (Capital)</td><td class="valor">{{ receita.saldo_anterior_capital }}</td></tr>
+        <tr><td>09 – Valor Creditado FNDE (Custeio)</td><td class="valor">{{ receita.valor_creditado_custeio }}</td></tr>
+        <tr><td>09 – Valor Creditado FNDE (Capital)</td><td class="valor">{{ receita.valor_creditado_capital }}</td></tr>
+        <tr><td>10 – Recursos Próprios</td><td class="valor">{{ receita.recursos_proprios }}</td></tr>
+        <tr><td>11 – Rendimento Aplicação (Custeio)</td><td class="valor">{{ receita.rendimento_aplicacao_custeio }}</td></tr>
+        <tr><td>11 – Rendimento Aplicação (Capital)</td><td class="valor">{{ receita.rendimento_aplicacao_capital }}</td></tr>
+        <tr><td>12 – Devolução FNDE (Custeio)</td><td class="valor">{{ receita.devolucao_fnde_custeio }}</td></tr>
+        <tr><td>12 – Devolução FNDE (Capital)</td><td class="valor">{{ receita.devolucao_fnde_capital }}</td></tr>
+        <tr><td>13 – Valor Total Receita (Custeio)</td><td class="valor">{{ receita.valor_total_receita_custeio }}</td></tr>
+        <tr><td>13 – Valor Total Receita (Capital)</td><td class="valor">{{ receita.valor_total_receita_capital }}</td></tr>
+        <tr><td>14 – Valor Despesa Realizada (-) (Custeio)</td><td class="valor">{{ receita.valor_despesa_realizada_custeio }}</td></tr>
+        <tr><td>14 – Valor Despesa Realizada (-) (Capital)</td><td class="valor">{{ receita.valor_despesa_realizada_capital }}</td></tr>
+        <tr><td>15 – Saldo Reprogramado ES (Custeio)</td><td class="valor">{{ receita.saldo_reprogramar_custeio }}</td></tr>
+        <tr><td>15 – Saldo Reprogramado ES (Capital)</td><td class="valor">{{ receita.saldo_reprogramar_capital }}</td></tr>
+        <tr><td>16 – Saldo Devolvido (Custeio)</td><td class="valor">{{ receita.saldo_devolvido_custeio }}</td></tr>
+        <tr><td>16 – Saldo Devolvido (Capital)</td><td class="valor">{{ receita.saldo_devolvido_capital }}</td></tr>
+        <tr><td>18 – Nº Escolas Atendidas</td><td class="valor">{{ receita.escolas_atendidas }}</td></tr>
+
+        <!-- Linha de totais -->
+        <tr class="total-geral">
+            <td><strong>Total Geral Receita</strong></td>
+            <td class="valor"><strong>{{ total_receitas }}</strong></td>
+        </tr>
+        <tr class="total-geral">
+            <td><strong>Total Geral Despesa</strong></td>
+            <td class="valor"><strong>{{ total_despesas }}</strong></td>
+        </tr>
+        <tr class="total-geral">
+            <td><strong>Saldo Final</strong></td>
+            <td class="valor"><strong>{{ saldo_geral }}</strong></td>
+        </tr>
+    </table>
+
+    <!-- Bloco 4 - Autenticação -->
+    <div class="autenticacao">
+        <p>Canaã dos Carajás (PA), {{ data_atual }}</p>
+    </div>
+    <br><br><br><br><br><br>
+
+    <!-- Footer com assinaturas -->
+
+    <div class="assinatura">
+        <div class="assinatura-item">
+            <span class="assinatura-linha"></span>
+            Nome do(a) Dirigente ou do Representante Legal
+        </div><br><br><br><br><br><br>
+        <div class="assinatura-item">
+            <span class="assinatura-linha"></span>
+            Assinatura do(a) Dirigente ou do Representante Legal
+        </div>
+    </div>
+    
+
+
+    <style>
+        /* Estilização da área de autenticação */
+        .assinatura {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.assinatura-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 20px; /* Espaçamento entre os itens */
+}
+
+.assinatura-linha {
+    display: block;
+    width: 300px; /* Tamanho da linha da assinatura */
+    border-top: 1px solid #000;
+    margin-bottom: 5px; /* Espaço entre a linha e o texto */
+}
+
+    </style>
+
+
+</body>
+</html>

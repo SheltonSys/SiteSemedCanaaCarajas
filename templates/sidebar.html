@@ -227,12 +227,26 @@
                         </p>
                     </a>
                     <ul class="nav nav-treeview submenu" id="setor-pedagogico-submenu" style="display: none;">
+
+
                         <li class="nav-item">
                             <a href="{% url 'site_pedagogico' %}" class="nav-link" data-id="site_setor_pedagogico" target="_blank">
                                 <i class="fas fa-chalkboard-teacher nav-icon"></i>
                                 <p>Site Pedagógico</p>
                             </a>
                         </li>
+
+
+                        <li class="nav-item">
+                            <a href="{% url 'plano_gestao_escolar' %}" class="nav-link" target="_blank">
+                                <i class="fas fa-chalkboard-teacher nav-icon"></i>
+                                <p>Gestão Escolar PGE</p>
+                            </a>
+                        </li>
+                        
+                        
+
+
                         <li class="nav-item">
                             <a href="{% url 'adm_site_pedagogico' %}" class="nav-link" data-id="adm-pedagogico">
                                 <i class="fas fa-user-cog nav-icon"></i>
@@ -315,6 +329,52 @@
                     <a href="{% url 'diagnosis_emcceja' %}" class="nav-link" data-id="encceja">
                         <i class="fas fa-university nav-icon"></i>
                         <p>EMCCEJA</p>
+                    </a>
+                </li>
+            </ul>
+        </li>
+        {% endif %}
+
+
+        <!-- Orientação Educacional -->
+        {% if user.tipo_usuario == "coordenador" or user.is_superuser %}
+        <li class="nav-item has-treeview">
+            <a href="#" class="nav-link">
+                <i class="fas fa-chalkboard-teacher nav-icon"></i>
+                <p>
+                    S.O.E
+                    <i class="right fas fa-angle-left"></i>
+                </p>
+            </a>
+            <ul class="nav nav-treeview">
+                <li class="nav-item">
+                    <a href="{% url 'soe_principal' %}" class="nav-link">
+                        <i class="fas fa-home nav-icon"></i> <!-- Ícone para Principal -->
+                        <p>Principal</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'soe_gestao' %}" class="nav-link">
+                        <i class="fas fa-cogs nav-icon"></i> <!-- Ícone para Gestão -->
+                        <p>Gestão</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'soe_servicos' %}" class="nav-link">
+                        <i class="fas fa-tools nav-icon"></i> <!-- Ícone para Serviços -->
+                        <p>Serviços</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'soe_uploads' %}" class="nav-link">
+                        <i class="fas fa-upload nav-icon"></i> <!-- Ícone para Uploads -->
+                        <p>Uploads</p>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'soe_relatorios' %}" class="nav-link">
+                        <i class="fas fa-chart-bar nav-icon"></i> <!-- Ícone para Relatórios -->
+                        <p>Relatórios</p>
                     </a>
                 </li>
             </ul>
@@ -452,7 +512,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="{% url 'escolas' %}" class="nav-link" data-id="sepeccescolas">
+                        <a href="{% url 'lista_escolas_pdde' %}" class="nav-link" data-id="sepeccescolas">
                             <i class="fas fa-school nav-icon"></i>
                             <p>Escolas</p>
                         </a>

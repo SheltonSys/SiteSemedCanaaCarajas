@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastrar Termo de Doação</h1>
+            <p class="text-muted">Gere um termo de doação com base nos bens cadastrados.</p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="card shadow-lg border-0 mb-5">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-file-signature"></i> Dados do Termo</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.escola.id_for_label }}" class="form-label">Escolha a Escola:</label>
+                            {{ form.escola }}
+                        </div>
+                
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.conselho.id_for_label }}" class="form-label">Nome do Conselho:</label>
+                            {{ form.conselho }}
+                        </div>
+                
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.bem.id_for_label }}" class="form-label">Bem:</label>
+                            {{ form.bem }}
+                        </div>
+                    </div>
+                
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-save"></i> Gerar Termo
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+
+        <!-- Lista de bens disponíveis -->
+        <div class="card shadow-lg border-0 mb-5">
+            <div class="card-header bg-info text-white">
+                <h2 class="h6 mb-0"><i class="fas fa-boxes"></i> Bens Cadastrados para Doação</h2>
+            </div>
+            <div class="card-body bg-light">
+                {% if bens_disponiveis %}
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover text-center">
+                        <thead class="table-info">
+                            <tr>
+                                <th>#</th>
+                                <th>Escola</th>
+                                <th>Conselho</th>
+                                <th>Descrição</th>
+                                <th>Quantidade</th>
+                                <th>Nota Fiscal</th>
+                                <th>Data</th>
+                                <th>Valor Unitário</th>
+                                <th>Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bem in bens_disponiveis %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ bem.escola.nome }}</td>
+                                <td>{{ bem.conselho }}</td>
+                                <td>{{ bem.descricao }}</td>
+                                <td>{{ bem.quantidade }}</td>
+                                <td>{{ bem.numero_nota }}</td>
+                                <td>{{ bem.data_nota|date:"d/m/Y" }}</td>
+                                <td>R$ {{ bem.valor_unitario|floatformat:2 }}</td>
+                                <td>R$ {{ bem.valor_total|floatformat:2 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Nenhum bem cadastrado ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para preencher conselho automaticamente -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const escolaSelect = document.getElementById("id_escola");
+        const conselhoInput = document.getElementById("id_conselho");
+
+        escolaSelect.addEventListener("change", function () {
+            const escolaId = this.value;
+            if (!escolaId) return;
+
+            fetch(`/get-escola-dados/${escolaId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    conselhoInput.value = data.nome_conselho || "Não informado";
+                })
+                .catch(error => {
+                    console.error("Erro ao buscar dados da escola:", error);
+                    conselhoInput.value = "Erro ao carregar";
+                });
+        });
+    });
+</script>
+{% endblock %}

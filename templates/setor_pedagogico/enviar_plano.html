@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="fas fa-file-upload me-2"></i> Enviar Plano de Gestão Escolar
+            </h5>
+        </div>
+        <div class="card-body bg-light">
+            <form id="form-envio-plano" method="POST" enctype="multipart/form-data" action="{% url 'enviar_plano' %}">
+                {% csrf_token %}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="id_unidade_ensino" class="form-label">Unidade de Ensino:</label>
+                        <input type="text" name="unidade_ensino" id="id_unidade_ensino" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_cargo" class="form-label">Cargo:</label>
+                        <input type="text" name="cargo" id="id_cargo" class="form-control" value="Diretor" required>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="id_servidor" class="form-label">Servidor:</label>
+                        <input type="text" name="servidor" id="id_servidor" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="id_telefone" class="form-label">Telefone:</label>
+                        <input type="text" name="telefone" id="id_telefone" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_arquivo" class="form-label">Arquivo do Plano (PDF):</label>
+                    <input type="file" name="arquivo" id="id_arquivo" class="form-control" required accept=".pdf">
+                </div>
+
+                <div class="text-end">
+                    <button type="button" id="btn-confirmar-envio" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i> Enviar
+                    </button>
+                    <a href="/site-pedagogico/" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.getElementById('form-envio-plano');
+        const btnEnviar = document.getElementById('btn-confirmar-envio');
+
+        btnEnviar.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: 'Confirmar envio?',
+                text: "Deseja realmente enviar o Plano de Gestão Escolar?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#198754',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sim, Enviar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const formData = new FormData(form);
+
+                    fetch(form.action, {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => {
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Enviado com sucesso!',
+                                showConfirmButton: false,
+                                timer: 1800
+                            }).then(() => {
+                                window.location.href = '/site-pedagogico/';
+                            });
+                        } else {
+                            Swal.fire('Erro!', 'Erro ao enviar o plano.', 'error');
+                        }
+                    }).catch(() => {
+                        Swal.fire('Erro!', 'Erro na conexão com o servidor.', 'error');
+                    });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

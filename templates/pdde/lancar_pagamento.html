@@ -1,0 +1,692 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Lançamento de Pagamentos - PDDE</h1>
+            <p class="text-muted">Registre e visualize os pagamentos efetuados pelas escolas no programa PDDE.</p>
+        </div>
+
+        <!-- Formulário Único -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-school"></i> Identificação e Pagamentos</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" id="form-cadastrar-pagamento" action="{% url 'pddelancar_pagamento' %}">
+                    {% csrf_token %}
+                    <div class="container-fluid p-4 bg-light rounded shadow">
+                        
+                        <!-- SEÇÃO ESCOLA -->
+                        <h4 class="mb-3 text-primary"><i class="fas fa-school"></i> Informações da Escola</h4>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="escola-select">Escolha a Escola:</label>
+                                <select id="escola-select" name="escola" class="form-control" required>
+                                    <option value="" selected disabled>Selecione uma escola</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="programa-select">Programa:</label>
+                                <select id="programa-select" name="programa" class="form-control" required disabled>
+                                    <option value="" selected disabled>Selecione um programa</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <label for="exercicio" class="form-label">Exercício:</label>
+                                <input type="text" id="exercicio" name="exercicio" class="form-control" value="2025" readonly>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+                
+                        <!-- SEÇÃO DESPESAS -->
+                        <h4 class="mb-3 text-primary"><i class="fas fa-file-invoice-dollar"></i> Informações Financeiras</h4>
+                        <div class="row g-3">
+                            <div class="col-lg-6 col-md-6">
+                                <label for="saldo_anterior_custeio" class="form-label">Saldo Anterior (Custeio):</label>
+                                <input type="text" id="saldo_anterior_custeio" name="saldo_anterior_custeio" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-lg-6 col-md-6">
+                                <label for="saldo_anterior_capital" class="form-label">Saldo Anterior (Capital):</label>
+                                <input type="text" id="saldo_anterior_capital" name="saldo_anterior_capital" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-lg-6 col-md-6">
+                                <label for="valor_creditado_custeio" class="form-label">Valor Creditado (Custeio):</label>
+                                <input type="text" id="valor_creditado_custeio" name="valor_creditado_custeio" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-lg-6 col-md-6">
+                                <label for="valor_creditado_capital" class="form-label">Valor Creditado (Capital):</label>
+                                <input type="text" id="valor_creditado_capital" name="valor_creditado_capital" class="form-control" readonly>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <label for="saldo_reprogramar_custeio" class="form-label">Saldo Reprogramado (Custeio):</label>
+                                <input type="text" id="saldo_reprogramar_custeio" name="saldo_reprogramar_custeio" class="form-control" readonly>
+                            </div>
+                            <div class="col-lg-6">
+                                <label for="saldo_reprogramar_capital" class="form-label">Saldo Reprogramado (Capital):</label>
+                                <input type="text" id="saldo_reprogramar_capital" name="saldo_reprogramar_capital" class="form-control" readonly>
+                            </div>
+                        </div>
+
+
+                
+                        <hr class="my-4">
+                
+                        <!-- SEÇÃO DADOS DO PAGAMENTO -->
+                        <h4 class="mb-3 text-primary"><i class="fas fa-money-bill-wave"></i> Pagamento</h4>
+                        <div class="row g-3">
+                            <div class="col-lg-4 col-md-6">
+                                <label for="nome_favorecido" class="form-label">Nome do Favorecido:</label>
+                                <input type="text" id="nome_favorecido" name="nome_favorecido" class="form-control" required>
+                            </div>
+                
+                            <div class="col-lg-4 col-md-6">
+                                <label for="cnpj_cpf" class="form-label">CNPJ/CPF:</label>
+                                <input type="text" id="cnpj_cpf" name="cnpj_cpf" class="form-control" required>
+                            </div>
+
+                            <div class="col-lg-4 col-md-6">
+                                <label for="tipo_pagamento" class="form-label">Natureza Despesa:</label>
+                                <select id="tipo_pagamento" name="tipo_pagamento" class="form-control" required>
+                                    <option value="" disabled selected>Selecione um tipo</option>
+                                    <option value="Custeio">Custeio</option>
+                                    <option value="Capital">Capital</option>
+                                </select>
+                            </div>
+                            
+                
+                            <div class="col-lg-12">
+                                <label for="tipo_bem_servico" class="form-label">Bens e Materiais Adquiridos ou Serviços Contratados:</label>
+                                <textarea id="tipo_bem_servico" name="tipo_bem_servico" class="form-control" rows="4" required></textarea>
+                            </div>
+                        </div>
+                
+                        <hr class="my-4">
+                
+                        <!-- SEÇÃO DOCUMENTAÇÃO -->
+                        <h4 class="mb-3 text-primary"><i class="fas fa-file-alt"></i> Documentação</h4>
+                        <div class="row g-3">
+                            <div class="col-lg-6 col-md-6">
+                                <label for="tipo_documento" class="form-label">Tipo de Documento:</label>
+                                <select id="tipo_documento" name="tipo_documento" class="form-control" required>
+                                    <option value="" disabled selected>Selecione</option>
+                                    <option value="NF">Nota Fiscal</option>
+                                    <option value="Cupom">Cupom Fiscal</option>
+                                    <option value="PIX">PIX</option>
+                                    <option value="Boleto">Boleto</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+                
+                            <div class="col-lg-3 col-md-6">
+                                <label for="numero_documento" class="form-label">Número do Documento:</label>
+                                <input type="text" id="numero_documento" name="numero_documento" class="form-control" required>
+                            </div>
+                
+                            <div class="col-lg-3 col-md-6">
+                                <label for="data_documento" class="form-label">Data do Documento:</label>
+                                <input type="date" id="data_documento" name="data_documento" class="form-control" required>
+                            </div>
+                        </div>
+                
+                        <hr class="my-4">
+                
+                        <!-- SEÇÃO DETALHES DO PAGAMENTO -->
+                        <h4 class="mb-3 text-primary"><i class="fas fa-credit-card"></i> Forma de Pagamento</h4>
+                        <div class="row g-3">
+                            <div class="col-lg-3 col-md-6">
+                                <label for="tipo_pagamento_efetuado" class="form-label">Tipo de Pagamento:</label>
+                                <select id="tipo_pagamento_efetuado" name="tipo_pagamento_efetuado" class="form-control" required>
+                                    <option value="" disabled selected>Selecione</option>
+                                    <option value="Dinheiro">Dinheiro</option>
+                                    <option value="PIX">PIX</option>
+                                    <option value="TED">TED</option>
+                                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                    <option value="Cartão de Débito">Cartão de Débito</option>
+                                    <option value="Cheque">Cheque</option>
+                                    <option value="Outros">Outros</option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-3 col-md-6">
+                                <label for="numero_documento_pagamento" class="form-label">Número do Documento:</label>
+                                <input type="text" id="numero_documento_pagamento" name="numero_documento_pagamento" class="form-control" required>
+                            </div>
+                
+                            <div class="col-lg-3 col-md-6">
+                                <label for="data_pagamento" class="form-label">Data do Pagamento:</label>
+                                <input type="date" id="data_pagamento" name="data_pagamento" class="form-control" required>
+                            </div>
+                
+                            <div class="col-lg-3 col-md-6">
+                                <label for="valor" class="form-label">Valor (R$):</label>
+                                <input type="text" id="valor" name="valor" class="form-control" required>
+                            </div>
+                        </div>
+                
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-success shadow-sm">
+                                <i class="fas fa-plus-circle"></i> Adicionar Pagamento
+                            </button>
+                            <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+
+                <hr>
+
+
+
+
+                <!-- Modal de Erro -->
+                <div class="modal fade" id="modalErro" tabindex="-1" aria-labelledby="modalErroLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title" id="modalErroLabel">
+                                    <i class="fas fa-exclamation-triangle"></i> Atenção!
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                            </div>
+                            <div class="modal-body text-center">
+                                <p id="modalErroTexto" class="fw-bold"></p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times"></i> Fechar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="card shadow-lg border-0 mt-4">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h2 class="h5 mb-0"><i class="fas fa-money-check-alt"></i> Pagamentos Efetuados</h2>
+                    </div>
+                    <div class="card-body bg-light">
+                        <div class="table-responsive">
+                            <table class="table table-bordered text-center align-middle">
+                                <thead class="bg-primary text-white">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nome do Favorecido</th>
+                                        <th>CNPJ/CPF</th>
+                                        <th>Tipo de Bens e Materiais/Serviços</th>
+                                        <th>Origem</th>
+                                        <th>Nat. Despesa</th>
+                                        <th>Tipo Documento</th>
+                                        <th>Data Pagamento</th>
+                                        <th>Valor (R$)</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-pagamentos">
+                                    {% for pagamento in pagamentos %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td class="text-start">{{ pagamento.nome_favorecido }}</td>
+                                        <td>{{ pagamento.cnpj_cpf }}</td>
+                                        <td class="text-start">{{ pagamento.tipo_bem_servico }}</td>
+                                        <td>FNDE</td> <!-- Origem sempre FNDE -->
+                                        <td>{{ pagamento.tipo_pagamento }}</td>
+                                        <td>{{ pagamento.tipo_documento }}</td>
+                                        <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
+                                        <td class="valor-pagamento {% if pagamento.tipo_pagamento == 'Custeio' %}custeio{% else %}capital{% endif %}">
+                                            R$ {{ pagamento.valor }}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'editar_pagamento' pagamento.id %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-edit"></i> Editar
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="10" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                
+                                <!-- ✅ LINHA DE SOMATÓRIO COM OS 3 TOTAIS NA MESMA LINHA -->
+                                <tfoot>
+                                    <tr class="bg-light fw-bold">
+                                        <td colspan="6"></td> <!-- Mantém alinhamento -->
+                                        <td class="text-end pe-3">Total Custeio:</td>
+                                        <td id="total-custeio" class="text-danger fw-bold">R$ 0,00</td>
+                                        <td class="text-end pe-3">Total Capital:</td>
+                                        <td id="total-capital" class="text-danger fw-bold">R$ 0,00</td>
+                                    </tr>
+                                    <tr class="bg-secondary text-white fw-bold">
+                                        <td colspan="8" class="text-end pe-3">Total Pagamentos:</td>
+                                        <td id="total-geral" colspan="2" class="text-warning fw-bold">R$ 0,00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                
+
+
+
+
+
+    </div>
+</div>
+
+<br>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function calcularTotais() {
+            let totalCusteio = 0;
+            let totalCapital = 0;
+    
+            document.querySelectorAll(".valor-pagamento").forEach(td => {
+                let valorTexto = td.textContent.replace("R$", "").replace(",", ".").trim();
+                let valor = parseFloat(valorTexto) || 0;
+    
+                if (td.classList.contains("custeio")) {
+                    totalCusteio += valor;
+                } else if (td.classList.contains("capital")) {
+                    totalCapital += valor;
+                }
+            });
+    
+            let totalGeral = totalCusteio + totalCapital;
+    
+            document.getElementById("total-custeio").textContent = "R$ " + totalCusteio.toFixed(2).replace(".", ",");
+            document.getElementById("total-capital").textContent = "R$ " + totalCapital.toFixed(2).replace(".", ",");
+            document.getElementById("total-geral").textContent = "R$ " + totalGeral.toFixed(2).replace(".", ",");
+        }
+    
+        // 🔹 Calcula os totais ao carregar a página
+        calcularTotais();
+    });
+    </script>
+    
+    
+
+<!-- Carregamento via AJAX -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function carregarPagamentos() {
+    fetch("/get-pagamentos/")
+        .then(response => response.json())
+        .then(data => {
+            let tabela = document.getElementById("tabela-pagamentos");
+            tabela.innerHTML = ""; 
+
+            if (data.pagamentos.length > 0) {
+                data.pagamentos.forEach((pagamento, index) => {
+                    let row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${pagamento.nome_favorecido}</td>
+                            <td>${pagamento.cnpj_cpf}</td>
+                            <td>${pagamento.tipo_bem_servico}</td>
+                            <td>${pagamento.origem}</td>
+                            <td>${pagamento.nat_despesa}</td>
+                            <td>${pagamento.tipo_documento}</td>
+                            <td>${pagamento.data_pagamento}</td>
+                            <td>${pagamento.valor}</td>
+                            <td>
+                                <a href="${pagamento.url_editar}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                            </td>
+                        </tr>`;
+                    tabela.innerHTML += row;
+                });
+            } else {
+                tabela.innerHTML = '<tr><td colspan="10" class="text-center text-muted">Nenhum pagamento registrado ainda.</td></tr>';
+            }
+        })
+        .catch(error => console.error("❌ Erro ao carregar pagamentos:", error));
+}
+    
+        // Carregar pagamentos ao iniciar a página
+        carregarPagamentos();
+    });
+    </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const escolaSelect = document.getElementById("escola-select");
+    const programaSelect = document.getElementById("programa-select");
+    const naturezaSelect = document.getElementById("natureza-select"); // Supondo que tenha um select para Natureza
+    const saldoAnteriorCusteioInput = document.getElementById("saldo_anterior_custeio");
+    const saldoAnteriorCapitalInput = document.getElementById("saldo_anterior_capital");
+    const valorCreditadoCusteioInput = document.getElementById("valor_creditado_custeio");
+    const valorCreditadoCapitalInput = document.getElementById("valor_creditado_capital");
+    const saldoReprogramarCusteioInput = document.getElementById("saldo_reprogramar_custeio");
+    const saldoReprogramarCapitalInput = document.getElementById("saldo_reprogramar_capital");
+    const valorDespesaCusteioInput = document.getElementById("valor_despesa_realizada_custeio");
+    const valorDespesaCapitalInput = document.getElementById("valor_despesa_realizada_capital");
+    const form = document.getElementById("form-cadastrar-pagamento");
+
+    // Campos de saldo e despesas
+    // Elementos de totalização
+    const totalCusteio = document.getElementById("total-custeio");
+    const totalCapital = document.getElementById("total-capital");
+    const totalGeral = document.getElementById("total-geral");
+
+    // 🔹 Habilita o select de Programa antes do envio do formulário
+    form.addEventListener("submit", function () {
+        programaSelect.disabled = false;
+    });
+
+    // 🔹 Função para carregar Escolas
+    function carregarEscolas() {
+        fetch("/get-escolas/")
+            .then(response => response.json())
+            .then(data => {
+                escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
+                
+                if (data.escolas.length === 0) {
+                    escolaSelect.innerHTML += '<option value="" disabled>Nenhuma escola disponível</option>';
+                } else {
+                    data.escolas.forEach(escola => {
+                        let option = document.createElement("option");
+                        option.value = escola.id;
+                        option.textContent = escola.nome;
+                        escolaSelect.appendChild(option);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error("❌ Erro ao carregar escolas:", error);
+                escolaSelect.innerHTML = '<option value="" disabled selected>Erro ao carregar escolas</option>';
+            });
+    }
+
+    // 🔹 Função para carregar Programas vinculados a uma escola
+    function carregarProgramas(escolaId) {
+        programaSelect.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+        programaSelect.disabled = true;
+
+        fetch(`/get-programas-escola/${escolaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                programaSelect.innerHTML = '<option value="" selected disabled>Selecione um programa</option>';
+
+                if (data.programas.length > 0) {
+                    data.programas.forEach(programa => {
+                        let option = document.createElement("option");
+                        option.value = programa;
+                        option.textContent = programa;
+                        programaSelect.appendChild(option);
+                    });
+                    programaSelect.disabled = false;
+                } else {
+                    programaSelect.innerHTML = '<option value="" disabled selected>Nenhum programa disponível</option>';
+                    programaSelect.disabled = true;
+                }
+            })
+            .catch(error => {
+                console.error("❌ Erro ao buscar programas:", error);
+                programaSelect.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
+                programaSelect.disabled = true;
+            });
+    }
+
+    function carregarPagamentos() {
+        let escolaId = escolaSelect.value;
+        let programa = programaSelect.value;
+        let natureza = naturezaSelect.value;
+
+        if (!escolaId || !programa || !natureza) return;
+
+        fetch(`/get-pagamentos/${escolaId}/${programa}/${natureza}/`)
+            .then(response => response.json())
+            .then(data => {
+                tabelaPagamentos.innerHTML = ""; // Limpa a tabela
+                let totalCusteioVal = 0;
+                let totalCapitalVal = 0;
+
+                if (data.pagamentos.length > 0) {
+                    data.pagamentos.forEach((pagamento, index) => {
+                        let valor = parseFloat(pagamento.valor) || 0;
+
+                        if (pagamento.tipo_pagamento === "Custeio") {
+                            totalCusteioVal += valor;
+                        } else {
+                            totalCapitalVal += valor;
+                        }
+
+                        let row = `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td class="text-start">${pagamento.nome_favorecido}</td>
+                                <td>${pagamento.cnpj_cpf}</td>
+                                <td class="text-start">${pagamento.tipo_bem_servico}</td>
+                                <td>FNDE</td>
+                                <td>${pagamento.tipo_pagamento}</td>
+                                <td>${pagamento.tipo_documento}</td>
+                                <td>${pagamento.data_pagamento}</td>
+                                <td class="valor-pagamento ${pagamento.tipo_pagamento === 'Custeio' ? 'custeio' : 'capital'}">
+                                    R$ ${valor.toFixed(2).replace(".", ",")}
+                                </td>
+                                <td>
+                                    <a href="/editar-pagamento/${pagamento.id}/" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                        tabelaPagamentos.innerHTML += row;
+                    });
+                } else {
+                    tabelaPagamentos.innerHTML = `
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">Nenhum pagamento encontrado para os filtros selecionados.</td>
+                        </tr>
+                    `;
+                }
+
+                atualizarTotais(totalCusteioVal, totalCapitalVal);
+            })
+            .catch(error => console.error("❌ Erro ao carregar pagamentos:", error));
+    }
+
+    
+
+    // 🔹 Função para carregar dados financeiros da escola
+    function carregarDadosFinanceiros(escolaId, programa) {
+        if (!escolaId || !programa) {
+            console.error("⚠️ Escola e programa são obrigatórios!");
+            return;
+        }
+
+        fetch(`/get-receita/${escolaId}/${encodeURIComponent(programa)}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.erro) {
+                    console.error("❌ Erro:", data.erro);
+                    return;
+                }
+
+                saldoAnteriorCusteioInput.value = data.saldo_anterior_custeio;
+                saldoAnteriorCapitalInput.value = data.saldo_anterior_capital;
+                valorCreditadoCusteioInput.value = data.valor_creditado_custeio;
+                valorCreditadoCapitalInput.value = data.valor_creditado_capital;
+                saldoReprogramarCusteioInput.value = data.saldo_reprogramar_custeio;
+                saldoReprogramarCapitalInput.value = data.saldo_reprogramar_capital;
+            })
+            .catch(error => {
+                console.error("❌ Erro ao buscar dados financeiros:", error);
+                saldoAnteriorCusteioInput.value = "0,00";
+                saldoAnteriorCapitalInput.value = "0,00";
+                valorCreditadoCusteioInput.value = "0,00";
+                valorCreditadoCapitalInput.value = "0,00";
+                saldoReprogramarCusteioInput.value = "0,00";
+                saldoReprogramarCapitalInput.value = "0,00";
+            });
+    }
+
+    // 🔹 Evento ao selecionar uma escola
+    escolaSelect.addEventListener("change", function () {
+        let escolaId = this.value;
+        if (escolaId) {
+            carregarProgramas(escolaId);
+        }
+    });
+
+    // 🔹 Evento ao selecionar um programa
+    programaSelect.addEventListener("change", function () {
+        let escolaId = escolaSelect.value;
+        let programa = this.value;
+        if (escolaId && programa) {
+            carregarDadosFinanceiros(escolaId, programa);
+        }
+    });
+
+    // 🔹 Carrega as escolas ao iniciar a página
+    carregarEscolas();
+});
+
+
+
+</script>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const tipoPagamento = document.getElementById("tipo_pagamento");
+        const saldoCusteio = document.getElementById("saldo_reprogramar_custeio");
+        const saldoCapital = document.getElementById("saldo_reprogramar_capital");
+        const submitButton = document.querySelector("button[type='submit']");
+        const modalErro = new bootstrap.Modal(document.getElementById("modalErro"));
+        const modalErroTexto = document.getElementById("modalErroTexto");
+        const modalErroElement = document.getElementById("modalErro");
+    
+        function verificarSaldo() {
+            let tipoSelecionado = tipoPagamento.value;
+            let valorCusteio = parseFloat(saldoCusteio.value.replace(",", ".") || "0");
+            let valorCapital = parseFloat(saldoCapital.value.replace(",", ".") || "0");
+    
+            if (tipoSelecionado === "Custeio" && valorCusteio <= 0) {
+                modalErroTexto.textContent = "❌ Não há recursos suficientes no saldo reprogramado de Custeio para efetivar o pagamento!";
+                modalErro.show();
+                submitButton.disabled = true;
+            } 
+            else if (tipoSelecionado === "Capital" && valorCapital <= 0) {
+                modalErroTexto.textContent = "❌ Não há recursos suficientes no saldo reprogramado de Capital para efetivar o pagamento!";
+                modalErro.show();
+                submitButton.disabled = true;
+            } 
+            else {
+                submitButton.disabled = false;
+            }
+        }
+    
+        // 🚀 Evento para recarregar a página ao fechar a modal
+        modalErroElement.addEventListener("hidden.bs.modal", function () {
+            window.location.reload();
+        });
+    
+        tipoPagamento.addEventListener("change", verificarSaldo);
+    });
+    </script>
+    
+    
+    
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const tipoPagamento = document.getElementById("tipo_pagamento");
+            const saldoCusteio = document.getElementById("saldo_reprogramar_custeio");
+            const saldoCapital = document.getElementById("saldo_reprogramar_capital");
+            const submitButton = document.querySelector("button[type='submit']");
+            const modalErro = new bootstrap.Modal(document.getElementById("modalErro"));
+            const modalErroTexto = document.getElementById("modalErroTexto");
+        
+            function verificarSaldo() {
+                let tipoSelecionado = tipoPagamento.value;
+                let valorCusteio = parseFloat(saldoCusteio.value.replace(",", ".") || "0");
+                let valorCapital = parseFloat(saldoCapital.value.replace(",", ".") || "0");
+        
+                if (tipoSelecionado === "Custeio" && valorCusteio <= 0) {
+                    modalErroTexto.textContent = "❌ Não há recursos suficientes no saldo reprogramado de Custeio para efetivar o pagamento!";
+                    modalErro.show();
+                    submitButton.disabled = true;
+                } 
+                else if (tipoSelecionado === "Capital" && valorCapital <= 0) {
+                    modalErroTexto.textContent = "❌ Não há recursos suficientes no saldo reprogramado de Capital para efetivar o pagamento!";
+                    modalErro.show();
+                    submitButton.disabled = true;
+                } 
+                else {
+                    submitButton.disabled = false;
+                }
+            }
+        
+            tipoPagamento.addEventListener("change", verificarSaldo);
+        });
+        </script>
+
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    function atualizarTotais() {
+        let totalCusteio = 0;
+        let totalCapital = 0;
+
+        // 🔍 Percorre todas as linhas da tabela para somar os valores
+        document.querySelectorAll("#tabela-pagamentos tr").forEach(row => {
+            let tipoDespesa = row.querySelector("td:nth-child(6)")?.textContent.trim();
+            let valorCelula = row.querySelector(".valor-pagamento")?.textContent.replace("R$", "").trim();
+            let valor = parseFloat(valorCelula.replace(",", ".")) || 0;
+
+            if (tipoDespesa === "Custeio") {
+                totalCusteio += valor;
+            } else if (tipoDespesa === "Capital") {
+                totalCapital += valor;
+            }
+        });
+
+        // 🔹 Calcula o total geral (soma de Custeio + Capital)
+        let totalGeral = totalCusteio + totalCapital;
+
+        // 🔹 Atualiza os valores na tabela
+        document.getElementById("total-custeio").textContent = `R$ ${totalCusteio.toFixed(2).replace(".", ",")}`;
+        document.getElementById("total-capital").textContent = `R$ ${totalCapital.toFixed(2).replace(".", ",")}`;
+        document.getElementById("total-geral").textContent = `R$ ${totalGeral.toFixed(2).replace(".", ",")}`;
+    }
+
+    // 🔄 Chama a função ao carregar a página
+    atualizarTotais();
+});
+
+</script>
+
+
+
+
+
+{% endblock %}

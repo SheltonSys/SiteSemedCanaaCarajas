@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-primary">Cadastrar Programa</h2>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="card p-4 shadow">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="id_nome">Nome do Programa:</label>
+                    {{ form.nome }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_escola">Escola:</label>
+                    {{ form.escola }}
+                </div>
+                <div class="col-md-12">
+                    <label for="id_descricao">Descrição:</label>
+                    {{ form.descricao }}
+                </div>
+                <div class="col-md-6">
+                    <label for="id_resolucao">Resolução:</label>
+                    {{ form.resolucao }}
+                </div>
+                <div class="col-md-3">
+                    <label for="id_data_inicio">Data de Início:</label>
+                    {{ form.data_inicio }}
+                </div>
+                <div class="col-md-3">
+                    <label for="id_data_fim">Data de Fim:</label>
+                    {{ form.data_fim }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-success mt-3">Salvar</button>
+            <a href="{% url 'listar_programas' %}" class="btn btn-secondary mt-3">Voltar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

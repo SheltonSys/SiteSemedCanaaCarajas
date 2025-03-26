@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">📄 Extrato Bancário</h1>
+            <p class="text-muted">Visualize os lançamentos bancários registrados no sistema.</p>
+        </div>
+
+        <!-- Formulário de Seleção -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-filter"></i> Filtrar Extrato</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form id="form-extrato">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="escola">Escolha a Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma escola</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="conta_bancaria">Conta Bancária:</label>
+                            <select id="conta_bancaria" name="conta_bancaria" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma conta</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-search"></i> Buscar Extrato
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabela de Extrato Bancário -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-university"></i> Movimentações Bancárias</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Escola</th>
+                                <th>Conta Bancária</th>
+                                <th>Tipo</th>
+                                <th>Valor (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-extrato">
+                            <tr><td colspan="6" class="text-center text-muted">Selecione uma escola e conta para visualizar os extratos.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    let formExtrato = document.getElementById("form-extrato");
+    let tabelaExtrato = document.getElementById("tabela-extrato");
+    let escolaSelect = document.getElementById("escola");
+    let contaSelect = document.getElementById("conta_bancaria");
+
+    // 🚀 Carrega todas as escolas ao carregar a página
+    fetch("/api/escolas/")
+        .then(response => response.json())
+        .then(data => {
+            escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
+            data.escolas.forEach(escola => {
+                escolaSelect.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
+            });
+        })
+        .catch(error => console.error("Erro ao carregar escolas:", error));
+
+    // 🎯 Quando uma escola for selecionada, carregar as contas vinculadas
+    escolaSelect.addEventListener("change", function () {
+        let escolaId = this.value;
+        if (!escolaId) return;
+
+        contaSelect.innerHTML = '<option value="">Carregando contas...</option>';
+
+        fetch(`/api/contas/${escolaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
+                data.contas.forEach(conta => {
+                    contaSelect.innerHTML += `<option value="${conta.id}">${conta.banco} - Ag: ${conta.agencia} - Conta: ${conta.conta}</option>`;
+                });
+            })
+            .catch(error => console.error("Erro ao carregar contas bancárias:", error));
+    });
+
+    // 🔍 Busca os extratos ao enviar o formulário
+    formExtrato.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        let escolaId = escolaSelect.value;
+        let contaId = contaSelect.value;
+
+        if (!escolaId || !contaId) {
+            alert("Selecione uma escola e uma conta para continuar.");
+            return;
+        }
+
+        tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Carregando...</td></tr>`;
+
+        fetch(`/api/extrato/?escola=${encodeURIComponent(escolaId)}&conta=${encodeURIComponent(contaId)}`)
+            .then(response => response.json())
+            .then(data => {
+                tabelaExtrato.innerHTML = "";
+
+                if (data.extratos.length > 0) {
+                    data.extratos.forEach(extrato => {
+                        let row = `
+                        <tr>
+                            <td>${extrato.data}</td>
+                            <td>${extrato.descricao}</td>
+                            <td>${extrato.escola}</td>
+                            <td>${extrato.conta_bancaria}</td>
+                            <td>${extrato.tipo}</td>
+                            <td class="text-right">R$ ${parseFloat(extrato.valor).toFixed(2)}</td>
+                        </tr>`;
+                        tabelaExtrato.innerHTML += row;
+                    });
+                } else {
+                    tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhum extrato encontrado.</td></tr>`;
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao buscar extratos:", error);
+                tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erro ao carregar os dados.</td></tr>`;
+            });
+    });
+});
+</script>
+
+{% endblock %}

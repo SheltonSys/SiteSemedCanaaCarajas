@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">📊 Relatórios Financeiros</h1>
+            <p class="text-muted">Gere e visualize relatórios detalhados da conciliação bancária.</p>
+        </div>
+
+        <!-- Formulário de Geração de Relatórios -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-file-pdf"></i> Selecionar Relatório</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="GET" id="form-relatorios">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="tipo_relatorio">Tipo de Relatório:</label>
+                            <select id="tipo_relatorio" name="tipo_relatorio" class="form-control" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="extrato_bancario">Extrato Bancário</option>
+                                <option value="lancamentos">Lançamentos Bancários</option>
+                                <option value="saldo_conciliacao">Saldo e Conciliação</option>
+                                <option value="movimentacao">Movimentação Financeira</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="formato">Formato do Relatório:</label>
+                            <select id="formato" name="formato" class="form-control" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="csv">CSV</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label for="data_inicial">Data Inicial:</label>
+                            <input type="date" id="data_inicial" name="data_inicial" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label for="data_final">Data Final:</label>
+                            <input type="date" id="data_final" name="data_final" class="form-control" required>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-download"></i> Gerar Relatório
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Lista de Relatórios Gerados -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-clipboard-list"></i> Relatórios Recentes</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Data</th>
+                                <th>Tipo de Relatório</th>
+                                <th>Formato</th>
+                                <th>Download</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-relatorios">
+                            {% for relatorio in relatorios %}
+                            <tr>
+                                <td>{{ relatorio.data }}</td>
+                                <td>{{ relatorio.tipo }}</td>
+                                <td>{{ relatorio.formato }}</td>
+                                <td>
+                                    <a href="{{ relatorio.link }}" class="btn btn-primary btn-sm" target="_blank">
+                                        <i class="fas fa-file-download"></i> Baixar
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">Nenhum relatório disponível.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let tabelaRelatorios = document.getElementById("tabela-relatorios");
+
+        if (!tabelaRelatorios) {
+            console.error("Erro: O elemento #tabela-relatorios não foi encontrado.");
+            return;
+        }
+
+        fetch("/get-relatorios/")
+            .then(response => response.json())
+            .then(data => {
+                tabelaRelatorios.innerHTML = "";
+
+                if (data.relatorios && data.relatorios.length > 0) {
+                    data.relatorios.forEach(relatorio => {
+                        let row = `
+                        <tr>
+                            <td>${relatorio.data}</td>
+                            <td>${relatorio.tipo}</td>
+                            <td>${relatorio.formato}</td>
+                            <td>
+                                <a href="${relatorio.link}" class="btn btn-primary btn-sm" target="_blank">
+                                    <i class="fas fa-file-download"></i> Baixar
+                                </a>
+                            </td>
+                        </tr>`;
+                        tabelaRelatorios.innerHTML += row;
+                    });
+                } else {
+                    tabelaRelatorios.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Nenhum relatório disponível.</td></tr>`;
+                }
+            })
+            .catch(error => console.error("Erro ao buscar relatórios:", error));
+    });
+</script>
+
+{% endblock %}

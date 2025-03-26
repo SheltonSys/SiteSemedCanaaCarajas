@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Lista de Proponentes</h1>
+            <p class="text-muted">Visualize todos os proponentes cadastrados no sistema.</p>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex justify-content-end align-items-center mt-3 gap-2">
+            <!-- Botão Novo -->
+            <a href="{% url 'cadastrar_proponente' %}" class="btn btn-primary shadow-sm">
+                <i class="fas fa-plus-circle"></i> Novo
+            </a>
+
+            <!-- Botão Voltar -->
+            <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+        <br>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-body bg-light">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nome</th>
+                            <th>CPF/CNPJ</th>
+                            <th>E-mail</th>
+                            <th>Telefone</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for proponente in proponentes %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ proponente.nome }}</td>
+                            <td>{{ proponente.cpf_cnpj }}</td>
+                            <td>{{ proponente.email }}</td>
+                            <td>{{ proponente.telefone }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="#" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Nenhum proponente cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

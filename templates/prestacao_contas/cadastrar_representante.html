@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastro de Representante Legal</h1>
+            <p class="text-muted">Registre os dados do representante legal da escola.</p>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-user-tie"></i> Informações do Representante</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="nome">Nome Completo:</label>
+                            <input type="text" id="nome" name="nome" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cpf">CPF:</label>
+                            <input type="text" id="cpf" name="cpf" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email">E-mail:</label>
+                            <input type="email" id="email" name="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="telefone">Telefone:</label>
+                            <input type="text" id="telefone" name="telefone" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cargo">Cargo:</label>
+                            <input type="text" id="cargo" name="cargo" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Salvar</button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para Máscaras de CPF e Telefone -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let cpfInput = document.getElementById("cpf");
+        let telefoneInput = document.getElementById("telefone");
+
+        cpfInput.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "")
+                                   .replace(/(\d{3})(\d)/, "$1.$2")
+                                   .replace(/(\d{3})(\d)/, "$1.$2")
+                                   .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+        });
+
+        telefoneInput.addEventListener("input", function () {
+            this.value = this.value.replace(/\D/g, "")
+                                   .replace(/(\d{2})(\d)/, "($1) $2")
+                                   .replace(/(\d{5})(\d)/, "$1-$2");
+        });
+    });
+</script>
+
+{% endblock %}

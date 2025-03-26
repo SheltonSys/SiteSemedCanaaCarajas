@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Lançamentos Bancários</h2>
+<a href="{% url 'criar_lancamento' %}" class="btn btn-success">Novo Lançamento</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Data</th>
+            <th>Descrição</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for lancamento in lancamentos %}
+        <tr>
+            <td>{{ lancamento.data }}</td>
+            <td>{{ lancamento.descricao }}</td>
+            <td>{{ lancamento.tipo }}</td>
+            <td>R$ {{ lancamento.valor }}</td>
+            <td>
+                <a href="{% url 'editar_lancamento' lancamento.id %}" class="btn btn-primary">Editar</a>
+                <a href="{% url 'excluir_lancamento' lancamento.id %}" class="btn btn-danger">Excluir</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

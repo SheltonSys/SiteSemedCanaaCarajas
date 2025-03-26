@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastro de Escola PDDE</h1>
+            <p class="text-muted">Preencha os dados da escola para registrá-la no sistema.</p>
+        </div>
+
+        <!-- Mensagens de Feedback -->
+        {% if messages %}
+        <div class="alert alert-dismissible">
+            {% for message in messages %}
+            <p class="alert alert-{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Formulário -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">
+                    <i class="fas fa-school"></i> Informações da Escola
+                </h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Primeira linha -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="id_nome" class="form-label">Nome da Escola:</label>
+                            <input type="text" class="form-control" id="id_nome" name="nome" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_tipo" class="form-label">Tipo (Escola, Creche, etc.):</label>
+                            <input type="text" class="form-control" id="id_tipo" name="tipo">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_dependencia_administrativa" class="form-label">Dependência Administrativa:</label>
+                            <input type="text" class="form-control" id="id_dependencia_administrativa" name="dependencia_administrativa">
+                        </div>
+                    </div>
+
+                    <!-- Segunda linha -->
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label for="id_endereco" class="form-label">Endereço:</label>
+                            <input type="text" class="form-control" id="id_endereco" name="endereco">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_bairro" class="form-label">Bairro:</label>
+                            <input type="text" class="form-control" id="id_bairro" name="bairro">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_cep" class="form-label">CEP:</label>
+                            <input type="text" class="form-control" id="id_cep" name="cep">
+                        </div>
+                    </div>
+
+                    <!-- Terceira linha -->
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label for="id_cidade" class="form-label">Cidade:</label>
+                            <input type="text" class="form-control" id="id_cidade" name="cidade" value="Canaã dos Carajás">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_uf" class="form-label">UF:</label>
+                            <input type="text" class="form-control" id="id_uf" name="uf" value="PA" maxlength="2">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_codigo_inep" class="form-label">Código INEP:</label>
+                            <input type="text" class="form-control" id="id_codigo_inep" name="codigo_inep" required>
+                        </div>
+                    </div>
+
+                    <!-- Quarta linha -->
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <label for="id_cnpj" class="form-label">CNPJ:</label>
+                            <input type="text" class="form-control" id="id_cnpj" name="cnpj" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_zona" class="form-label">Zona:</label>
+                            <select class="form-control" id="id_zona" name="zona">
+                                <option value="Urbana">Urbana</option>
+                                <option value="Rural">Rural</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_ensino" class="form-label">Ensino:</label>
+                            <select class="form-control" id="id_ensino" name="ensino">
+                                <option value="" selected disabled>Selecione o nível de ensino</option>
+                                <option value="Educação Infantil">Educação Infantil</option>
+                                <option value="Ensino Fundamental">Ensino Fundamental</option>
+                                <option value="Ensino Médio">Ensino Médio</option>
+                                <option value="Educação de Jovens e Adultos (EJA)">EJA</option>
+                                <option value="Técnico Profissionalizante">Técnico Profissionalizante</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Quinta linha - Campo de Programas -->
+                    <div class="row mt-3">
+
+
+                        <!-- Upload de Procuração -->
+                        <div class="col-md-4">
+                            <label for="id_procuracao" class="form-label">Procuração (Opcional):</label>
+                            <input type="file" class="form-control" id="id_procuracao" name="procuracao">
+                            {% if form.instance.procuracao %}
+                                <small class="text-muted">
+                                    <a href="{{ form.instance.procuracao.url }}" target="_blank">Ver arquivo atual</a>
+                                </small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Data de Validade da Procuração -->
+                        <div class="col-md-3">
+                            <label for="id_validade_procuracao" class="form-label">Data de Validade da Procuração (Opcional):</label>
+                            <input type="date" class="form-control" id="id_validade_procuracao" name="validade_procuracao"
+                                value="{{ form.instance.validade_procuracao|date:'Y-m-d' }}">
+                        </div>
+
+                        
+
+                        <div class="col-md-5">
+                            <label for="id_conselho" class="form-label">Nome do Conselho:</label>
+                            <input type="text" class="form-control" id="id_conselho" name="nome_conselho" placeholder="Digite o nome do conselho">
+                        </div>
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <a href="{% url 'lista_escolas_pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Estilos customizados -->
+<style>
+    .content-wrapper {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .btn {
+        font-size: 1rem;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+</style>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        carregarProgramas(); // Chama a função ao carregar a página
+
+        function carregarProgramas() {
+            fetch("{% url 'listar_programas' %}") // Faz a requisição para buscar os programas
+                .then(response => response.json())
+                .then(data => {
+                    let selectPrograma = document.getElementById("id_programa");
+
+                    if (!selectPrograma) {
+                        console.error("Elemento select de programas não encontrado.");
+                        return;
+                    }
+
+                    // Limpa as opções antes de atualizar
+                    selectPrograma.innerHTML = '<option value="" selected disabled>Selecione um programa</option>';
+
+                    // Adiciona os programas recuperados da API
+                    data.programas.forEach(programa => {
+                        let option = document.createElement("option");
+                        option.value = programa.id;
+                        option.textContent = programa.nome;
+                        selectPrograma.appendChild(option);
+                    });
+                })
+                .catch(error => console.error("Erro ao buscar programas:", error));
+        }
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("btnSalvarReceita").addEventListener("click", function () {
+            let formData = new FormData(document.getElementById("form-pdde-receita"));
+    
+            fetch("/banco-curriculos/pdde-lancar-receita/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Receita cadastrada com sucesso!");
+                    location.reload();
+                } else {
+                    alert("Erro ao cadastrar: " + data.error);
+                }
+            })
+            .catch(error => console.error("Erro na requisição:", error));
+        });
+    });
+    </script>
+    
+
+
+
+
+
+
+
+{% endblock %}
+
+

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Editar Pagamento</h1>
+            <p class="text-muted">Atualize os dados do pagamento.</p>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-warning text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-edit"></i> Editar Pagamento</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="nome_favorecido">Nome do Favorecido:</label>
+                            <input type="text" id="nome_favorecido" name="nome_favorecido" class="form-control" value="{{ pagamento.nome_favorecido }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="cnpj_cpf">CNPJ/CPF:</label>
+                            <input type="text" id="cnpj_cpf" name="cnpj_cpf" class="form-control" value="{{ pagamento.cnpj_cpf }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipo_bem_servico">Tipo de Bens e Materiais/Serviços:</label>
+                            <input type="text" id="tipo_bem_servico" name="tipo_bem_servico" class="form-control" value="{{ pagamento.tipo_bem_servico }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipo_pagamento">Natureza Despesa:</label>
+                            <input type="text" id="tipo_pagamento" name="tipo_pagamento" class="form-control" value="{{ pagamento.tipo_pagamento }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="tipo_documento">Tipo de Documento:</label>
+                            <input type="text" id="tipo_documento" name="tipo_documento" class="form-control" value="{{ pagamento.tipo_documento }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="data_pagamento">Data do Pagamento:</label>
+                            <input type="date" id="data_pagamento" name="data_pagamento" class="form-control" value="{{ pagamento.data_pagamento|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="valor">Valor (R$):</label>
+                            <input type="text" id="valor" name="valor" class="form-control" value="{{ pagamento.valor }}" required>
+                        </div>
+                    </div>
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                        <a href="{% url 'pddelancar_pagamento' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

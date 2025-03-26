@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-primary">Lista de Programas</h2>
+    <a href="{% url 'criar_programa' %}" class="btn btn-success mb-3">Novo Programa</a>
+    <table class="table table-bordered">
+        <thead class="bg-primary text-white">
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Resolução</th>
+                <th>Escola</th>
+                <th>Data Início</th>
+                <th>Data Fim</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for programa in programas %}
+            <tr>
+                <td>{{ programa.nome }}</td>
+                <td>{{ programa.descricao }}</td>
+                <td>{{ programa.resolucao }}</td>
+                <td>{{ programa.escola.nome }}</td>
+                <td>{{ programa.data_inicio|date:"d/m/Y" }}</td>
+                <td>{{ programa.data_fim|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Nenhum programa cadastrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

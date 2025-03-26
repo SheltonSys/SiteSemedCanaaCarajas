@@ -379,7 +379,7 @@ class EditarPerfilForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-
+# *******************************************************************************************************************
 
 from django import forms
 from .models import Candidato  # Certifique-se de que o modelo Candidato existe
@@ -388,14 +388,14 @@ class FormDeAtualizacao(forms.ModelForm):
     class Meta:
         model = Candidato  # Substitua por seu modelo
         fields = ['nome_completo', 'email', 'cpf']  # Ajuste os campos conforme necessário
-
+# *******************************************************************************************************************
 
 
 from django import forms
 
 class UploadCSVForm(forms.Form):
     file = forms.FileField(label="Selecione um arquivo CSV")
-
+# *******************************************************************************************************************
 
 
 from django import forms
@@ -408,7 +408,7 @@ class RespostaForm(forms.ModelForm):
         widgets = {
             'data_resposta': forms.DateInput(attrs={'type': 'date'}),
         }
-
+# *******************************************************************************************************************
 
 # forms.py
 from django import forms
@@ -436,7 +436,7 @@ class LancamentoConceitoForm(forms.ModelForm):
     class Meta:
         model = Conceito
         fields = ['aluno', 'habilidade', 'conceito']
-
+# *******************************************************************************************************************
 
 from django import forms
 
@@ -451,7 +451,7 @@ class ConceitoForm(forms.Form):
         label="Conceitos de Linguagem", 
         required=True
     )
-
+# *******************************************************************************************************************
 
 
 # forms.py
@@ -472,7 +472,7 @@ class ProfessorEIForm(forms.ModelForm):
             'cpf_professor': forms.TextInput(attrs={'class': 'form-control'}),
             'email_professor': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-
+# *******************************************************************************************************************
 
 class CoordenadorForm(forms.ModelForm):
     class Meta:
@@ -487,7 +487,7 @@ class CoordenadorForm(forms.ModelForm):
             'cpf_professor': forms.TextInput(attrs={'class': 'form-control'}),
             'email_Coordenadora': forms.EmailInput(attrs={'class': 'form-control'}),
         }
-
+# *******************************************************************************************************************
 
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
@@ -495,7 +495,7 @@ from django.contrib.auth.forms import AuthenticationForm
 class ProfessorLoginForm(AuthenticationForm):
     username = forms.CharField(label='Nome de Usuário', max_length=150)
     password = forms.CharField(widget=forms.PasswordInput, label='Senha')
-
+# *******************************************************************************************************************
 
 from django import forms
 from .models import CustomUserProf
@@ -513,8 +513,7 @@ class CustomUserProfCreationForm(forms.ModelForm):
         if commit:
             user.save()
         return user
-
-
+# *******************************************************************************************************************
 
 from django import forms
 from .models import Aluno
@@ -524,3 +523,405 @@ class AlunoForm(forms.ModelForm):
         model = Aluno
         fields = ['pessoa_nome', 'cpf', 'idade', 'modalidade', 'avaliado', 'professor']  # Use apenas os campos corretos
 
+# *******************************************************************************************************************
+# ***************************************************SEPECC**********************************************************
+# *******************************************************************************************************************
+
+from django import forms
+from .models import EscolaPdde, Programa
+import re
+
+class EscolaPddeForm(forms.ModelForm):
+    programas = forms.ModelMultipleChoiceField(
+        queryset=Programa.objects.all(),
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "form-check-input"}),
+        required=False,
+        label="Programas"
+    )
+
+    procuracao = forms.FileField(
+        required=False,
+        widget=forms.ClearableFileInput(attrs={"class": "form-control"}),
+        label="Procuração (Upload)"
+    )
+
+    validade_procuracao = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+        label="Validade da Procuração"
+    )
+
+    class Meta:
+        model = EscolaPdde
+        fields = [
+            "nome", "endereco", "zona", "ensino", "cep", "bairro", "cidade", "uf", "tipo",
+            "dependencia_administrativa", "codigo_inep", "cnpj", "nome_conselho",
+            "quantidade_salas", "quantidade_turmas", "quantidade_professores", "quantidade_alunos",
+            "procuracao", "validade_procuracao", "programas"
+        ]
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "form-control"}),
+            "cnpj": forms.TextInput(attrs={"class": "form-control", "placeholder": "99.999.999/9999-99"}),
+            "endereco": forms.TextInput(attrs={"class": "form-control"}),
+            "codigo_inep": forms.TextInput(attrs={"class": "form-control", "maxlength": "10"}),
+            "zona": forms.Select(attrs={"class": "form-control"}),
+            "ensino": forms.Select(attrs={"class": "form-control"}),
+            "cep": forms.TextInput(attrs={"class": "form-control"}),
+            "bairro": forms.TextInput(attrs={"class": "form-control"}),
+            "cidade": forms.TextInput(attrs={"class": "form-control"}),
+            "uf": forms.TextInput(attrs={"class": "form-control", "maxlength": "2"}),
+            "tipo": forms.TextInput(attrs={"class": "form-control"}),
+            "dependencia_administrativa": forms.TextInput(attrs={"class": "form-control"}),
+            "nome_conselho": forms.TextInput(attrs={"class": "form-control"}),
+            "quantidade_salas": forms.NumberInput(attrs={"class": "form-control"}),
+            "quantidade_turmas": forms.NumberInput(attrs={"class": "form-control"}),
+            "quantidade_professores": forms.NumberInput(attrs={"class": "form-control"}),
+            "quantidade_alunos": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        """ Garante que os programas vinculados à escola sejam carregados corretamente. """
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:  # Se for uma edição, carrega os programas já vinculados
+            self.fields["programas"].initial = self.instance.programas.all()
+
+    def clean_codigo_inep(self):
+        """ Validação do Código INEP: Exatamente 10 dígitos numéricos """
+        codigo_inep = self.cleaned_data.get("codigo_inep", "")
+        if not codigo_inep.isdigit() or len(codigo_inep) != 10:
+            raise forms.ValidationError("O Código INEP deve ter exatamente 10 dígitos numéricos.")
+        return codigo_inep
+
+    def clean_cnpj(self):
+        """ Validação do CNPJ: Deve estar no formato 99.999.999/9999-99 """
+        cnpj = self.cleaned_data.get("cnpj", "")
+        cnpj_numerico = re.sub(r"[^\d]", "", cnpj)  # Remove pontos, barras e traços
+        
+        if len(cnpj_numerico) != 14 or not cnpj_numerico.isdigit():
+            raise forms.ValidationError("CNPJ inválido! O formato correto é: 99.999.999/9999-99.")
+        
+        return cnpj
+# *******************************************************************************************************************
+
+from django import forms
+from .models import Receita
+
+class ReceitaForm(forms.ModelForm):
+    class Meta:
+        model = Receita
+        fields = [
+            "escola",
+            "data_inicio",
+            "data_fim",
+            "saldo_anterior_custeio",
+            "saldo_anterior_capital",
+            "valor_creditado_custeio",
+            "valor_creditado_capital",
+            "recursos_proprios_custeio",  # ✅ Campo atualizado
+            "recursos_proprios_capital",  # ✅ Campo atualizado
+            "rendimento_aplicacao_custeio",
+            "rendimento_aplicacao_capital",
+            "devolucao_fnde_custeio",
+            "devolucao_fnde_capital",
+            "valor_total_receita_custeio",
+            "valor_total_receita_capital",
+            "valor_despesa_realizada_custeio",
+            "valor_despesa_realizada_capital",
+            "saldo_reprogramar_custeio",
+            "saldo_reprogramar_capital",
+            "saldo_devolvido_custeio",
+            "saldo_devolvido_capital",
+            "escolas_atendidas",
+        ]
+        widgets = {
+            "escola": forms.Select(attrs={"class": "form-control"}),
+            "data_inicio": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "data_fim": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "saldo_anterior_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "saldo_anterior_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "valor_creditado_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "valor_creditado_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "recursos_proprios_custeio": forms.NumberInput(attrs={"class": "form-control"}),  # ✅ Corrigido
+            "recursos_proprios_capital": forms.NumberInput(attrs={"class": "form-control"}),  # ✅ Corrigido
+            "rendimento_aplicacao_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "rendimento_aplicacao_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "devolucao_fnde_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "devolucao_fnde_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "valor_total_receita_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "valor_total_receita_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "valor_despesa_realizada_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "valor_despesa_realizada_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "saldo_reprogramar_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "saldo_reprogramar_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "saldo_devolvido_custeio": forms.NumberInput(attrs={"class": "form-control"}),
+            "saldo_devolvido_capital": forms.NumberInput(attrs={"class": "form-control"}),
+            "escolas_atendidas": forms.NumberInput(attrs={"class": "form-control"}),
+        }
+# *******************************************************************************************************************
+
+from django import forms
+from .models import ReceitaDespesa
+
+class ReceitaDespesaForm(forms.ModelForm):
+    class Meta:
+        model = ReceitaDespesa
+        fields = [
+            "escola",
+            "periodo_execucao",
+            "saldo_anterior_custeio",
+            "saldo_anterior_capital",
+            "valor_creditado_custeio",
+            "valor_creditado_capital",
+            "recursos_proprios_custeio",
+            "recursos_proprios_capital",
+            "rendimento_aplicacao_custeio",
+            "rendimento_aplicacao_capital",
+            "devolucao_fnde_custeio",
+            "devolucao_fnde_capital",
+            "saldo_reprogramar_custeio",
+            "saldo_reprogramar_capital",
+            "saldo_devolvido_custeio",
+            "saldo_devolvido_capital",
+            "total_receita",
+            "total_despesa",
+            "saldo_disponivel",
+            "escolas_atendidas",
+        ]
+# *******************************************************************************************************************
+
+from django import forms
+from .models import LancamentoBancario
+
+class LancamentoBancarioForm(forms.ModelForm):
+    data = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date", "class": "form-control"})
+    )  # ✅ Garante que o campo "data" seja editável
+
+    class Meta:
+        model = LancamentoBancario
+        fields = ["data", "descricao", "tipo", "categoria", "valor", "escola", "conta_bancaria"]  # 🔥 Removidos campos inexistentes
+        widgets = {
+            "descricao": forms.TextInput(attrs={"class": "form-control"}),
+            "tipo": forms.Select(attrs={"class": "form-control"}),
+            "valor": forms.NumberInput(attrs={"class": "form-control"}),
+            "escola": forms.Select(attrs={"class": "form-control"}),  # 🔥 Corrigido para incluir "escola"
+            "conta_bancaria": forms.Select(attrs={"class": "form-control"}),
+        }
+# *******************************************************************************************************************
+
+from django import forms
+from .models import ContaBancaria  # Certifique-se de que esse modelo existe em models.py
+
+class ContaBancariaForm(forms.ModelForm):
+    class Meta:
+        model = ContaBancaria
+        fields = ['escola', 'banco', 'agencia', 'conta', 'tipo_conta']
+# *******************************************************************************************************************
+
+from django import forms
+from .models import EscolaPdde, ContaBancaria
+
+class ConferenciaForm(forms.Form):
+    data_inicial = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    data_final = forms.DateField(widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}))
+    escola = forms.ModelChoiceField(queryset=EscolaPdde.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+    conta = forms.ModelChoiceField(queryset=ContaBancaria.objects.all(), widget=forms.Select(attrs={'class': 'form-control'}))
+    tipo_conferencia = forms.ChoiceField(
+        choices=[
+            ('extrato_vs_lancamentos', 'Extrato Bancário vs Lançamentos'),
+            ('lancamentos_vs_pagamentos', 'Lançamentos vs Pagamentos Internos')
+        ],
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+# *******************************************************************************************************************
+
+from django import forms
+from .models import Programa
+
+class ProgramaForm(forms.ModelForm):
+    class Meta:
+        model = Programa
+        fields = ["nome", "descricao", "resolucao", "data_inicio", "data_fim"]  # Removemos 'escola'
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": "form-control"}),
+            "descricao": forms.Textarea(attrs={"class": "form-control", "rows": 3}),
+            "resolucao": forms.TextInput(attrs={"class": "form-control"}),
+            "data_inicio": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+            "data_fim": forms.DateInput(attrs={"type": "date", "class": "form-control"}),
+        }
+# *******************************************************************************************************************
+
+from django import forms
+from .models import EscolaPdde, Programa
+
+class VincularEscolaProgramaForm(forms.Form):
+    escola = forms.ModelChoiceField(
+        queryset=EscolaPdde.objects.all(),
+        label="Escolha a Escola",
+        widget=forms.Select(attrs={"class": "form-control"})
+    )
+    programas = forms.ModelMultipleChoiceField(
+        queryset=Programa.objects.all(),
+        label="Escolha os Programas",
+        widget=forms.SelectMultiple(attrs={"class": "form-control"})
+    )
+
+# *******************************************************************************************************************
+# ***************************************************PESQUISA DE PREÇOS**********************************************
+# *******************************************************************************************************************
+
+from django import forms
+from .models import Item, Proponente, Proposta
+
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = '__all__'
+
+from django import forms
+from .models import Proponente
+
+class ProponenteForm(forms.ModelForm):
+    class Meta:
+        model = Proponente
+        fields = [
+            "nome", "cpf_cnpj", "email", "telefone", "endereco",
+            "bairro", "cidade", "estado", "cep", "tipo_proponente",
+            "representante_legal", "observacoes"
+        ]
+        widgets = {
+            "observacoes": forms.Textarea(attrs={"rows": 3}),
+            "tipo_proponente": forms.Select(),
+            "estado": forms.Select(),
+        }
+
+
+class PropostaForm(forms.ModelForm):
+    class Meta:
+        model = Proposta
+        fields = '__all__'
+
+
+
+
+from django import forms
+from .models import Documento
+
+class DocumentoForm(forms.ModelForm):
+    class Meta:
+        model = Documento
+        fields = ["escola", "tipo", "numero", "data_emissao", "arquivo"]
+        widgets = {
+            'escola': forms.Select(attrs={'class': 'form-control'}),
+            'tipo': forms.Select(attrs={'class': 'form-control'}),
+            'numero': forms.TextInput(attrs={'class': 'form-control'}),
+            'data_emissao': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'arquivo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
+from .models import BemAdquirido
+
+class BemAdquiridoForm(forms.ModelForm):
+    class Meta:
+        model = BemAdquirido
+        fields = ["documento", "especificacao", "quantidade", "valor_unitario"]
+        widgets = {
+            'documento': forms.Select(attrs={'class': 'form-control'}),
+            'especificacao': forms.TextInput(attrs={'class': 'form-control'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
+            'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+
+from .models import RepresentanteLegal
+
+class RepresentanteLegalForm(forms.ModelForm):
+    class Meta:
+        model = RepresentanteLegal
+        fields = ["nome", "cpf", "cargo", "email", "telefone"]
+        widgets = {
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'cpf': forms.TextInput(attrs={'class': 'form-control'}),
+            'cargo': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+
+
+from .models import Bem
+
+class BemForm(forms.ModelForm):
+    class Meta:
+        model = Bem
+        fields = ['escola', 'nome_conselho', 'nome', 'documento', 'quantidade', 'valor_unitario']
+        widgets = {
+            'escola': forms.Select(attrs={'class': 'form-control'}),
+            'nome_conselho': forms.TextInput(attrs={'class': 'form-control'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control'}),
+            'documento': forms.Select(attrs={'class': 'form-control'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
+            'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+
+
+
+
+# forms.py
+from .models import TermoDoacao, BemDoado
+from django import forms
+
+class TermoDoacaoForm(forms.ModelForm):
+    class Meta:
+        model = TermoDoacao
+        fields = ['escola', 'conselho', 'bem']
+        widgets = {
+            'escola': forms.Select(attrs={'class': 'form-control'}),
+            'conselho': forms.TextInput(attrs={'class': 'form-control'}),
+            'bem': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(TermoDoacaoForm, self).__init__(*args, **kwargs)
+        self.fields['bem'].queryset = BemDoado.objects.all().order_by('descricao')
+
+
+
+
+
+from .models import BemDoado
+
+class BemDoadoForm(forms.ModelForm):
+    class Meta:
+        model = BemDoado
+        fields = ['escola', 'conselho', 'descricao', 'quantidade', 'numero_nota', 'data_nota', 'valor_unitario']
+        widgets = {
+            'escola': forms.Select(attrs={'class': 'form-control'}),
+            'conselho': forms.TextInput(attrs={'class': 'form-control'}),
+            'descricao': forms.TextInput(attrs={'class': 'form-control'}),
+            'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
+            'numero_nota': forms.TextInput(attrs={'class': 'form-control'}),
+            'data_nota': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+        }
+
+
+
+
+from django import forms
+from .models import PlanoGestaoEscolar
+
+class PlanoGestaoEscolarForm(forms.ModelForm):
+    class Meta:
+        model = PlanoGestaoEscolar
+        fields = ['unidade_ensino', 'cargo', 'servidor', 'telefone', 'arquivo']
+        widgets = {
+            'unidade_ensino': forms.TextInput(attrs={'class': 'form-control'}),
+            'cargo': forms.TextInput(attrs={'class': 'form-control'}),
+            'servidor': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefone': forms.TextInput(attrs={'class': 'form-control'}),
+            'arquivo': forms.FileInput(attrs={'class': 'form-control'}),
+        }

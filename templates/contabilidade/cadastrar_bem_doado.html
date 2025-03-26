@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastrar Bem a Ser Doado</h1>
+            <p class="text-muted">Informe os dados do bem que será incluído no termo de doação.</p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-hand-holding"></i> Dados do Bem</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <!-- Escolher Escola -->
+                        <p><strong>Escolas carregadas:</strong></p>
+                        <ul>
+                            {% for escola in escolas %}
+                                <li>{{ escola.nome }}</li>
+                            {% empty %}
+                                <li>Nenhuma escola cadastrada</li>
+                            {% endfor %}
+                        </ul>
+
+
+                        <!-- Nome do Conselho Escolar -->
+                        <div class="col-md-6">
+                            <label for="nome_conselho" class="form-label">Nome do Conselho:</label>
+                            <input type="text" id="nome_conselho" name="nome_conselho" class="form-control" readonly>
+                        </div>
+
+                        <!-- Descrição do Bem -->
+                        <div class="col-md-6 mt-3">
+                            <label for="descricao" class="form-label">Descrição do Bem:</label>
+                            <input type="text" id="descricao" name="descricao" class="form-control" required>
+                        </div>
+
+                        <!-- Número da Nota Fiscal -->
+                        <div class="col-md-3 mt-3">
+                            <label for="nota_fiscal_numero" class="form-label">Nº Nota Fiscal:</label>
+                            <input type="text" id="nota_fiscal_numero" name="nota_fiscal_numero" class="form-control">
+                        </div>
+
+                        <!-- Data da Nota Fiscal -->
+                        <div class="col-md-3 mt-3">
+                            <label for="nota_fiscal_data" class="form-label">Data da Nota Fiscal:</label>
+                            <input type="date" id="nota_fiscal_data" name="nota_fiscal_data" class="form-control">
+                        </div>
+
+                        <!-- Quantidade -->
+                        <div class="col-md-3 mt-3">
+                            <label for="quantidade" class="form-label">Quantidade:</label>
+                            <input type="number" id="quantidade" name="quantidade" class="form-control" required>
+                        </div>
+
+                        <!-- Valor Unitário -->
+                        <div class="col-md-3 mt-3">
+                            <label for="valor_unitario" class="form-label">Valor Unitário (R$):</label>
+                            <input type="text" id="valor_unitario" name="valor_unitario" class="form-control" required>
+                        </div>
+
+                        <!-- Valor Total -->
+                        <div class="col-md-3 mt-3">
+                            <label for="valor_total" class="form-label">Valor Total (R$):</label>
+                            <input type="text" id="valor_total" name="valor_total" class="form-control" readonly>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const escolaSelect = document.getElementById("escola");
+        const nomeConselhoInput = document.getElementById("nome_conselho");
+
+        escolaSelect.addEventListener("change", function () {
+            let escolaId = this.value;
+            if (!escolaId) return;
+
+            fetch(`/get-escola-dados/${escolaId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    nomeConselhoInput.value = data.nome_conselho || "Não informado";
+                })
+                .catch(error => console.error("Erro ao buscar dados da escola:", error));
+        });
+
+        const qtd = document.getElementById("quantidade");
+        const unit = document.getElementById("valor_unitario");
+        const total = document.getElementById("valor_total");
+
+        function calcularTotal() {
+            let quantidade = parseFloat(qtd.value.replace(",", ".") || "0");
+            let unitario = parseFloat(unit.value.replace(",", ".") || "0");
+            let soma = quantidade * unitario;
+            total.value = soma.toFixed(2).replace(".", ",");
+        }
+
+        qtd.addEventListener("input", calcularTotal);
+        unit.addEventListener("input", calcularTotal);
+    });
+</script>
+
+{% endblock %}

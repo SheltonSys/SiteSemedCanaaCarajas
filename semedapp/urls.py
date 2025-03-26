@@ -26,6 +26,13 @@ from .views import (
     curriculo_sucesso,
     CurriculoCreateView,
 )
+from .views import (
+    conciliacao_extrato,
+    conciliacao_lancamento,
+    conciliacao_saldo,
+    conciliacao_conferencia,
+    conciliacao_relatorios,
+)
 from .views import habilidades_matematica_view
 from .views import habilidades_pesquisa_view
 from semedapp.views import dashboard_transporte
@@ -65,11 +72,77 @@ from semedapp.views import editar_curriculo
 from .views import imprimir_curriculo_alternativo
 from .views import imprimir_curriculo_alternativo
 from .views import listar_diretores
+from .views import EscolaPddeListView, EscolaPddeCreateView, EscolaPddeDeleteView, EscolaPddeDetailView, EscolaPddeUpdateView
+from .views import get_escola_pdde
+from .views import get_escola_pdde_modal
+from .views import EscolaPddeModalView
+from .views import get_escola_pdde, get_receita_despesa
+from .views import pddereceita_despesa_view
+from .views import get_pagamentos
+from .views import pdde_list
+from .views import get_dados_financeiros
+from .views import lancamento_pagamento
+from .views import get_pagamentos_pdde
+from .views import get_dados_pagamentos_pdde
+from .views import pddelancar_pagamento
+from .views import get_escolas
+from .views import pdde_gerar_pdf
+from .views import listar_lancamentos, criar_lancamento, editar_lancamento, excluir_lancamento
+from .views import conciliacao_lancamento, editar_lancamento
+from .views import listar_pdde
+from .views import criar_conta_bancaria, listar_contas
+from .views import listar_contas, excluir_conta
+from .views import get_escolas, get_contas_por_escola
+from .views import consultar_saldo, api_escolas, api_contas, api_saldos
+from .views import api_escolas, api_contas, api_conferencia
+from .views import api_extrato
+from .views import listar_programas, criar_programa
+from .views import cadastrar_programa
+from .views import listar_escolas
+from .views import editar_escola_pdde
+from .views import get_programas_vinculados
+from .views import vincular_escola_programa
+from semedapp.views import get_programas_escola
+from semedapp.views import get_programas_por_escola
+from .views import listar_programas_por_escola  # Importa a função correta da view
+from .views import get_dados_receita_despesa_pdde
+from .views import get_dados_receita
+from .views import get_receita, get_pagamentos
+from .views import pddelancar_pagamento, editar_pagamento  # Certifique-se de importar a view correta
+from .views import editar_conta
+from .views import emitir_conciliacao, gerar_conciliacao_pdf
+from .views import cadastrar_propostas  # Importe a view corretamente
+from .views import apuracao_resultados
+from .views import (
+    pesquisa_precos, cadastrar_item, cadastrar_proponente, listar_proponentes,
+    cadastrar_propostas, apuracao_resultado, get_subcategorias, listar_itens,
+    gerar_pdf_orcamento, gerar_excel_orcamento, cadastrar_subcategoria, cadastrar_categoria
+)
+
+from .views import apuracao_resultados_view, detalhes_proponente
+from .views import cadastrar_documento, cadastrar_bem, cadastrar_representante
+from .views import gerar_prestacao_contas_pdf
+from .views import listar_documentos, cadastrar_documento  # ✅ Importe a função correta
+from .views import cadastrar_bem, listar_bens
+from .views import get_escola_dados
+from .views import enviar_plano_gestao
+from .views import listar_pge_planos
+from .views import plano_gestao_escolar_admin
+
+
+
+from .views import (
+    pddereceita_despesa, 
+    pddelancar_receita, 
+    pddelancar_despesa, 
+    pddelancar_pagamento
+)
 
 # app_name = 'contabilidade'
 # app_name = 'banco_curriculos'
 
 urlpatterns = [
+
     path("banco-curriculos/login-curriculo/", views.login_candidato, name="login_candidato"),
 
     path("banco-curriculos/area-candidato/", views.area_candidato, name="area_candidato"),  # Área de candidato
@@ -667,7 +740,206 @@ urlpatterns = [
     path('banco-curriculos/imprimir-curriculo-alternativo/<int:diretor_id>/', imprimir_curriculo_alternativo, name='imprimir_curriculo_alternativo'),
 
     path('listar-diretores/', listar_diretores, name='listar_diretores'),
-     
+
+
+    # SEPECC
+    path("get-escola-pdde/<int:pk>/", get_escola_pdde, name="get-escola-pdde"),
+    path('banco-curriculos/adicionar-escola-pdde/', EscolaPddeCreateView.as_view(), name='adicionar_escola_pdde'),
+    path('banco-curriculos/listar-escolas/', EscolaPddeListView.as_view(), name='lista_escolas_pdde'),  # Certifique-se de que essa rota existe!
+    path('banco-curriculos/excluir-escola/<int:pk>/', EscolaPddeDeleteView.as_view(), name='excluir_escola_pdde'),
+    path('banco-curriculos/detalhes-escola/<int:pk>/', EscolaPddeDetailView.as_view(), name='detalhes_escola_pdde'),
+
+    path("banco-curriculos/escola-pdde/<int:pk>/", get_escola_pdde, name="get_escola_pdde"),
+    path("banco-curriculos/escolas/", EscolaPddeListView.as_view(), name="listar_escolas"),
+    path('get-escola-modal/<int:pk>/', get_escola_pdde_modal, name='get_escola_pdde_modal'),
+    path("contabilidade/pdde/", EscolaPddeModalView.as_view(), name="escola_modal"),
+    path("pddereceita-despesa/", pddereceita_despesa_view, name="pddereceita_despesa"),
+    path("get-escola-pdde/<int:pk>/", get_escola_pdde, name="get_escola_pdde"),
+
+    path("get-escola-pdde/<int:escola_id>/", get_escola_pdde, name="get_escola_pdde"),
+    path("get-receita-despesa/<int:escola_id>/", get_receita_despesa, name="get_receita_despesa"),
+    path("get-pagamentos/", get_pagamentos, name="get_pagamentos"),
+    path("get-pagamentos/<int:escola_id>/", get_pagamentos, name="get_pagamentos"),
+    path("pdde-list/", pdde_list, name="pdde_list"),
+
+    # path("pdde-receita-despesa/", pddereceita_despesa, name="pddereceita_despesa"),
+    path("pdde-lancar-receita/", pddelancar_receita, name="pddelancar_receita"),
+    path("pdde-lancar-despesa/", pddelancar_despesa, name="pddelancar_despesa"),
+    path("pdde-lancar-pagamento/", pddelancar_pagamento, name="pddelancar_pagamento"),
+    path("editar-pagamento/<int:pagamento_id>/", editar_pagamento, name="editar_pagamento"),  # 🔹 Adicionada esta linha
+    path("get-dados-financeiros/<int:escola_id>/", get_dados_financeiros, name="get_dados_financeiros"),
+
+    path("pagamento-lancamento/", lancamento_pagamento, name="pagamento_lancamento"),
+    path("get-pagamentos-pdde/<int:escola_id>/", get_pagamentos_pdde, name="get_pagamentos_pdde"),
+    path("get-dados-pagamentos-pdde/<int:escola_id>/", get_dados_pagamentos_pdde, name="get_dados_pagamentos_pdde"),
+    path('lancar-pagamento/', pddelancar_pagamento, name='lancar_pagamento'),
+    path("get-escolas/", get_escolas, name="get_escolas"),
+    path("get-escolas/", get_escolas, name="get-escolas"),
+    path('banco-curriculos/pdde/gerar-pdf/', pdde_gerar_pdf, name='gerar_pdf'),
+    path("get-dados-financeiros/<int:escola_id>/", get_dados_financeiros, name="get-dados-financeiros"),
+    path('pdde/gerar-pdf/', pdde_gerar_pdf, name='pdde_gerar_pdf'),
+    
+    
+     # 🔹 Conciliação Bancária
+    path('conciliacao/extrato/', conciliacao_extrato, name='conciliacao_extrato'),
+    path('conciliacao/lancamentos/', conciliacao_lancamento, name='conciliacao_lancamento'),
+    path('conciliacao/saldo/', conciliacao_saldo, name='conciliacao_saldo'),
+    path('conciliacao/conferencia/', conciliacao_conferencia, name='conciliacao_conferencia'),
+    path('conciliacao/relatorios/', conciliacao_relatorios, name='conciliacao_relatorios'),
+
+    # 🔹 Lançamentos Bancários
+    path('conciliacao/lancamento/novo/', criar_lancamento, name="criar_lancamento"),
+    path('conciliacao/lancamento/editar/<int:pk>/', editar_lancamento, name="editar_lancamento"),
+    path('conciliacao/lancamento/excluir/<int:pk>/', excluir_lancamento, name="excluir_lancamento"),
+
+    # 🔹 Lançamentos Bancários (Separados da Conciliação)
+    path('lancamentos/', listar_lancamentos, name='listar_lancamentos'),
+    path('lancamentos/novo/', criar_lancamento, name='criar_lancamento'),
+    path('lancamentos/editar/<int:pk>/', editar_lancamento, name='editar_lancamento'),
+    path('lancamentos/excluir/<int:pk>/', excluir_lancamento, name='excluir_lancamento'),
+
+
+    path("listar-pdde/", listar_pdde, name="listar_pdde"),
+
+    path("contas/nova/", criar_conta_bancaria, name="nova_conta"),
+    path("contas/nova/", criar_conta_bancaria, name="nova_conta"),
+    path("contas/listar/", listar_contas, name="listar_contas"),  # ✅ Adicionando a rota correta
+    path("contas/editar/<int:conta_id>/", views.editar_conta, name="editar_conta"),
+    path("contas/listar/", views.listar_contas, name="listar_contas"),
+    path("contas/nova/", views.criar_conta_bancaria, name="nova_conta"),
+    path("contas/excluir/<int:conta_id>/", excluir_conta, name="excluir_conta"),
+
+    path("get-contas/<int:escola_id>/", get_contas_por_escola, name="get_contas_por_escola"),
+
+    path("consulta-saldo/", consultar_saldo, name="consulta_saldo"),
+    path("api/escolas/", api_escolas, name="api_escolas"),  # 🔹 API para carregar escolas
+    path("api/contas/<int:escola_id>/", api_contas, name="api_contas"),  # 🔹 API para carregar contas da escola
+    path("api/saldos/", api_saldos, name="api_saldos"),  # 🔹 API para buscar os saldos filtrados
+    path("api/conferencia/", api_conferencia, name="api_conferencia"),
+
+    path("api/extrato/", api_extrato, name="api_extrato"),  # 🔹 Rota para buscar extrato bancário
+
+    path("programas/", listar_programas, name="listar_programas"),
+    path("programas/novo/", criar_programa, name="criar_programa"),
+
+    path("cadastrar-programa/", cadastrar_programa, name="cadastrar_programa"),
+
+    path("listar-programas/", listar_programas, name="listar_programas"),
+
+    path("listar-escolas/", listar_escolas, name="listar_escolas"),
+
+    path("pdde-lancar-receita/", pddelancar_receita, name="lancar_receita"),  # ✅ URL correta 
+
+    path('banco-curriculos/editar-escola/<int:escola_id>/', editar_escola_pdde, name='editar_escola'),
+
+    path("get-receita-despesa/<int:escola_id>/", pddereceita_despesa, name="pddereceita_despesa"),
+
+    path('editar-escola/<int:pk>/', editar_escola_pdde, name='editar_escola_pdde'),
+
+    path('get-programas-vinculados/<int:escola_id>/', get_programas_vinculados, name='get_programas_vinculados'),
+
+    path('banco-curriculos/pddereceita-despesa/<int:escola_id>/', pddereceita_despesa, name='pddereceita_despesa'),
+
+    path("vincular-escola-programa/", vincular_escola_programa, name="vincular_escola_programa"),
+
+    # path("get-programas-escola/<int:escola_id>/", listar_programas_por_escola, name="listar_programas_por_escola"),
+
+    path("pdde/get-receita-despesa/<int:escola_id>/", views.get_dados_receita_despesa_pdde, name="get_dados_receita_despesa_pdde"),
+
+    path("pdde/get-receita-despesa/<int:escola_id>/", get_dados_receita_despesa_pdde, name="get_dados_receita_despesa_pdde"),
+
+    path("pdde/get-receita/<int:escola_id>/", get_dados_receita, name="get_dados_receita"),
+
+    # path("get-programas-escola/<int:escola_id>/", get_programas_escola, name="get-programas-escola"),
+
+    path("get-programas-escola/<int:escola_id>/", get_programas_por_escola, name="get_programas_por_escola"),
+
+    path("get-receita/<int:escola_id>/<str:programa>/", get_receita, name="get_receita"),
+
+    path('contas/editar/<int:conta_id>/', editar_conta, name='editar_conta'),
+
+    path('conciliacao/emitir/', emitir_conciliacao, name='conciliacao_emitir'),
+
+    path('conciliacao/gerar-pdf/', gerar_conciliacao_pdf, name='gerar_conciliacao_pdf'),
+
+
+    path("", views.pesquisa_precos, name="pesquisa_precos"),
+    path("cadastrar-item/", views.cadastrar_item, name="cadastrar_item"),
+    path("cadastrar-proponente/", views.cadastrar_proponente, name="cadastrar_proponente"),
+    path("listar-proponentes/", views.listar_proponentes, name="listar_proponentes"),  # Adicione esta linha
+    path("cadastrar-proposta/", views.cadastrar_propostas, name="cadastrar_propostas"),  # Verifique o nome aqui
+    path("cadastrar-proposta/", views.cadastrar_propostas, name="cadastrar_proposta"),  # Certifique-se de que o nome é correto
+    path("apuracao-resultado/", views.apuracao_resultado, name="apuracao_resultado"),
+    path("get-subcategorias/<int:categoria_id>/", views.get_subcategorias, name="get_subcategorias"),
+    path("listar-itens/", views.listar_itens, name="listar_item"),
+    path("gerar-pdf-orcamento/", views.gerar_pdf_orcamento, name="gerar_pdf_orcamento"),  # Adicione esta linha
+    path("gerar-excel-orcamento/", views.gerar_excel_orcamento, name="gerar_excel_orcamento"),  # Adicione esta linha
+    path("cadastrar-subcategoria/", views.cadastrar_subcategoria, name="cadastrar_subcategoria"),
+    path("cadastrar-categoria/", views.cadastrar_categoria, name="cadastrar_categoria"),  # ✅ Nova URL para cadastrar categoria
+    path("apuracao/", apuracao_resultados, name="apuracao_resultados"),
+    path("apuracao-resultados/", apuracao_resultados, name="apuracao_resultados"),  # 🔹 Confirme que esta URL está correta
+    path("api/detalhes_proponente/<int:proponente_id>/", detalhes_proponente, name="detalhes_proponente"),
+
+
+    path("documentos/", listar_documentos, name="listar_documentos"),
+    path("documentos/cadastrar/", cadastrar_documento, name="cadastrar_documento"),
+    path("bens/cadastrar/", cadastrar_bem, name="cadastrar_bem"),
+    path("bens/listar/", views.listar_bens, name="listar_bem"),
+    path("bens/", listar_bens, name="listar_bens"),
+    path('representantes/', views.listar_representantes, name='listar_representantes'),
+    path('representantes/cadastrar/', views.cadastrar_representante, name='cadastrar_representante'),
+    path("representantes/cadastrar/", cadastrar_representante, name="cadastrar_representante"),
+    path("relatorio/prestacao_contas/", gerar_prestacao_contas_pdf, name="gerar_prestacao_contas_pdf"),
+
+    path('get-escola-dados/<int:escola_id>/', get_escola_dados, name="get_escola_dados"),
+
+    path("documentos/listar/", views.listar_documento, name="listar_documento"),
+    path('documentos/cadastrar/', cadastrar_documento, name="cadastrar_documento"),
+
+    path('termo-doacao/cadastrar/', views.cadastrar_termo_doacao, name='cadastrar_termo_doacao'),
+    path('termo-doacao/<int:termo_id>/', views.visualizar_termo_doacao, name='visualizar_termo_doacao'),
+
+    path("bens-doacao/cadastrar/", views.cadastrar_bem_doado, name="cadastrar_bem_doado"),
+    path("bens-doacao/listar/", views.listar_bens_doados, name="listar_bens_doados"),
+    path("bens-doacao/termo/", views.gerar_pdf_termo_doacao, name="gerar_termo_doacao"),
+
+    path('termo-doacao/pdf/', views.gerar_pdf_termo_doacao, name='gerar_pdf_termo_doacao'),
+
+    path('get-escola-dados/<int:escola_id>/', views.get_escola_dados, name='get_escola_dados'),
+    path("termo-doacao/cadastrar/", views.cadastrar_termo_doacao, name="cadastrar_termo_doacao"),
+    path('get-escola-dados/<int:escola_id>/', views.get_dados_escola, name='get_dados_escola'),
+    # urls.py
+    path("termo-doacao/pdf/<int:termo_id>/", views.gerar_pdf_termo_doacao, name="gerar_pdf_termo_doacao"),
+
+    path('bem-doado/pdf/<int:bem_id>/', views.gerar_pdf_bem, name='gerar_pdf_bem'),
+
+    path("representantes/", views.listar_representantes, name="listar_representante"),  # <- nome deve casar com o template
+
+
+    path('enviar-plano/', enviar_plano_gestao, name='enviar_plano'),
+
+    path('planos-de-gestao/', listar_pge_planos, name='listar_pge_planos'),
+
+    path('get-dados-unidade/<str:unidade_nome>/', views.obter_dados_unidade, name='get_dados_unidade'),
+
+    path('admin/pge/', plano_gestao_escolar_admin, name='plano_gestao_escolar'),
+
+    # Página de administração dos planos (com tabela e filtros)
+    path('planos-gestao/', views.plano_gestao_escolar_admin, name='plano_gestao_escolar'),
+
+    # Página alternativa ou simplificada, se desejar manter
+    path('planos-gestao/listar/', views.listar_pge_planos, name='listar_planos'),
+
+    # Atualização de status (usado pelo fetch ou modal)
+    path('planos-gestao/<int:plano_id>/atualizar/', views.atualizar_status_plano, name='atualizar_status_plano'),
+    path('planos-gestao/novo/', views.enviar_plano_gestao, name='enviar_plano'),  # Este é o correto
+
+    path('planos-gestao/', views.listar_pge_planos, name='listar_planos'),
+
+    path('planos-gestao/enviar/', views.enviar_plano_gestao, name='enviar_plano'),
+
+    
+
 
 
     

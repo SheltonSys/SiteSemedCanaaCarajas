@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h1 class="text-danger">Erro ao Processar a Solicitação</h1>
+    <p>{{ error_message }}</p>
+    <a href="{% url 'lancar_receita' %}" class="btn btn-primary">Voltar</a>
+</div>
+{% endblock %}

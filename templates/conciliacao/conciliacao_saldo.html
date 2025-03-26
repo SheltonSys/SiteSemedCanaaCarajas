@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">📊 Verificação de Saldos Bancários</h1>
+            <p class="text-muted">Aqui você pode consultar os saldos bancários para conciliação.</p>
+        </div>
+
+        <!-- Formulário de Consulta de Saldos -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-balance-scale"></i> Consultar Saldo</h2>
+            </div>
+
+            <div class="card-body bg-light">
+                <form method="GET" id="form-consulta-saldo">
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <label for="escola">Escolha a Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma escola</option>
+                                {% for escola in escolas %}
+                                    <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="conta_bancaria">Conta Bancária:</label>
+                            <select id="conta_bancaria" name="conta_bancaria" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma conta</option>
+                                {% for conta in contas %}
+                                    <option value="{{ conta.id }}">{{ conta.banco }} - Agência: {{ conta.agencia }} - Conta: {{ conta.conta }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="data_inicial">Data Inicial:</label>
+                            <input type="date" id="data_inicial" name="data_inicial" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="data_final">Data Final:</label>
+                            <input type="date" id="data_final" name="data_final" class="form-control" required>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <label for="tipo_saldo">Tipo de Saldo:</label>
+                            <select id="tipo_saldo" name="tipo_saldo" class="form-control" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="conta_corrente">Conta Corrente</option>
+                                <option value="aplicacao_financeira">Aplicação Financeira</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-search-dollar"></i> Consultar Saldo
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Tabela de Saldos -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-wallet"></i> Lançamentos Bancários</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Tipo</th>
+                                <th>Valor do Lançamento (R$)</th>
+                                <th>Saldo Acumulado (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-saldos">
+                            {% for saldo in saldos %}
+                            <tr class="{% if saldo.tipo_raw == 'debito' %}bg-light{% endif %}">
+                                <td>{{ saldo.data }}</td>
+                                <td>{{ saldo.descricao }}</td>
+                                <td>
+                                    {% if saldo.tipo_raw == 'debito' %}
+                                        <span class="text-danger fw-bold">⬇️ {{ saldo.tipo|capfirst }}</span>
+                                    {% else %}
+                                        <span class="text-success fw-bold">⬆️ {{ saldo.tipo|capfirst }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-right {% if saldo.tipo_raw == 'debito' %}text-danger fw-bold{% elif saldo.tipo_raw == 'credito' %}text-success fw-bold{% endif %}">
+                                    {% if saldo.tipo_raw == 'debito' %}
+                                        -R$ {{ saldo.valor_lancamento|floatformat:2 }}
+                                    {% else %}
+                                        R$ {{ saldo.valor_lancamento|floatformat:2 }}
+                                    {% endif %}
+                                </td>
+                                <td class="text-right fw-bold">
+                                    R$ {{ saldo.saldo_acumulado|floatformat:2 }}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">Nenhum lançamento encontrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    let escolaSelect = document.getElementById("escola");
+    let contaSelect = document.getElementById("conta_bancaria");
+    let tabelaSaldos = document.getElementById("tabela-saldos");
+    let formConsultaSaldo = document.getElementById("form-consulta-saldo");
+
+    if (!escolaSelect || !contaSelect || !tabelaSaldos || !formConsultaSaldo) {
+        console.error("Erro: Um ou mais elementos do formulário não foram encontrados.");
+        return;
+    }
+
+    // 🚀 Carrega todas as escolas ao carregar a página
+    fetch("/api/escolas/")
+        .then(response => response.json())
+        .then(data => {
+            escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
+            if (data.escolas && data.escolas.length > 0) {
+                data.escolas.forEach(escola => {
+                    escolaSelect.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
+                });
+            } else {
+                console.warn("Nenhuma escola encontrada.");
+            }
+        })
+        .catch(error => console.error("Erro ao carregar escolas:", error));
+
+    // 🎯 Quando uma escola for selecionada, carregar as contas vinculadas
+    escolaSelect.addEventListener("change", function () {
+        let escolaId = this.value;
+        if (!escolaId) return;
+
+        // Adiciona um indicador de carregamento
+        contaSelect.innerHTML = '<option value="">Carregando contas...</option>';
+
+        fetch(`/api/contas/${escolaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
+                if (data.contas && data.contas.length > 0) {
+                    data.contas.forEach(conta => {
+                        contaSelect.innerHTML += `<option value="${conta.id}">${conta.banco} - Ag: ${conta.agencia} - Conta: ${conta.conta}</option>`;
+                    });
+                } else {
+                    console.warn(`Nenhuma conta encontrada para a escola ${escolaId}.`);
+                }
+            })
+            .catch(error => console.error("Erro ao carregar contas bancárias:", error));
+    });
+
+
+    // 🏦 Busca os saldos ao enviar o formulário
+    formConsultaSaldo.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    let dataInicial = document.getElementById("data_inicial").value;
+    let dataFinal = document.getElementById("data_final").value;
+    let escolaId = escolaSelect.value;
+    let contaId = contaSelect.value;
+
+    if (!dataInicial || !dataFinal || !escolaId || !contaId) {
+        alert("Preencha todos os campos para consultar os saldos.");
+        return;
+    }
+
+    tabelaSaldos.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Carregando...</td></tr>`;
+
+    fetch(`/api/saldos/?data_inicial=${dataInicial}&data_final=${dataFinal}&escola=${escolaId}&conta=${contaId}`)
+    .then(response => response.json())
+    .then(data => {
+        tabelaSaldos.innerHTML = "";
+
+        if (data.saldos && data.saldos.length > 0) {
+            data.saldos.forEach(saldo => {
+                const valor = parseFloat(saldo.valor_lancamento).toFixed(2);
+                const saldoAcumulado = parseFloat(saldo.saldo_acumulado).toFixed(2);
+
+                // Aplica classe vermelha para Saída e verde para Entrada
+                let classeTexto = "";
+                if (saldo.tipo_raw === "debito") {
+                    classeTexto = "text-danger fw-bold";
+                } else if (saldo.tipo_raw === "credito") {
+                    classeTexto = "text-success fw-bold";
+                }
+
+                const row = `
+                    <tr>
+                        <td>${saldo.data}</td>
+                        <td>${saldo.descricao}</td>
+                        <td>${saldo.tipo}</td>
+                        <td class="text-right ${classeTexto}">R$ ${valor}</td>
+                        <td class="text-right">R$ ${saldoAcumulado}</td>
+                    </tr>`;
+                tabelaSaldos.innerHTML += row;
+            });
+        } else {
+            tabelaSaldos.innerHTML = `<tr><td colspan="5" class="text-center text-muted">Nenhum saldo encontrado.</td></tr>`;
+        }
+    })
+    .catch(error => {
+        console.error("Erro ao buscar saldos:", error);
+        tabelaSaldos.innerHTML = `<tr><td colspan="5" class="text-center text-danger">Erro ao carregar os dados.</td></tr>`;
+    });
+
+
+});
+});
+
+
+
+    </script>
+    
+
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Lista de Itens Cadastrados</h1>
+            <p class="text-muted">Visualize todos os itens cadastrados no sistema.</p>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h2 class="h5 text-primary m-0">
+                <i class="fas fa-box"></i> Itens Cadastrados
+            </h2>
+            <div class="d-flex gap-2">
+                <a href="{% url 'cadastrar_item' %}" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Cadastrar Novo Item
+                </a>
+                <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </div>
+        
+
+        <div class="card shadow-lg border-0">
+            <div class="card-body bg-light">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nome</th>
+                            <th>Unidade de Medida</th>
+                            <th>Categoria</th>
+                            <th>Subcategoria</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in itens %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ item.nome }}</td>
+                            <td>{{ item.unidade_medida }}</td>
+                            <td>{{ item.categoria.nome }}</td>
+                            <td>{{ item.subcategoria.nome }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="#" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">Nenhum item cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

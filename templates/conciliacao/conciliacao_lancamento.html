@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">📄 Lançamentos Bancários</h1>
+            <p class="text-muted">Registre e visualize os lançamentos bancários para conciliação.</p>
+        </div>
+
+        <!-- Formulário de Cadastro de Lançamento -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-plus-circle"></i> Novo Lançamento</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" id="form-lancamento" action="{% url 'criar_lancamento' %}">
+                    {% csrf_token %}
+                    <div class="row">
+
+                        <div class="col-md-6">
+                            <label for="escola">Escolha a Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required>
+                                <option value="" selected disabled>Carregando escolas...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label for="conta_bancaria">Conta Bancária:</label>
+                            <select id="conta_bancaria" name="conta_bancaria" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma escola primeiro</option>
+                            </select>
+                        </div>
+                        
+
+                
+                        <div class="col-md-6">
+                            <label for="data">Data:</label>
+                            <input type="date" id="data" name="data" class="form-control" required>
+                        </div>
+                
+                        <div class="col-md-6">
+                            <label for="descricao">Descrição:</label>
+                            <input type="text" id="descricao" name="descricao" class="form-control" required>
+                        </div>
+                
+                        <div class="col-md-6">
+                            <label for="tipo">Tipo:</label>
+                            <select id="tipo" name="tipo" class="form-control" required>
+                                <option value="" disabled selected>Selecione</option>
+                                <option value="Entrada">Entrada</option>
+                                <option value="Saída">Saída</option>
+                            </select>
+                        </div>
+                
+                        <div class="col-md-6">
+                            <label for="categoria">Categoria:</label>
+                            <input type="text" id="categoria" name="categoria" class="form-control" required>
+                        </div>
+                
+                        <div class="col-md-6">
+                            <label for="valor">Valor (R$):</label>
+                            <input type="text" id="valor" name="valor" class="form-control" required>
+                        </div>
+                    </div>
+                
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-save"></i> Adicionar Lançamento
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+                
+                
+            </div>
+        </div>
+
+        <hr>
+
+        <!-- Tabela de Lançamentos -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-list-alt"></i> Lançamentos Registrados</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Tipo</th>
+                                <th>Categoria</th>
+                                <th>Valor (R$)</th>
+                                <th>Escola</th>
+                                <th>Conta Bancária</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lancamento in lancamentos %}
+                            <tr>
+                                <td>{{ lancamento.data }}</td>
+                                <td>{{ lancamento.descricao }}</td>
+                                <td>{{ lancamento.tipo }}</td>
+                                <td>{{ lancamento.categoria }}</td>
+                                <td class="text-right">R$ {{ lancamento.valor|floatformat:2 }}</td>
+                                <td>{{ lancamento.escola.nome }}</td>
+                                <td>{{ lancamento.conta_bancaria.banco }} - Ag: {{ lancamento.conta_bancaria.agencia }} - Conta: {{ lancamento.conta_bancaria.conta }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'editar_lancamento' lancamento.id %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    <a href="{% url 'excluir_lancamento' lancamento.id %}" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt"></i> Excluir
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Nenhum lançamento cadastrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let tabelaLancamentos = document.getElementById("tabela-lancamentos");
+
+        if (!tabelaLancamentos) {
+            console.error("Erro: O elemento #tabela-lancamentos não foi encontrado.");
+            return;
+        }
+
+        fetch("/get-lancamentos/")
+            .then(response => response.json())
+            .then(data => {
+                tabelaLancamentos.innerHTML = "";
+
+                if (data.lancamentos && data.lancamentos.length > 0) {
+                    data.lancamentos.forEach(lancamento => {
+                        let row = `
+                        <tr>
+                            <td>${lancamento.data}</td>
+                            <td>${lancamento.descricao}</td>
+                            <td>${lancamento.tipo}</td>
+                            <td>${lancamento.categoria}</td>
+                            <td class="text-right">R$ ${parseFloat(lancamento.valor).toFixed(2)}</td>
+                            <td class="text-center">
+                                <a href="/lancamentos/editar/${lancamento.id}/" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                                <a href="/lancamentos/excluir/${lancamento.id}/" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash-alt"></i> Excluir
+                                </a>
+                            </td>
+                        </tr>`;
+                        tabelaLancamentos.innerHTML += row;
+                    });
+                } else {
+                    tabelaLancamentos.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhum lançamento cadastrado.</td></tr>`;
+                }
+            })
+            .catch(error => console.error("Erro ao buscar lançamentos:", error));
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let escolaSelect = document.getElementById("escola");
+        let contaSelect = document.getElementById("conta_bancaria");
+
+        // 🔹 Carrega as escolas ao iniciar a página
+        fetch("/get-escolas/")
+            .then(response => response.json())
+            .then(data => {
+                escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
+                data.escolas.forEach(escola => {
+                    escolaSelect.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
+                });
+            })
+            .catch(error => console.error("Erro ao buscar escolas:", error));
+
+        // 🔹 Atualiza as contas bancárias quando a escola for selecionada
+        escolaSelect.addEventListener("change", function () {
+            let escolaId = this.value;
+
+            fetch(`/get-contas/${escolaId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
+                    data.contas.forEach(conta => {
+                        contaSelect.innerHTML += `
+                            <option value="${conta.id}">${conta.banco} - Agência: ${conta.agencia} - Conta: ${conta.conta}</option>
+                        `;
+                    });
+                })
+                .catch(error => console.error("Erro ao buscar contas bancárias:", error));
+        });
+    });
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,280 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h6 class="display-4 text-warning font-weight-bold">
+                Editar Escola PDDE - {{ escola.nome }}
+            </h6>            
+            <p class="text-muted">Atualize os dados da escola conforme necessário.</p>
+        </div>
+
+        <!-- Mensagens de Erro -->
+        {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>Erro ao atualizar a escola:</strong>
+            <ul>
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Formulário -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-warning text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">
+                    <i class="fas fa-edit"></i> Informações da Escola
+                </h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Renderiza automaticamente os campos do formulário -->
+                    {{ form.as_p }}
+                    
+
+                    <!-- Primeira linha -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_nome">Nome da Escola:</label>
+                                <input type="text" class="form-control" id="id_nome" name="nome" value="{{ escola.nome }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_tipo" class="form-label">Tipo:</label>
+                                <input type="text" class="form-control" id="id_tipo" name="tipo" value="{{ escola.tipo|default_if_none:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_nome_conselho" class="form-label">Nome do Conselho:</label>
+                                <input type="text" class="form-control" id="id_nome_conselho" name="nome_conselho" value="{{ escola.nome_conselho|default_if_none:'' }}">
+                            </div>
+                        </div>
+                    </div>
+
+
+                     <!-- Segunda linha -->
+                     <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_ano" class="form-label">Ano:</label>
+                                <input type="number" class="form-control" id="id_ano" name="ano" value="{{ escola.ano }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_status" class="form-label">Status:</label>
+                                <select class="form-control" id="id_status" name="status" required>
+                                    <option value="pendente" {% if form.status.value == "pendente" %}selected{% endif %}>Pendente</option>
+                                    <option value="aprovado" {% if form.status.value == "aprovado" %}selected{% endif %}>Aprovado</option>
+                                    <option value="reprovado" {% if form.status.value == "reprovado" %}selected{% endif %}>Reprovado</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Segunda linha -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_endereco" class="form-label">Endereço:</label>
+                                <input type="text" class="form-control" id="id_endereco" name="endereco" value="{{ escola.endereco }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_bairro" class="form-label">Bairro:</label>
+                                <input type="text" class="form-control" id="id_bairro" name="bairro" value="{{ escola.bairro }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_cep" class="form-label">CEP:</label>
+                                <input type="text" class="form-control" id="id_cep" name="cep" value="{{ escola.cep }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terceira linha -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_cidade" class="form-label">Cidade:</label>
+                                <input type="text" class="form-control" id="id_cidade" name="cidade" value="{{ escola.cidade }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_uf" class="form-label">UF:</label>
+                                <input type="text" class="form-control" id="id_uf" name="uf" value="{{ escola.uf }}" maxlength="2" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_dependencia_administrativa" class="form-label">Dependência Administrativa:</label>
+                                <input type="text" class="form-control" id="id_dependencia_administrativa" name="dependencia_administrativa" value="{{ escola.dependencia_administrativa }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quarta linha -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_codigo_inep" class="form-label">Código INEP:</label>
+                                <input type="text" class="form-control" id="id_codigo_inep" name="codigo_inep" value="{{ escola.codigo_inep }}" required maxlength="10">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="id_cnpj" class="form-label">CNPJ:</label>
+                                <input type="text" class="form-control" id="id_cnpj" name="cnpj" value="{{ escola.cnpj }}" required>
+                            </div>
+                        </div>
+                  
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_zona" class="form-label">Zona:</label>
+                            <select class="form-control" id="id_zona" name="zona">
+                                <option value="Urbana" {% if escola.zona == "Urbana" %}selected{% endif %}>Urbana</option>
+                                <option value="Rural" {% if escola.zona == "Rural" %}selected{% endif %}>Rural</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="id_ensino" class="form-label">Ensino:</label>
+                            <select class="form-control" id="id_ensino" name="ensino">
+                                <option value="" disabled {% if not escola.ensino %}selected{% endif %}>Selecione o nível de ensino</option>
+                                <option value="Educação Infantil" {% if escola.ensino == "Educação Infantil" %}selected{% endif %}>Educação Infantil</option>
+                                <option value="Ensino Fundamental" {% if escola.ensino == "Ensino Fundamental" %}selected{% endif %}>Ensino Fundamental</option>
+                                <option value="Ensino Médio" {% if escola.ensino == "Ensino Médio" %}selected{% endif %}>Ensino Médio</option>
+                                <option value="EJA" {% if escola.ensino == "EJA" %}selected{% endif %}>Educação de Jovens e Adultos (EJA)</option>
+                                <option value="Técnico Profissionalizante" {% if escola.ensino == "Técnico Profissionalizante" %}selected{% endif %}>Técnico Profissionalizante</option>
+                            </select>
+                        </div>
+                    </div>
+                    </div>
+                    
+                    <!-- Quinta linha -->
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="id_quantidade_salas" class="form-label">Salas:</label>
+                                <input type="number" class="form-control" id="id_quantidade_salas" name="quantidade_salas" value="{{ escola.quantidade_salas|default_if_none:0 }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="id_quantidade_turmas" class="form-label">Turmas:</label>
+                                <input type="number" class="form-control" id="id_quantidade_turmas" name="quantidade_turmas" value="{{ escola.quantidade_turmas|default_if_none:0 }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="id_quantidade_professores" class="form-label">Professores:</label>
+                                <input type="number" class="form-control" id="id_quantidade_professores" name="quantidade_professores" value="{{ escola.quantidade_professores|default_if_none:0 }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="id_quantidade_alunos" class="form-label">Alunos:</label>
+                                <input type="number" class="form-control" id="id_quantidade_alunos" name="quantidade_alunos" value="{{ escola.quantidade_alunos|default_if_none:0 }}" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Linha com Programa Vinculado, Procuração e Validade -->
+                    <div class="row">
+                        <!-- Programa Vinculado -->
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="id_programa">Programa Vinculado:</label>
+                                <select class="form-control" id="id_programa" name="programa">
+                                    <option value="" disabled {% if not escola.programas.exists %}selected{% endif %}>
+                                        Selecione um programa
+                                    </option>
+                                    {% for programa in programas %}
+                                    <option value="{{ programa.id }}" {% if programa in escola.programas.all %}selected{% endif %}>
+                                        {{ programa.nome }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    
+                        <!-- Upload da Procuração -->
+                        <!-- Upload da Procuração -->
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label for="id_procuracao" class="form-label">Procuração (Upload):</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="file" class="form-control me-2" id="id_procuracao" name="procuracao">
+                                    {% if escola.procuracao %}
+                                        <a href="{{ escola.procuracao.url }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-eye"></i> <!-- Ícone de olho -->
+                                        </a>
+                                        <span class="text-muted small">{{ escola.procuracao.name|cut:"procuracoes/" }}</span> <!-- Nome do arquivo -->
+                                    {% else %}
+                                        <small class="text-muted ms-2">Não cadastrada</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Validade da Procuração -->
+                        <div class="col-md-3">
+                            <div class="mb-3">
+                                <label for="id_validade_procuracao">Validade da Procuração:</label>
+                                <input type="date" class="form-control" id="id_validade_procuracao" name="validade_procuracao"
+                                    value="{{ escola.validade_procuracao|date:'Y-m-d' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Botões -->
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-warning shadow-sm">
+                            <i class="fas fa-save"></i> Atualizar
+                        </button>
+                        <a href="{% url 'lista_escolas_pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-times-circle"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let codigoInepInput = document.getElementById("id_codigo_inep");
+
+        codigoInepInput.addEventListener("blur", function () {
+            let value = codigoInepInput.value.trim();
+            
+            // Verifica se o valor é numérico e menor que 10 dígitos
+            if (value.length > 0 && value.length < 10) {
+                codigoInepInput.value = value.padStart(10, '0'); // Adiciona zeros à esquerda
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+
+

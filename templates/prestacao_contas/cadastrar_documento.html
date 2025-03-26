@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastro de Documentos</h1>
+            <p class="text-muted">Gerencie os documentos relacionados aos bens adquiridos no PDDE.</p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-file-alt"></i> Novo Documento</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <!-- Escolher Escola -->
+                        <div class="col-md-6">
+                            <label for="escola" class="form-label">Escolha a Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma escola</option>
+                                {% for escola in escolas %}
+                                    <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Nome do Conselho Escolar -->
+                        <div class="col-md-6">
+                            <label for="nome_conselho" class="form-label">Nome do Conselho:</label>
+                            <input type="text" id="nome_conselho" name="nome_conselho" class="form-control" readonly>
+                        </div>
+
+                        <!-- Tipo do Documento -->
+                        <div class="col-md-6 mt-3">
+                            <label for="tipo" class="form-label">Tipo do Documento:</label>
+                            <select id="tipo" name="tipo" class="form-control" required>
+                                <option value="" selected disabled>Selecione o tipo</option>
+                                <option value="NF">Nota Fiscal</option>
+                                <option value="RC">Recibo</option>
+                                <option value="CT">Contrato</option>
+                                <option value="OT">Outros</option>
+                            </select>
+                        </div>
+
+                        <!-- Número do Documento -->
+                        <div class="col-md-6 mt-3">
+                            <label for="numero" class="form-label">Número do Documento:</label>
+                            <input type="text" id="numero" name="numero" class="form-control" required>
+                        </div>
+
+                        <!-- Data de Emissão -->
+                        <div class="col-md-6 mt-3">
+                            <label for="data_emissao" class="form-label">Data de Emissão:</label>
+                            <input type="date" id="data_emissao" name="data_emissao" class="form-control" required>
+                        </div>
+
+                        <!-- Valor Total -->
+                        <div class="col-md-6 mt-3">
+                            <label for="valor_total" class="form-label">Valor Total (R$):</label>
+                            <input type="number" id="valor_total" name="valor_total" class="form-control" step="0.01">
+                        </div>
+
+                        <!-- Upload do Arquivo -->
+                        <div class="col-md-6 mt-3">
+                            <label for="arquivo" class="form-label">Arquivo:</label>
+                            <input type="file" id="arquivo" name="arquivo" class="form-control" required>
+                        </div>
+
+                        <!-- Descrição do Documento -->
+                        <div class="col-md-12 mt-3">
+                            <label for="descricao" class="form-label">Descrição:</label>
+                            <textarea id="descricao" name="descricao" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const escolaSelect = document.getElementById("escola");
+        const nomeConselhoInput = document.getElementById("nome_conselho");
+
+        escolaSelect.addEventListener("change", function () {
+            let escolaId = this.value;
+            if (!escolaId) return;
+
+            fetch(`/get-escola-dados/${escolaId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    nomeConselhoInput.value = data.nome_conselho || "Não informado";
+                })
+                .catch(error => console.error("Erro ao buscar dados da escola:", error));
+        });
+    });
+</script>
+{% endblock %}

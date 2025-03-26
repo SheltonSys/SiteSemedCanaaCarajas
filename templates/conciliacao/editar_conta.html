@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h2>Editar Conta Bancária</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_banco" class="form-label">Banco:</label>
+            <input type="text" class="form-control" id="id_banco" name="banco" value="{{ conta.banco }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_agencia" class="form-label">Agência:</label>
+            <input type="text" class="form-control" id="id_agencia" name="agencia" value="{{ conta.agencia }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_conta" class="form-label">Conta:</label>
+            <input type="text" class="form-control" id="id_conta" name="conta" value="{{ conta.conta }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_tipo_conta" class="form-label">Tipo de Conta:</label>
+            <select class="form-control" id="id_tipo_conta" name="tipo_conta">
+                <option value="Corrente" {% if conta.tipo_conta == "Corrente" %}selected{% endif %}>Corrente</option>
+                <option value="Poupança" {% if conta.tipo_conta == "Poupança" %}selected{% endif %}>Poupança</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a href="{% url 'listar_contas' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

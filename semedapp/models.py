@@ -123,7 +123,12 @@ class Aluno(models.Model):
     idade = models.IntegerField(blank=True, null=True)
     modalidade = models.CharField(max_length=50, blank=True, null=True)
     avaliado = models.CharField(max_length=10, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
-    professor = models.CharField(max_length=255, blank=True, null=True)  # ou pode ser uma ForeignKey para outro modelo
+    professor = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
     turma = models.ForeignKey('Turma', on_delete=models.CASCADE, related_name='alunos')
 
     def __str__(self):
@@ -243,8 +248,8 @@ class Relatorio(models.Model):
 
 class Escola(models.Model):
     # Dados da Unidade
-    nome = models.CharField(max_length=255)
-    endereco = models.CharField(max_length=255)
+    nome = models.CharField(max_length=255)  # Remova unique=True se estiver
+    endereco = models.CharField(max_length=255, blank=True, null=True)  # <-- Aqui
     cep = models.CharField(max_length=9, null=True, blank=True)  # Ex.: 68356-055
     bairro = models.CharField(max_length=255, null=True, blank=True)
     cidade = models.CharField(max_length=255, default="Canaã dos Carajás")
@@ -301,7 +306,12 @@ class Escola(models.Model):
     vice_diretor = models.CharField(max_length=255, null=True, blank=True)
     telefone_vice_diretor = models.CharField(max_length=15, null=True, blank=True)
     email_vice_diretor = models.EmailField(null=True, blank=True)
-    coordenador_pedagogico = models.CharField(max_length=255, null=True, blank=True)
+    coordenador_pedagogico = models.CharField(
+        max_length=255,
+        null=True,     # permite NULL no banco de dados
+        blank=True     # permite campo vazio no formulário
+    )
+
     telefone_coordenador_pedagogico = models.CharField(max_length=15, null=True, blank=True)
     email_coordenador_pedagogico = models.EmailField(null=True, blank=True)
     secretario = models.CharField(max_length=255, null=True, blank=True)
@@ -323,11 +333,11 @@ from django.db import models
 from django.conf import settings  # Corrige a referência ao usuário customizado
 
 class Escolas(models.Model):
-    nome = models.CharField(max_length=255, unique=True)
+    nome = models.CharField(max_length=255)  # Remova unique=True se estiver
     unidade_educacional = models.CharField(max_length=255, blank=True, null=True)
-    endereco = models.TextField()
-    telefone = models.CharField(max_length=20, blank=True, null=True)
-    diretor = models.CharField(max_length=255, blank=True, null=True)
+    endereco = models.CharField(max_length=255, blank=True, null=True)  # <-- Aqui
+    telefone = models.CharField(max_length=20, blank=True, null=True)   # (opcional também)
+    diretor = models.CharField(max_length=255, blank=True, null=True)   # (opcional também)
     # 🔹 Correção: referenciar o AUTH_USER_MODEL dinamicamente
     coordenador = models.ForeignKey(
         settings.AUTH_USER_MODEL,  # Usa o modelo configurado em settings.py
@@ -339,22 +349,6 @@ class Escolas(models.Model):
 
     def __str__(self):
         return self.nome
-
-
-
-    
-
-
-
-# class Escolas(models.Model):
-#     nome = models.CharField(max_length=255)
-#     endereco = models.TextField(blank=True, null=True)
-#     telefone = models.CharField(max_length=20, blank=True, null=True)
-#     unidade_educacional = models.CharField(max_length=255, blank=True, null=True)
-
-#     def __str__(self):
-#         return self.nome
-
 
 
 # ********************************************************************************************************************************
@@ -1889,7 +1883,8 @@ class CandidatoCurriculo(models.Model):
 # ********************************************************************************************************************************
 
 from django.db import models
-from django.contrib.auth.models import User
+
+
 
 class CandidatoAutenticado(models.Model):
     #user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil_candidato")
@@ -2423,9 +2418,15 @@ class Professor(models.Model):
 
 
 class Turma(models.Model):
-    nome = models.CharField(max_length=255, unique=True)  # Esse campo deve existir
+    nome = models.CharField(max_length=255)  # <-- Removido unique=True
     ano_letivo = models.IntegerField(default=2025)  # Garante que tenha um valor padrão
-    professor = models.ForeignKey(User, on_delete=models.CASCADE)  # Se `User` representa o professor
+    professor = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
+
     escola = models.ForeignKey(Escolas, on_delete=models.CASCADE)
     ano = models.IntegerField()
     modalidade = models.CharField(max_length=50)
@@ -2439,7 +2440,12 @@ class CadastroEscola(models.Model):
     cpf = models.CharField(max_length=11)
     data_nascimento = models.DateField()
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name="escolas")
-    professor = models.ForeignKey(Professor, on_delete=models.CASCADE, related_name="escolas")
+    professor = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
     ano = models.IntegerField()
     modalidade = models.CharField(max_length=50)
     pessoa_nome = models.CharField(max_length=255)
@@ -2452,7 +2458,12 @@ class CadastroEscola(models.Model):
 
 
 class ProfessorEscola(models.Model):
-    professor = models.ForeignKey(User, on_delete=models.CASCADE)
+    professor = models.ForeignKey(
+    settings.AUTH_USER_MODEL,
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True
+)
     escolas = models.ForeignKey(Escolas, on_delete=models.CASCADE)  # Verifique o nome aqui
     turmas = models.ManyToManyField(Turma)
     
@@ -2465,7 +2476,10 @@ class ProfessorEscola(models.Model):
 
 class CadastroEI(models.Model):
     professor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
     )
     id_matricula = models.AutoField(primary_key=True)
     unidade_ensino = models.CharField(max_length=255)
@@ -2480,12 +2494,24 @@ class CadastroEI(models.Model):
         max_length=3, choices=[("SIM", "Sim"), ("NAO", "Não")], default="NAO"
     )
 
-    turma = models.ForeignKey(
-        "semedapp.Turma", 
-        on_delete=models.CASCADE, 
-        related_name="cadastros_ei",
-        db_column="turma_id"  # 🔹 Garante que o nome da coluna no banco de dados seja correto
+    turma = models.ForeignKey(Turma, on_delete=models.SET_NULL, null=True, blank=True)
+
+    id_coordenador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cadastros_como_id_coordenador'
     )
+
+    coordenador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='cadastros_como_coordenador'
+    )
+
     # Campos para as questões de Matemática e Linguagem
     questao_matematica_1 = models.CharField(max_length=50, null=True, blank=True)
     questao_matematica_2 = models.CharField(max_length=50, null=True, blank=True)
@@ -2537,8 +2563,6 @@ class NotaAluno(models.Model):
 from django.db import models
 from semedapp.models import CustomUserProf  # 🔹 Confirme que este é o modelo correto
 
-
-
 class ModuleModulosPermitidos(models.Model):
     customuserprof = models.ForeignKey(
         CustomUserProf,  # 🔹 Referenciando corretamente o modelo CustomUserProf
@@ -2557,6 +2581,796 @@ class ModuleModulosPermitidos(models.Model):
 
     def __str__(self):
         return f"{self.customuserprof.username} - {self.module.nome}"  # 🔹 Melhor debug
+# ********************************************************************************************************************************
+# ********************************************************************************************************************************
+# *****************************************************SEPECC*********************************************************************
+# ********************************************************************************************************************************
+
+
+from decimal import Decimal
+from django.db import models
+
+class ReceitaDespesa(models.Model):
+    TIPO_CHOICES = [
+        ("receita", "Receita"),
+        ("despesa", "Despesa"),
+    ]
+
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name="receitadespesa")
+    programa = models.CharField(max_length=255)
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default="receita")
+    periodo_execucao = models.IntegerField()
+
+    # 🏦 **Saldos Anteriores**
+    saldo_anterior_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    saldo_anterior_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    # 📌 **Valores Creditados**
+    valor_creditado_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    valor_creditado_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    # ✅ **Novos Campos**
+    recursos_proprios_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    recursos_proprios_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    # 💰 **Rendimento e Devoluções**
+    rendimento_aplicacao_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    rendimento_aplicacao_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    devolucao_fnde_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    devolucao_fnde_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    # 📌 **Receitas e Despesas**
+    total_receita = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    total_despesa = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    # 📌 **Saldos Reprogramados e Devolvidos**
+    saldo_reprogramar_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    saldo_reprogramar_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    saldo_devolvido_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    saldo_devolvido_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    escolas_atendidas = models.IntegerField(default=0)
+
+    # ✅ **Campo para armazenar o saldo disponível**
+    saldo_disponivel = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
+    ## 🔹 **Propriedades para cálculo dinâmico**
+    @property
+    def saldo_reprogramado_custeio(self):
+        return (self.saldo_anterior_custeio + self.valor_creditado_custeio +
+                self.recursos_proprios_custeio + self.rendimento_aplicacao_custeio -
+                self.devolucao_fnde_custeio - self.total_despesa - self.saldo_devolvido_custeio)
+
+    @property
+    def saldo_reprogramado_capital(self):
+        return (self.saldo_anterior_capital + self.valor_creditado_capital +
+                self.recursos_proprios_capital + self.rendimento_aplicacao_capital -
+                self.devolucao_fnde_capital - self.total_despesa - self.saldo_devolvido_capital)
+
+    ## 🔹 **Cálculo do Saldo Disponível**
+    def calcular_saldo_disponivel(self):
+        receita_total = (
+            self.saldo_anterior_custeio + self.saldo_anterior_capital +
+            self.valor_creditado_custeio + self.valor_creditado_capital +
+            self.recursos_proprios_custeio + self.recursos_proprios_capital +
+            self.rendimento_aplicacao_custeio + self.rendimento_aplicacao_capital
+        )
+
+        return receita_total - (self.total_despesa + self.devolucao_fnde_custeio + self.devolucao_fnde_capital +
+                                self.saldo_devolvido_custeio + self.saldo_devolvido_capital)
+
+    ## 🔹 **Salva e recalcula o saldo disponível**
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            super().save(*args, **kwargs)
+
+        self.saldo_disponivel = self.calcular_saldo_disponivel()
+        super().save(update_fields=["saldo_disponivel"])
+
+    def __str__(self):
+        return f"{self.escola.nome} - {self.programa} ({self.periodo_execucao})"
+
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class Receita(models.Model):
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name="receitas")
+    programa = models.CharField(max_length=255)
+    data_inicio = models.DateField()
+    data_fim = models.DateField(default="2025-12-31")
+
+    saldo_anterior_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    saldo_anterior_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    valor_creditado_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    valor_creditado_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    # 🔹 Renomeamos para recursos_proprios_custeio e recursos_proprios_capital
+    recursos_proprios_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    recursos_proprios_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    rendimento_aplicacao_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    rendimento_aplicacao_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    devolucao_fnde_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    devolucao_fnde_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    saldo_reprogramar_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    saldo_reprogramar_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    saldo_devolvido_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    saldo_devolvido_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    valor_total_receita_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    valor_total_receita_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    valor_despesa_realizada_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    valor_despesa_realizada_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+
+    escolas_atendidas = models.IntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.escola} - {self.programa} ({self.data_inicio} a {self.data_fim})"
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class Programa(models.Model):
+    nome = models.CharField(max_length=255, unique=True, verbose_name="Nome do Programa")
+    descricao = models.TextField(blank=True, null=True, verbose_name="Descrição do Programa")
+    resolucao = models.CharField(max_length=255, blank=True, null=True, verbose_name="Resolução")
+    data_inicio = models.DateField(verbose_name="Data de Início", null=True, blank=True)
+    data_fim = models.DateField(verbose_name="Data de Fim", null=True, blank=True)
+
+    def __str__(self):
+        return self.nome
+# ********************************************************************************************************************************
+from django.db import models
+
+class EscolaPdde(models.Model):
+    NIVEIS_ENSINO = [
+        ("Educação Infantil", "Educação Infantil"),
+        ("Ensino Fundamental", "Ensino Fundamental"),
+        ("Ensino Médio", "Ensino Médio"),
+        ("Educação de Jovens e Adultos (EJA)", "Educação de Jovens e Adultos (EJA)"),
+        ("Técnico Profissionalizante", "Técnico Profissionalizante"),
+    ]
+
+    # **Identificação**
+    nome = models.CharField(max_length=255)
+    ano = models.IntegerField(default=2024)  # Campo do ano do PDDE
+    status = models.CharField(
+        max_length=20,
+        choices=[("aprovado", "Aprovado"), ("pendente", "Pendente"), ("reprovado", "Reprovado")],
+        default="pendente"
+    )
+    cnpj = models.CharField(max_length=18, unique=True)
+    endereco = models.CharField(max_length=255, null=True, blank=True)
+    cep = models.CharField(max_length=9, null=True, blank=True)  # ✅ Adicionado
+    bairro = models.CharField(max_length=255, null=True, blank=True)  # ✅ Adicionado
+    cidade = models.CharField(max_length=255, default="Canaã dos Carajás")  # ✅ Adicionado
+    uf = models.CharField(max_length=2, default="PA")
+
+    # 🔹 Adicionando a relação muitos para muitos com Programas
+    programas = models.ManyToManyField('Programa', blank=True, related_name="escolas")
+    
+    # **Dados Administrativos**
+    tipo = models.CharField(max_length=50, null=True, blank=True)
+    dependencia_administrativa = models.CharField(max_length=50, null=True, blank=True)
+    codigo_inep = models.CharField(max_length=10, unique=True)
+    
+    # **Zona da Escola**
+    zona = models.CharField(
+        max_length=10, 
+        choices=[("Rural", "Rural"), ("Urbana", "Urbana")], 
+        default="Urbana"
+    )
+
+    procuracao = models.FileField(upload_to="procuracoes/", null=True, blank=True)
+    validade_procuracao = models.DateField(null=True, blank=True)
+
+
+    # **Nível de Ensino**
+    ensino = models.CharField(
+        max_length=255, 
+        null=True, blank=True, 
+        help_text="Informe os níveis de ensino disponíveis na escola"
+    )
+
+    # **Estrutura**
+    quantidade_salas = models.IntegerField(default=0)
+    quantidade_turmas = models.IntegerField(default=0)
+    quantidade_professores = models.IntegerField(default=0)
+    quantidade_alunos = models.IntegerField(default=0)
+
+    # **Novo Campo**
+    nome_conselho = models.CharField(max_length=255, null=True, blank=True, help_text="Nome do Conselho Escolar") 
+    
+
+    def __str__(self):
+        return self.nome
+# ********************************************************************************************************************************
+
+class SemedAppEscolaPddeProgramas(models.Model):
+    escolapdde = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE)
+    programa = models.ForeignKey(Programa, on_delete=models.CASCADE)
+
+# ********************************************************************************************************************************
+
+class EscolaPrograma(models.Model):
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE, related_name="programas_escola", verbose_name="Escola")
+    programa = models.ForeignKey(Programa, on_delete=models.CASCADE, related_name="escolas_participantes", verbose_name="Programa")
+    data_inicio = models.DateField(verbose_name="Data de Início", null=True, blank=True)
+    data_fim = models.DateField(verbose_name="Data de Fim", null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.escola.nome} - {self.programa.nome}"
+# ********************************************************************************************************************************
+
+class EscolaPddeProgramas(models.Model):
+    escolapdde = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE)
+    programa = models.ForeignKey(Programa, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.escolapdde.nome} - {self.programa.nome}"
+# ********************************************************************************************************************************
+
+# 🚀 **Pagamentos Efetuados**
+from django.db import models
+from django.db.models import F, DecimalField
+from django.core.exceptions import ObjectDoesNotExist
+
+class Pagamento(models.Model):
+    escola = models.ForeignKey("EscolaPdde", on_delete=models.CASCADE)
+    programa = models.CharField(max_length=255)
+    nome_favorecido = models.CharField(max_length=255)
+    cnpj_cpf = models.CharField(max_length=20, blank=True, null=True)
+    tipo_pagamento = models.CharField(
+        max_length=50,
+        choices=[("Custeio", "Custeio"), ("Capital", "Capital")]
+    )
+    tipo_bem_servico = models.TextField()
+    origem = models.CharField(max_length=50, default="FNDE")
+
+    tipo_documento = models.CharField(
+        max_length=50,
+        choices=[
+            ("NF", "Nota Fiscal"),
+            ("Cupom", "Cupom Fiscal"),
+            ("PIX", "PIX"),
+            ("Boleto", "Boleto"),
+            ("Outros", "Outros"),
+        ]
+    )
+    numero_documento = models.CharField(max_length=100)
+    data_documento = models.DateField()
+
+    tipo_pagamento_efetuado = models.CharField(
+        max_length=50,
+        choices=[
+            ("Dinheiro", "Dinheiro"),
+            ("PIX", "PIX"),
+            ("TED", "TED"),
+            ("Cartão de Crédito", "Cartão de Crédito"),
+            ("Cartão de Débito", "Cartão de Débito"),
+            ("Cheque", "Cheque"),
+            ("Outros", "Outros"),
+        ]
+    )
+    numero_documento_pagamento = models.CharField(max_length=100)
+    data_pagamento = models.DateField()
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    exercicio = models.IntegerField()
+
+    def save(self, *args, **kwargs):
+        """
+        Atualiza os valores de `valor_despesa_realizada_custeio`, `valor_despesa_realizada_capital`
+        e os saldos reprogramados ao salvar um pagamento.
+        """
+        super().save(*args, **kwargs)  # Salva o pagamento primeiro
+
+        try:
+            receita = Receita.objects.get(escola=self.escola, programa=self.programa)
+
+            if self.tipo_pagamento == "Custeio":
+                # Atualiza a despesa realizada (soma o novo pagamento)
+                Receita.objects.filter(id=receita.id).update(
+                    valor_despesa_realizada_custeio=F("valor_despesa_realizada_custeio") + self.valor
+                )
+
+                # Atualiza o saldo reprogramado após salvar a despesa corretamente
+                Receita.objects.filter(id=receita.id).update(
+                    saldo_reprogramar_custeio=(
+                        F("saldo_anterior_custeio") + F("valor_creditado_custeio") + F("recursos_proprios_custeio") 
+                        + F("rendimento_aplicacao_custeio")
+                        - F("devolucao_fnde_custeio") - F("valor_despesa_realizada_custeio") - F("saldo_devolvido_custeio")
+                    )
+                )
+
+            else:  # Caso seja "Capital"
+                # Atualiza a despesa realizada (soma o novo pagamento)
+                Receita.objects.filter(id=receita.id).update(
+                    valor_despesa_realizada_capital=F("valor_despesa_realizada_capital") + self.valor
+                )
+
+                # Atualiza o saldo reprogramado após salvar a despesa corretamente
+                Receita.objects.filter(id=receita.id).update(
+                    saldo_reprogramar_capital=(
+                        F("saldo_anterior_capital") + F("valor_creditado_capital") + F("recursos_proprios_capital") 
+                        + F("rendimento_aplicacao_capital")
+                        - F("devolucao_fnde_capital") - F("valor_despesa_realizada_capital") - F("saldo_devolvido_capital")
+                    )
+                )
+
+        except ObjectDoesNotExist:
+            print(f"⚠️ Nenhuma Receita encontrada para a Escola {self.escola.nome} e Programa {self.programa}")
+
+    def __str__(self):
+        return f"{self.nome_favorecido} - R$ {self.valor}"
+# ********************************************************************************************************************************
+from django.db import models
+
+class ContaBancaria(models.Model):
+    escola = models.ForeignKey(
+        "EscolaPdde", 
+        on_delete=models.CASCADE, 
+        related_name="contas"
+    )
+    conselho = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True,
+        help_text="Conselho vinculado à escola."
+    )
+    nome = models.CharField(
+        max_length=100, 
+        help_text="Nome da conta bancária (ex: Conta Principal)",
+    )
+    banco = models.CharField(
+        max_length=100, 
+        help_text="Nome do banco da conta."
+    )
+    agencia = models.CharField(
+        max_length=20, 
+        help_text="Número da agência bancária."
+    )
+    conta = models.CharField(
+        max_length=20, 
+        help_text="Número da conta bancária."
+    )
+    saldo = models.DecimalField(
+        max_digits=15, decimal_places=2, 
+        default=0.00, 
+        help_text="Saldo atual da conta bancária."
+    )
+    tipo_conta = models.CharField(
+        max_length=10,
+        choices=[("Corrente", "Corrente"), ("Poupança", "Poupança")],
+        default="Corrente",
+        help_text="Tipo da conta bancária."
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["escola", "banco", "agencia", "conta"], 
+                name="unique_conta_bancaria_por_escola"
+            )
+        ]
+        ordering = ["escola", "banco"]
+
+    def save(self, *args, **kwargs):
+        """Ao salvar a conta, automaticamente adiciona o conselho vinculado à escola."""
+        if self.escola:
+            self.conselho = self.escola.nome_conselho  # Obtém o nome do conselho vinculado à escola
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.banco} - {self.agencia}/{self.conta} ({self.escola.nome})"
+
+# ********************************************************************************************************************************
+
+from django.conf import settings  # Importando configuração do usuário customizado
+from django.db import models
+from decimal import Decimal
+
+class LancamentoBancario(models.Model):
+    TIPOS = [
+        ("Entrada", "Entrada"),
+        ("Saída", "Saída"),
+    ]
+    TIPO_CHOICES = [
+        ('credito', 'Entrada'),
+        ('debito', 'Saída'),
+    ]
+
+    data = models.DateField(verbose_name="Data do Lançamento")
+    descricao = models.CharField(max_length=255, verbose_name="Descrição")
+    tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, verbose_name="Tipo de Lançamento")
+    valor = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor (R$)")
+    conta_bancaria = models.ForeignKey(
+        "ContaBancaria",
+        on_delete=models.CASCADE,
+        related_name='lancamentos',
+        verbose_name="Conta Bancária"
+    )
+    origem_destino = models.CharField(max_length=255, blank=True, null=True, verbose_name="Origem/Destino")
+    
+    # 🔹 Atualizando a referência para o usuário customizado
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # Correto para usuários customizados
+        on_delete=models.CASCADE,
+        verbose_name="Usuário"
+    )
+
+    comprovante = models.FileField(upload_to='comprovantes/', blank=True, null=True, verbose_name="Comprovante")
+    categoria = models.CharField(max_length=100, blank=True, null=True, verbose_name="Categoria")
+    escola = models.ForeignKey("EscolaPdde", on_delete=models.CASCADE, verbose_name="Escola")
+
+    def save(self, *args, **kwargs):
+        """ Atualiza saldo da conta ao salvar lançamento """
+
+        # 🔹 Converte `valor` para Decimal caso seja string
+        if isinstance(self.valor, str):
+            self.valor = Decimal(self.valor.replace(",", "."))
+
+        # 🔹 Verifica se a transação é de débito e há saldo suficiente
+        if self.tipo == 'debito' and self.valor > self.conta_bancaria.saldo:
+            raise ValueError("Saldo insuficiente para essa transação.")
+
+        # 🔹 Atualiza saldo da conta ANTES de salvar o lançamento
+        if self.pk is None:  # Se for um novo lançamento
+            if self.tipo == 'credito':
+                self.conta_bancaria.saldo += self.valor
+            else:
+                self.conta_bancaria.saldo -= self.valor
+        else:  # Caso esteja editando um lançamento existente
+            lancamento_antigo = LancamentoBancario.objects.get(pk=self.pk)
+            diferenca = self.valor - lancamento_antigo.valor
+
+            if self.tipo == 'credito':
+                self.conta_bancaria.saldo += diferenca
+            else:
+                self.conta_bancaria.saldo -= diferenca
+
+        self.conta_bancaria.save()  # Salva a conta bancária primeiro
+        super().save(*args, **kwargs)  # Salva o lançamento em seguida
+
+    def __str__(self):
+        return f"{self.descricao} - R$ {self.valor} ({self.tipo})"
+
+# ********************************************************************************************************************************
+# *****************************************************PESQUISA DE PREÇOS*********************************************************
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class Categoria(models.Model):
+    nome = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.nome
+# ********************************************************************************************************************************
+
+class Subcategoria(models.Model):
+    categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
+    nome = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"{self.categoria.nome} - {self.nome}"
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class Item(models.Model):
+    nome = models.CharField(max_length=255)
+    descricao = models.TextField(blank=True, null=True)
+    unidade_medida = models.CharField(max_length=50)
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
+    subcategoria = models.ForeignKey(Subcategoria, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return self.nome
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class Proponente(models.Model):
+    nome = models.CharField(max_length=255)
+    cpf_cnpj = models.CharField(max_length=18, unique=True)  # Aceita CPF ou CNPJ
+    email = models.EmailField(max_length=255, unique=True)
+    telefone = models.CharField(max_length=50)
+    endereco = models.CharField(max_length=255)
+    bairro = models.CharField(max_length=100)
+    cidade = models.CharField(max_length=100)
+    estado = models.CharField(max_length=2, choices=[
+        ("AC", "Acre"), ("AL", "Alagoas"), ("AP", "Amapá"), ("AM", "Amazonas"),
+        ("BA", "Bahia"), ("CE", "Ceará"), ("DF", "Distrito Federal"), ("ES", "Espírito Santo"),
+        ("GO", "Goiás"), ("MA", "Maranhão"), ("MT", "Mato Grosso"), ("MS", "Mato Grosso do Sul"),
+        ("MG", "Minas Gerais"), ("PA", "Pará"), ("PB", "Paraíba"), ("PR", "Paraná"),
+        ("PE", "Pernambuco"), ("PI", "Piauí"), ("RJ", "Rio de Janeiro"), ("RN", "Rio Grande do Norte"),
+        ("RS", "Rio Grande do Sul"), ("RO", "Rondônia"), ("RR", "Roraima"), ("SC", "Santa Catarina"),
+        ("SP", "São Paulo"), ("SE", "Sergipe"), ("TO", "Tocantins")
+    ])
+    cep = models.CharField(max_length=9)
+    tipo_proponente = models.CharField(max_length=20, choices=[
+        ("Pessoa Física", "Pessoa Física"),
+        ("Pessoa Jurídica", "Pessoa Jurídica")
+    ])
+    representante_legal = models.CharField(max_length=255, blank=True, null=True)
+    observacoes = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.nome} ({self.cpf_cnpj})"
+
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class Proposta(models.Model):
+    item = models.ForeignKey('Item', on_delete=models.CASCADE)
+    proponente = models.ForeignKey('Proponente', on_delete=models.CASCADE)
+    quantidade = models.PositiveIntegerField(default=1)  # Campo para quantidade
+    preco_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)  # Campo para valor total
+    data_proposta = models.DateField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        """ Calcula o valor total antes de salvar a proposta """
+        self.valor_total = self.preco_unitario * self.quantidade
+        super(Proposta, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.item.nome} - {self.proponente.nome} - {self.quantidade}x R${self.preco_unitario}"
+
+# ********************************************************************************************************************************
+
+from django.db import models
+
+class ApuracaoResultado(models.Model):
+    STATUS_CHOICES = [
+        ("Pendente", "Pendente"),
+        ("Adjudicado", "Adjudicado"),
+        ("Revogado", "Revogado"),
+    ]
+
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    proponente_vencedor = models.ForeignKey(Proponente, on_delete=models.CASCADE)
+    quantidade = models.PositiveIntegerField(default=1)  # 🔹 Nova coluna
+    preco_vencedor = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)  # 🔹 Nova coluna
+    data_apuracao = models.DateField(auto_now_add=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pendente")  # 🔹 Status
+
+    def save(self, *args, **kwargs):
+        self.valor_total = self.quantidade * self.preco_vencedor  # 🔹 Calcula valor total
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.item.nome} - {self.proponente_vencedor.nome} ({self.status})"
+
+
+# ********************************************************************************************************************************
 
 
 
+
+from django.db import models
+
+class Orcamento(models.Model):
+    item = models.ForeignKey("Item", on_delete=models.CASCADE)
+    proponente = models.ForeignKey("Proponente", on_delete=models.CASCADE)
+    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    data_cadastro = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.item} - {self.proponente} - R$ {self.preco}"
+
+
+
+from django.db import models
+
+class Documento(models.Model):
+    TIPO_DOCUMENTO = [
+        ('NF', 'Nota Fiscal'),
+        ('RC', 'Recibo'),
+        ('CT', 'Contrato'),
+        ('OT', 'Outros'),
+    ]
+
+    escola = models.ForeignKey(
+        'EscolaPdde',
+        on_delete=models.CASCADE,
+        related_name="documentos",
+        verbose_name="Escola"
+    )
+
+    tipo = models.CharField(
+        max_length=2,
+        choices=TIPO_DOCUMENTO,
+        verbose_name="Tipo do Documento"
+    )
+
+    numero = models.CharField(
+        max_length=50,
+        unique=True,
+        verbose_name="Número do Documento"
+    )
+
+    data_emissao = models.DateField(
+        verbose_name="Data de Emissão"
+    )
+
+    descricao = models.TextField(
+        blank=True,
+        null=True,
+        verbose_name="Descrição do Documento"
+    )
+
+    arquivo = models.FileField(
+        upload_to="documentos_prestacao_contas/",
+        null=True,
+        blank=True,
+        verbose_name="Arquivo Anexado"
+    )
+
+    valor_total = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        verbose_name="Valor Total (R$)"
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Criado em"
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name="Última atualização"
+    )
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.numero} ({self.escola.nome})"
+
+
+class BemAdquirido(models.Model):
+    documento = models.ForeignKey(Documento, on_delete=models.CASCADE, related_name="bens")
+    especificacao = models.CharField(max_length=255)
+    quantidade = models.IntegerField()
+    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+
+    @property
+    def valor_total(self):
+        return self.quantidade * self.valor_unitario
+
+    def __str__(self):
+        return self.especificacao
+
+from django.db import models
+
+class RepresentanteLegal(models.Model):
+    nome = models.CharField(max_length=255)
+    cpf = models.CharField(max_length=14, unique=True)  # Confirme se existe
+    email = models.EmailField(unique=True)  # Confirme se existe
+    telefone = models.CharField(max_length=15)  # Confirme se existe
+    cargo = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.nome
+
+
+
+
+from django.db import models
+
+class Bem(models.Model):
+    escola = models.ForeignKey(
+        'EscolaPdde',
+        on_delete=models.CASCADE,
+        verbose_name="Escola"
+    )
+
+    nome_conselho = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Nome do Conselho"
+    )
+
+    nome = models.CharField(max_length=255, verbose_name="Nome do Bem")
+    documento = models.FileField(upload_to="documentos_bens/", verbose_name="Documento de Aquisição")
+    quantidade = models.PositiveIntegerField(verbose_name="Quantidade")
+    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Unitário (R$)")
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, verbose_name="Valor Total (R$)")
+    data_cadastro = models.DateTimeField(auto_now_add=True, verbose_name="Data de Cadastro")
+
+    def save(self, *args, **kwargs):
+        if self.quantidade and self.valor_unitario:
+            self.valor_total = self.quantidade * self.valor_unitario
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.nome} - {self.escola.nome}"
+
+
+
+# models.py
+from django.db import models
+
+class TermoDoacao(models.Model):
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
+    conselho = models.CharField(max_length=255)
+    bem = models.ForeignKey('BemDoado', on_delete=models.CASCADE, null=True, blank=True)
+    data_emissao = models.DateField(auto_now_add=True)
+
+
+
+
+class BemDoado(models.Model):
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, verbose_name="Escola")
+    conselho = models.CharField(max_length=255, verbose_name="Conselho Escolar")
+    descricao = models.CharField(max_length=255, verbose_name="Descrição do Bem")
+    quantidade = models.PositiveIntegerField()
+    numero_nota = models.CharField(max_length=50, verbose_name="Nº Nota Fiscal")
+    data_nota = models.DateField(verbose_name="Data da Nota Fiscal")
+    valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    data_doacao = models.DateField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        self.valor_total = self.quantidade * self.valor_unitario
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.descricao} - {self.escola.nome}"
+
+
+
+
+##########################################################################################################################################
+##########################################################################################################################################
+################################################GESTÃO ESCOLA#################################################################
+##########################################################################################################################################
+
+from django.db import models
+
+STATUS_CHOICES = (
+    ('enviado', 'Enviado'),
+    ('deferido', 'Deferido'),
+    ('indeferido', 'Indeferido'),
+)
+
+class PlanoGestaoEscolar(models.Model):
+    unidade_ensino = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=100, default='Diretor')
+    servidor = models.CharField(max_length=255)
+    telefone = models.CharField(max_length=20)
+    arquivo = models.FileField(upload_to='pge_planos/')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Não Enviado')  # <- aqui
+    enviado = models.BooleanField(default=False)
+    data_envio = models.DateTimeField(auto_now_add=True)
+    deferido_indeferido = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.servidor} - {self.unidade_ensino}"
+
+
+
+from django.db import models
+
+class PGEPlanoGestaoEscolar(models.Model):
+    unidade_ensino = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=50)
+    servidor = models.CharField(max_length=255)
+    telefone = models.CharField(max_length=20)
+    arquivo = models.FileField(upload_to='pge/', blank=True, null=True)
+    enviado = models.BooleanField(default=False)
+    deferido_indeferido = models.CharField(max_length=50, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.unidade_ensino} - {self.servidor}"

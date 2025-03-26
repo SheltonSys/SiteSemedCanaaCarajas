@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">🔍 Conferência de Movimentação</h1>
+            <p class="text-muted">Aqui você pode verificar a conciliação entre lançamentos bancários e registros internos.</p>
+        </div>
+
+        <!-- Formulário de Conferência -->
+<div class="card shadow-lg border-0">
+    <div class="card-header bg-gradient-primary text-white">
+        <h2 class="h5 mb-0"><i class="fas fa-search-dollar"></i> Buscar Movimentação</h2>
+    </div>
+    <div class="card-body bg-light">
+        <form method="GET" id="form-conferencia">
+            <div class="row">
+                <div class="col-md-6">
+                    <label for="escola">Escolha a Escola:</label>
+                    <select id="escola" name="escola" class="form-control" required>
+                        <option value="" selected disabled>Selecione uma escola</option>
+                        {% for escola in escolas %}
+                            <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="conta_bancaria">Conta Bancária:</label>
+                    <select id="conta_bancaria" name="conta_bancaria" class="form-control" required>
+                        <option value="" selected disabled>Selecione uma conta</option>
+                        {% for conta in contas %}
+                            <option value="{{ conta.id }}">{{ conta.banco }} - Ag: {{ conta.agencia }} - Conta: {{ conta.conta }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label for="data_inicial">Data Inicial:</label>
+                    <input type="date" id="data_inicial" name="data_inicial" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="data_final">Data Final:</label>
+                    <input type="date" id="data_final" name="data_final" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="tipo_conferencia">Tipo de Conferência:</label>
+                    <select id="tipo_conferencia" name="tipo_conferencia" class="form-control" required>
+                        <option value="" selected disabled>Selecione</option>
+                        <option value="extrato_vs_lancamentos">Extrato Bancário vs Lançamentos</option>
+                        <option value="lancamentos_vs_pagamentos">Lançamentos vs Pagamentos Internos</option>
+                    </select>
+                </div>
+            </div>
+            <div class="text-end mt-3">
+                <button type="submit" id="btn-iniciar" class="btn btn-success shadow-sm">
+                    <i id="btn-icon" class="fas fa-search"></i> <span id="btn-text">Iniciar Conferência</span>
+                </button>
+                <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+        </form>
+        
+    </div>
+</div>
+
+<!-- Resultados da Conferência -->
+<div class="card shadow-lg border-0 mt-4">
+    <div class="card-header bg-gradient-primary text-white">
+        <h2 class="h5 mb-0"><i class="fas fa-file-invoice"></i> Resultados da Conferência</h2>
+    </div>
+    <div class="card-body bg-light">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="bg-primary text-white">
+                    <tr>
+                        <th>Data</th>
+                        <th>Descrição</th>
+                        <th>Escola</th>
+                        <th>Conta Bancária</th>
+                        <th>Valor (R$)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-conferencia">
+                    {% for item in conferencias %}
+                    <tr>
+                        <td>{{ item.data }}</td>
+                        <td>{{ item.descricao }}</td>
+                        <td>{{ item.escola }}</td>
+                        <td>{{ item.conta_bancaria }}</td>
+                
+                        <td class="text-right {% if item.status == 'Saída' %}text-danger fw-bold{% else %}text-success fw-bold{% endif %}">
+                            {% if item.status == 'Saída' %}
+                                -R$ {{ item.valor_lancamento|floatformat:2 }}
+                            {% else %}
+                                R$ {{ item.valor_lancamento|floatformat:2 }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.status == "Entrada" %}
+                                <span class="badge bg-success">Entrada</span>
+                            {% elif item.status == "Saída" %}
+                                <span class="badge bg-danger">Saída</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Indefinido</span>
+                            {% endif %}
+                        </td>
+                        
+                        
+                        
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">Nenhuma movimentação encontrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let escolaSelect = document.getElementById("escola");
+        let contaSelect = document.getElementById("conta_bancaria");
+        let tabelaConferencia = document.getElementById("tabela-conferencia");
+        let formConferencia = document.getElementById("form-conferencia");
+        let btnIniciar = document.getElementById("btn-iniciar");
+        let btnIcon = document.getElementById("btn-icon");
+        let btnText = document.getElementById("btn-text");
+
+        if (!escolaSelect || !contaSelect || !tabelaConferencia || !formConferencia || !btnIniciar) {
+            console.error("Erro: Um ou mais elementos do formulário não foram encontrados.");
+            return;
+        }
+
+        fetch("/api/escolas/")
+            .then(response => response.json())
+            .then(data => {
+                escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
+                if (data.escolas && data.escolas.length > 0) {
+                    data.escolas.forEach(escola => {
+                        escolaSelect.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
+                    });
+                }
+            })
+            .catch(error => console.error("❌ Erro ao carregar escolas:", error));
+
+        escolaSelect.addEventListener("change", function () {
+            let escolaId = this.value;
+            if (!escolaId) return;
+
+            contaSelect.innerHTML = '<option value="">Carregando contas...</option>';
+
+            fetch(`/api/contas/${escolaId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
+                    if (data.contas && data.contas.length > 0) {
+                        data.contas.forEach(conta => {
+                            contaSelect.innerHTML += `<option value="${conta.id}">${conta.banco} - Ag: ${conta.agencia} - Conta: ${conta.conta}</option>`;
+                        });
+                    }
+                })
+                .catch(error => console.error("❌ Erro ao carregar contas bancárias:", error));
+        });
+
+        formConferencia.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            let dataInicial = document.getElementById("data_inicial").value;
+            let dataFinal = document.getElementById("data_final").value;
+            let escolaId = escolaSelect.value;
+            let contaId = contaSelect.value;
+            let tipoConferencia = document.getElementById("tipo_conferencia").value;
+
+            if (!dataInicial || !dataFinal || !escolaId || !contaId || !tipoConferencia) {
+                alert("⚠️ Preencha todos os campos para iniciar a conferência.");
+                return;
+            }
+
+            btnIniciar.disabled = true;
+            btnIcon.classList.remove("fa-search");
+            btnIcon.classList.add("fa-spinner", "fa-spin");
+            btnText.innerText = "Carregando...";
+
+            tabelaConferencia.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Carregando...</td></tr>`;
+
+            fetch(`/api/conferencia/?data_inicial=${encodeURIComponent(dataInicial)}&data_final=${encodeURIComponent(dataFinal)}&escola=${encodeURIComponent(escolaId)}&conta=${encodeURIComponent(contaId)}&tipo=${encodeURIComponent(tipoConferencia)}`)
+                .then(response => response.json())
+                .then(data => {
+                    tabelaConferencia.innerHTML = "";
+
+                    if (data.conferencias && data.conferencias.length > 0) {
+                        data.conferencias.forEach(item => {
+                            const isDebito = item.tipo_raw === "debito";
+                            const valorAbsoluto = Math.abs(parseFloat(item.valor_lancamento)).toFixed(2);
+                            const valorFormatado = isDebito ? `-R$ ${valorAbsoluto}` : `R$ ${valorAbsoluto}`;
+                            const classeValor = isDebito ? "text-danger fw-bold" : "text-success fw-bold";
+
+                            const statusTexto = item.tipo_raw === "debito" ? "Saída" : "Entrada";
+                            const statusBadge = item.tipo_raw === "debito"
+                                ? '<span class="badge bg-danger">Saída</span>'
+                                : '<span class="badge bg-success">Entrada</span>';
+
+
+                            const row = `
+                                <tr>
+                                    <td>${item.data}</td>
+                                    <td>${item.descricao}</td>
+                                    <td>${item.escola}</td>
+                                    <td>${item.conta_bancaria}</td>
+                                    <td class="text-right ${classeValor}">${valorFormatado}</td>
+                                    <td>${statusBadge}</td>
+                                </tr>`;
+
+                            tabelaConferencia.innerHTML += row;
+                        });
+                    } else {
+                        tabelaConferencia.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhuma movimentação encontrada.</td></tr>`;
+                    }
+
+                    resetButton();
+                })
+                .catch(error => {
+                    console.error("❌ Erro ao buscar conferências:", error);
+                    tabelaConferencia.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erro ao carregar os dados.</td></tr>`;
+                    resetButton();
+                });
+        });
+
+        function resetButton() {
+            btnIniciar.disabled = false;
+            btnIcon.classList.remove("fa-spinner", "fa-spin");
+            btnIcon.classList.add("fa-search");
+            btnText.innerText = "Iniciar Conferência";
+        }
+    });
+</script>
+
+    
+
+{% endblock %}

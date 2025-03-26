@@ -1139,61 +1139,56 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content shadow-lg">
                 <!-- Cabeçalho -->
-                <div class="modal-header bg-primary text-white d-flex align-items-center justify-content-between">
+                <div class="modal-header bg-warning text-white d-flex align-items-center justify-content-between">
                     <div class="d-flex align-items-center">
                         <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
                             style="width: 80px; height: 50px;" class="me-3">
-                        <p class="modal-title flex-grow-1 text-center mb-0 text-align:center" id="anuncioModalLabel">
-                            Novidades em Destaque</p>
+                        <h5 class="modal-title flex-grow-1 text-center mb-0" id="anuncioModalLabel">
+                            Plano de Gestão Escolar - PGE
+                        </h5>
                     </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Fechar"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
                 </div>
 
-                <!-- Corpo -->
-                <div class="modal-body">
-                    <div class="text-center mb-4">
-                        <img src="{% static 'assets/dist/img/banner-atividades2.jpeg' %}" alt="Banner Atividades"
-                            class="img-fluid rounded" style="max-width: 50%; height: auto;">
-                    </div>
-                    <p class="text-center fs-5">Confira as novidades em <strong>SEMED Canaã dos
-                            Carajás</strong>:</p>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <i class="fas fa-calendar-alt text-primary"></i>
-                            <a href="{% url 'site_curriculos' %}" class="text-decoration-none text-dark" target="_blank">
-                                <strong>Banco de Currículos</strong> - Cadastre seu currículo.
-                            </a>
-                        </li>
+           <!-- Corpo -->
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <img src="{% static 'assets/dist/img/pge-banner.png' %}" alt="Banner PGE"
+                        class="img-fluid rounded" style="max-width: 70%; height: auto;">
+                </div>
 
-                        <li class="list-group-item">
-                            <i class="fas fa-calendar-check text-success"></i>
-                            <strong> Período de Diagnóstico</strong> 20 de Janeiro a 7 de Fevereiro de 2025.
-                        </li>
-                        <li class="list-group-item d-flex align-items-center">
-                            <img src="{% static 'assets/dist/img/samacc-icon.png' %}" alt="SAMACC"
-                                style="width: 18px; height: 18px; object-fit: contain; margin-right: 8px;">
-                            <strong>SAMACC</strong> - 17 a 21 de Fevereiro de 2025.
-                        </li>
-
-                    </ul>
+                <div class="alert alert-warning fs-5 border-2 border-warning" role="alert" style="text-align: justify;">
+                    <p class="mb-3">
+                        <strong>Diretores e Vice-Diretores:</strong> Atenção ao prazo!
+                    </p>
+                    <p>
+                        No máximo em <strong>49 (quarenta e nove) dias úteis</strong> após a sua nomeação, o Diretor e o Vice-Diretor deverão <strong>elaborar e encaminhar</strong>, com base no <strong>Anexo II do Edital 008/2023-SEMED/GS</strong>, o <strong>Plano de Gestão Escolar – PGE</strong> da unidade escolar à qual foram designados.
+                    </p>
+                    <p>
+                        O envio deve ser feito <strong>exclusivamente pela internet</strong>, acessando o site da Secretaria Municipal de Educação (SEMED) e clicando no banner do Plano de Gestão Escolar – PGE.
+                    </p>
                     <div class="text-center mt-4">
-                        <a href="#eventos" class="btn btn-outline-primary btn-lg">
-                            <i class="fas fa-arrow-right"></i> Saiba mais
+                        <a href="{% url 'site_pedagogico' %}" class="btn btn-primary btn-lg" target="_blank">
+                            <i class="fas fa-paper-plane"></i> Enviar Plano de Gestão Escolar
                         </a>
                     </div>
-                </div>
-
-                <!-- Rodapé -->
-                <div class="modal-footer bg-light">
-                    <p class="text-muted text-center w-100 m-0">
-                        © SEMED Canaã dos Carajás - Transformando a educação para um futuro melhor.
+                    <p class="mt-4 mb-0">
+                        Após análise da SEMED, o Diretor e o Vice-Diretor deverão apresentar o referido PGE.
                     </p>
                 </div>
             </div>
+
+            <!-- Rodapé -->
+            <div class="modal-footer bg-light">
+                <p class="text-muted text-center w-100 m-0">
+                    © SEMED Canaã dos Carajás - Transformando a educação para um futuro melhor.
+                </p>
+            </div>
         </div>
     </div>
+</div>
 
+    
     <script>
         document.addEventListener("DOMContentLoaded", function () {
             // Aguarda 5 segundos e exibe a modal

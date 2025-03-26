@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastro de Conta Bancária</h1>
+            <p class="text-muted">Vincule uma conta bancária a uma escola e gerencie os pagamentos de forma eficiente.</p>
+        </div>
+
+        <!-- FORMULÁRIO DE CRIAÇÃO DE CONTA -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-university"></i> Dados da Conta Bancária</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST" id="form-criar-conta">
+                    {% csrf_token %}
+                    <div class="row">
+                        
+                        <!-- Escolha da Escola -->
+                        <!-- Escolha da Escola -->
+                        <div class="col-md-6">
+                            <label for="escola">Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required onchange="atualizarConselho()">
+                                <option value="" selected disabled>Selecione uma escola</option>
+                                {% for escola in escolas %}
+                                    <option value="{{ escola.id }}" data-conselho="{{ escola.nome_conselho }}">{{ escola.nome }} ({{ escola.ano }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Conselho Vinculado -->
+                        <div class="col-md-6">
+                            <label for="conselho">Conselho Vinculado:</label>
+                            <input type="text" id="conselho" name="conselho" class="form-control" readonly>
+                        </div>
+
+                        <script>
+                            function atualizarConselho() {
+                                var escolaSelect = document.getElementById("escola");
+                                var conselhoInput = document.getElementById("conselho");
+                                var conselho = escolaSelect.options[escolaSelect.selectedIndex].getAttribute("data-conselho");
+                                conselhoInput.value = conselho || "Nenhum conselho vinculado";
+                            }
+                        </script>
+
+
+
+                        <!-- Banco -->
+                        <div class="col-md-6">
+                            <label for="banco">Banco:</label>
+                            <input type="text" id="banco" name="banco" class="form-control" required>
+                        </div>
+
+                        <!-- Agência -->
+                        <div class="col-md-6">
+                            <label for="agencia">Agência:</label>
+                            <input type="text" id="agencia" name="agencia" class="form-control" required>
+                        </div>
+
+                        <!-- Número da Conta -->
+                        <div class="col-md-6">
+                            <label for="conta">Número da Conta:</label>
+                            <input type="text" id="conta" name="conta" class="form-control" required>
+                        </div>
+
+                        <!-- Tipo de Conta -->
+                        <div class="col-md-6">
+                            <label for="tipo_conta">Tipo de Conta:</label>
+                            <select id="tipo_conta" name="tipo_conta" class="form-control" required>
+                                <option value="Corrente">Corrente</option>
+                                <option value="Poupança">Poupança</option>
+                            </select>
+                        </div>
+                        
+                        <!-- CNPJ (Preenchido automaticamente) -->
+                        <div class="col-md-6">
+                            <label for="cnpj">CNPJ:</label>
+                            <input type="text" id="cnpj" name="cnpj" class="form-control" readonly>
+                        </div>
+
+                        <!-- Endereço (Preenchido automaticamente) -->
+                        <div class="col-md-6">
+                            <label for="endereco">Endereço:</label>
+                            <input type="text" id="endereco" name="endereco" class="form-control" readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="municipio">Município:</label>
+                            <input type="text" id="municipio" name="municipio" class="form-control" readonly>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="uf">UF:</label>
+                            <input type="text" id="uf" name="uf" class="form-control" readonly>
+                        </div>
+
+                    </div>
+
+                    <!-- Botões -->
+                    <div class="text-end mt-4">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-save"></i> Criar Conta
+                        </button>
+
+                        <a href="{% url 'listar_contas' %}" class="btn btn-primary shadow-sm">
+                            <i class="fas fa-list"></i> Listar Contas
+                        </a>
+
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<br>
+
+<!-- SCRIPT PARA PREENCHER AUTOMATICAMENTE OS DADOS DA ESCOLA -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("escola").addEventListener("change", function () {
+            let escolaId = this.value;
+
+            if (escolaId) {
+                fetch(`/get-escola-pdde/${escolaId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById("cnpj").value = data.cnpj || "Não informado";
+                        document.getElementById("endereco").value = data.endereco ? data.endereco + ", " + data.bairro : "";
+                        document.getElementById("municipio").value = data.cidade || "";
+                        document.getElementById("uf").value = data.uf || "";
+                    })
+                    .catch(error => console.error("Erro ao buscar os dados da escola:", error));
+            }
+        });
+    });
+</script>
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let escolaSelect = document.getElementById("escola");
+        let conselhoInput = document.getElementById("conselho");
+
+        escolaSelect.addEventListener("change", function () {
+            let selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
+            let conselho = selectedOption.getAttribute("data-conselho") || "Não informado";
+            conselhoInput.value = conselho;
+        });
+    });
+</script>
+
+{% endblock %}

@@ -13,3 +13,9 @@ def get_item(dictionary, key):
     Retorna o valor de um dicionário para uma chave específica.
     """
     return dictionary.get(key, '')
+
+
+@register.filter
+def sub(value, arg):
+    """ Subtrai dois valores """
+    return value - arg

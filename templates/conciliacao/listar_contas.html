@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Contas Bancárias Cadastradas</h1>
+            <p class="text-muted">Lista de todas as contas bancárias vinculadas às escolas no sistema.</p>
+        </div>
+
+        <!-- TABELA DE CONTAS BANCÁRIAS -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0"><i class="fas fa-university"></i> Contas Bancárias</h2>
+                <a href="{% url 'nova_conta' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus-circle"></i> Nova Conta
+                </a>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>#</th>
+                                <th>Banco</th>
+                                <th>Agência</th>
+                                <th>Conta</th>
+                                <th>Tipo</th>
+                                <th>Escola</th>
+                                <th>Conselho</th> <!-- Nova coluna para o nome do conselho -->
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for conta in contas %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ conta.banco }}</td>
+                                <td>{{ conta.agencia }}</td>
+                                <td>{{ conta.conta }}</td>
+                                <td>{{ conta.tipo_conta }}</td>
+                                <td>{{ conta.escola.nome }}</td>
+                                <td>{{ conta.conselho|default:"Não informado" }}</td> <!-- Exibe o nome do conselho ou "Não informado" se estiver em branco -->
+                                <td class="text-center">
+                                    <a href="{% url 'editar_conta' conta.id %}" class="btn btn-warning btn-sm shadow-sm">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </a>
+                                    <button class="btn btn-danger btn-sm shadow-sm" data-toggle="modal" 
+                                            data-target="#confirmDeleteModal" data-conta-id="{{ conta.id }}">
+                                        <i class="fas fa-trash-alt"></i> Excluir
+                                    </button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Nenhuma conta bancária cadastrada.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de navegação -->
+        <div class="text-end mt-4">
+            <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+        </div>
+
+    </div>
+</div>
+
+<br>
+
+<!-- Modal de Confirmação -->
+<!-- Modal de Confirmação -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="confirmDeleteLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza de que deseja excluir a seguinte conta bancária?</p>
+                <p><strong>Banco:</strong> <span id="modalBanco"></span></p>
+                <p><strong>Agência:</strong> <span id="modalAgencia"></span></p>
+                <p><strong>Conta:</strong> <span id="modalConta"></span></p>
+                <p class="text-danger"><i class="fas fa-exclamation-circle"></i> Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- SCRIPT PARA ATUALIZAR O MODAL COM OS DADOS DA CONTA -->
+<script>
+   document.addEventListener("DOMContentLoaded", function () {
+    $('#confirmDeleteModal').on('show.bs.modal', function (event) {
+        let button = $(event.relatedTarget);  // Botão que acionou o modal
+        let contaId = button.data('conta-id');  
+        let banco = button.data('banco') || "Não informado";  
+        let agencia = button.data('agencia') || "Não informado";  
+        let conta = button.data('conta') || "Não informado";  
+
+        // Atualiza os campos do modal
+        document.getElementById("modalBanco").innerText = banco;
+        document.getElementById("modalAgencia").innerText = agencia;
+        document.getElementById("modalConta").innerText = conta;
+
+        // Define a ação do formulário para excluir a conta corretamente
+        let deleteForm = document.getElementById("deleteForm");
+        deleteForm.action = `/banco-curriculos/contas/excluir/${contaId}/`;
+    });
+});
+
+</script>
+
+{% endblock %}

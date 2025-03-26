@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">TERMO DE DOAÇÃO</h1>
+            <p class="text-muted">Documento oficial da transferência de bens adquiridos com recursos do PDDE.</p>
+        </div>
+
+        <!-- Card do Termo -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-file-signature"></i> Declaração de Doação</h2>
+            </div>
+
+            <div class="card-body bg-light">
+                <!-- Texto -->
+                <p class="mb-4">
+                    Pelo presente instrumento a(o) <strong>{{ termo.conselho }}</strong> da Escola <strong>{{ termo.escola.nome }}</strong> faz, em conformidade com a legislação aplicável ao Programa <strong>PDDE</strong> e demais normas pertinentes à matéria, a doação do(s) bem(ns), conforme discriminado(s) abaixo, adquirido(s) ou produzido(s) com recursos do referido Programa, ao(à) <strong>SECRETARIA MUNICIPAL DE EDUCAÇÃO DE CANAÃ DOS CARAJÁS - PARÁ</strong>, para que seja(m) tombado(s) e incorporado(s) ao seu patrimônio público e destinado(s) à escola acima identificada, à qual cabe a responsabilidade pela guarda e conservação do(s) mesmo(s).
+                </p>
+
+                <!-- Tabela de Bens -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover table-bordered text-center">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>N.º ORD</th>
+                                <th>DESCRIÇÃO DO BEM</th>
+                                <th>QUANT.</th>
+                                <th>NOTA FISCAL (Nº)</th>
+                                <th>DATA</th>
+                                <th>VALOR UNITÁRIO (R$)</th>
+                                <th>VALOR TOTAL (R$)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in bens %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ item.descricao }}</td>
+                                <td>{{ item.quantidade }}</td>
+                                <td>{{ item.numero_nota }}</td>
+                                <td>{{ item.data_nota|date:"d/m/Y" }}</td>
+                                <td>R$ {{ item.valor_unitario|floatformat:2 }}</td>
+                                <td>R$ {{ item.valor_total|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Nenhum bem informado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td colspan="6" class="text-end">TOTAL GERAL:</td>
+                                <td>R$ {{ total_geral|floatformat:2 }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Rodapé -->
+                <div class="text-end mt-5">
+                    <p class="fw-bold">Canaã dos Carajás - PA, {{ termo.data_emissao|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="text-end mt-4">
+            <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <a href="{% url 'gerar_pdf_termo_doacao' termo.id %}" target="_blank" class="btn btn-primary shadow-sm">
+                <i class="fas fa-file-pdf"></i> Gerar PDF
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <!-- Título e Introdução -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 text-primary fw-bold">Gestão de Escolas PDDE</h1>
+        <p class="lead text-secondary">Gerencie, visualize e explore as escolas cadastradas de forma dinâmica e eficiente.</p>
+    </div>
+
+    <!-- Barra de Ações -->
+    <div class="row mb-4">
+        <div class="col-lg-9">
+            <div class="input-group shadow-sm">
+                <input type="text" class="form-control" placeholder="Pesquisar escola..." id="pesquisa">
+                <button class="btn btn-primary" type="button" onclick="filtrarEscolas()">
+                    <i class="fas fa-search"></i> Pesquisar
+                </button>
+            </div>
+        </div>
+        <div class="col-lg-3 text-lg-end text-center mt-lg-0 mt-3">
+            <a href="{% url 'adicionar_escola_pdde' %}" class="btn btn-success shadow-sm">
+                <i class="fas fa-plus-circle"></i> Nova Escola PDDE
+            </a>
+        </div>
+    </div>
+
+    <!-- Indicadores Dinâmicos -->
+    <div class="row mb-5 justify-content-center">
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="card-title fw-bold text-primary">Total de Escolas</h6>
+                    <p class="display-6 fw-bold">{{ total_escolas }}</p>
+                    <i class="fas fa-school fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="card-title fw-bold text-primary">Escolas Urbanas</h6>
+                    <p class="display-6 fw-bold">{{ total_urbanas }}</p>
+                    <i class="fas fa-city fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="card-title fw-bold text-primary">Escolas Rurais</h6>
+                    <p class="display-6 fw-bold">{{ total_rurais }}</p>
+                    <i class="fas fa-tractor fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="card-title fw-bold text-primary">Ensino Fundamental</h6>
+                    <p class="display-6 fw-bold">{{ total_ensino_fundamental }}</p>
+                    <i class="fas fa-book fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="card-title fw-bold text-primary">Ensino Médio</h6>
+                    <p class="display-6 fw-bold">{{ total_ensino_medio }}</p>
+                    <i class="fas fa-graduation-cap fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-center">
+                    <h6 class="card-title fw-bold text-primary">Educação Infantil</h6>
+                    <p class="display-6 fw-bold">{{ total_educacao_infantil }}</p>
+                    <i class="fas fa-child fa-2x text-secondary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+
+
+    <!-- Tabela de Escolas -->
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle table-striped" id="tabela-escolas">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col">Nome</th>
+                    <th scope="col">Localização</th>
+                    <th scope="col">Zona</th>
+                    <th scope="col">Ensino</th>
+                    <th scope="col">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for escola in escolas %}
+                <tr>
+                    <td>{{ escola.nome }}</td>
+                    <td>{{ escola.endereco }}, {{ escola.bairro }} - {{ escola.cidade }}/{{ escola.uf }}</td>
+                    <td>{{ escola.zona }}</td>
+                    <td>{{ escola.ensino }}</td>
+                    <td>
+                        <a href="{% url 'detalhes_escola_pdde' escola.id %}" class="btn btn-outline-primary btn-sm">Detalhes</a>
+                        <a href="{% url 'editar_escola' escola.id %}" class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        
+                        
+                        <a href="{% url 'excluir_escola_pdde' escola.id %}" class="btn btn-outline-danger btn-sm"
+                           onclick="return confirm('Tem certeza que deseja excluir esta escola?');">
+                            Excluir
+                        </a>
+                    </td>
+                    
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted">Nenhuma escola cadastrada.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            
+        </table>
+    </div>
+</div>
+
+<!-- Modal Exclusão -->
+<script>
+    function confirmDeletion(id) {
+        if (confirm("Tem certeza que deseja excluir esta escola?")) {
+            window.location.href = "/banco-curriculos/excluir-escola/" + id + "/";
+        }
+    }
+
+    function filtrarEscolas() {
+        let input = document.getElementById("pesquisa").value.toLowerCase();
+        let tabela = document.getElementById("tabela-escolas");
+        let linhas = tabela.getElementsByTagName("tr");
+
+        for (let i = 1; i < linhas.length; i++) {
+            let colunas = linhas[i].getElementsByTagName("td");
+            if (colunas.length > 0) {
+                let nomeEscola = colunas[0].textContent.toLowerCase();
+                if (nomeEscola.includes(input)) {
+                    linhas[i].style.display = "";
+                } else {
+                    linhas[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
+
+<!-- Estilos Customizados -->
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
+    .table-hover tbody tr:hover {
+        background-color: #f1f1f1;
+    }
+    .btn-outline-primary:hover {
+        background-color: #007bff;
+        color: white;
+    }
+    .btn-outline-warning:hover {
+        background-color: #ffc107;
+        color: white;
+    }
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+</style>
+{% endblock %}

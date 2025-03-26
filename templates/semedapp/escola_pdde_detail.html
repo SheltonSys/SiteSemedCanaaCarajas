@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Detalhes da Escola PDDE</h1>
+            <p class="text-muted">Visualize as informações cadastradas da escola.</p>
+        </div>
+
+        <!-- Informações da Escola -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-school"></i> Informações Gerais</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nome:</strong> {{ escola.nome }}</p>
+                        <p><strong>Endereço:</strong> {{ escola.endereco }}</p>
+                        <p><strong>Bairro:</strong> {{ escola.bairro }}</p>
+                        <p><strong>Cidade/UF:</strong> {{ escola.cidade }} / {{ escola.uf }}</p>
+                        <p><strong>Zona:</strong> {{ escola.zona }}</p>
+                        <p><strong>Código INEP:</strong> {{ escola.codigo_inep }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>CNPJ:</strong> {{ escola.cnpj }}</p>
+                        <p><strong>Dependência Administrativa:</strong> {{ escola.dependencia_administrativa }}</p>
+                        <p><strong>Status:</strong> {{ escola.status }}</p>
+                        <p><strong>Ano:</strong> {{ escola.ano }}</p>
+                        <p><strong>Nome do Conselho:</strong> {{ escola.nome_conselho }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estrutura da Escola -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-building"></i> Estrutura da Escola</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="row">
+                    <div class="col-md-3"><p><strong>Salas:</strong> {{ escola.quantidade_salas }}</p></div>
+                    <div class="col-md-3"><p><strong>Turmas:</strong> {{ escola.quantidade_turmas }}</p></div>
+                    <div class="col-md-3"><p><strong>Professores:</strong> {{ escola.quantidade_professores }}</p></div>
+                    <div class="col-md-3"><p><strong>Alunos:</strong> {{ escola.quantidade_alunos }}</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nível de Ensino -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-book"></i> Nível de Ensino</h2>
+            </div>
+            <div class="card-body bg-light">
+                <p><strong>Ensino:</strong> {{ escola.ensino }}</p>
+            </div>
+        </div>
+
+        <!-- Programas Vinculados -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-list"></i> Programas Vinculados</h2>
+            </div>
+            <div class="card-body bg-light">
+                {% if escola.programas.all %}
+                    <ul>
+                        {% for programa in escola.programas.all %}
+                            <li>{{ programa.nome }}</li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">Nenhum programa vinculado.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Procuração e Validade -->
+        <div class="card shadow-lg border-0 mt-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-file-alt"></i> Procuração</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Validade:</strong> 
+                            {% if escola.validade_procuracao %}
+                                {{ escola.validade_procuracao|date:"d/m/Y" }}
+                            {% else %}
+                                <span class="text-muted">Não cadastrada</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Arquivo:</strong> 
+                            {% if escola.procuracao %}
+                                <a href="{{ escola.procuracao.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Ver
+                                </a>
+                                <span class="text-muted small">{{ escola.procuracao.name|cut:"procuracoes/" }}</span>
+                            {% else %}
+                                <span class="text-muted">Nenhum arquivo cadastrado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões -->
+        <div class="text-end mt-4">
+            <a href="{% url 'lista_escolas_pdde' %}" class="btn btn-secondary shadow-sm">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </a>
+            <a href="{% url 'editar_escola_pdde' escola.id %}" class="btn btn-warning shadow-sm">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            <a href="{% url 'excluir_escola_pdde' escola.id %}" class="btn btn-danger shadow-sm"
+               onclick="return confirm('Tem certeza que deseja excluir esta escola?');">
+                <i class="fas fa-trash-alt"></i> Excluir
+            </a>
+        </div>
+    </div>
+</div>
+
+<br><br>
+{% endblock %}
+
+<!-- Estilos customizados -->
+<style>
+    .content-wrapper {
+        margin-left: 0;
+        padding: 20px;
+    }
+    .btn {
+        font-size: 1rem;
+    }
+    .form-label {
+        font-weight: bold;
+    }
+</style>

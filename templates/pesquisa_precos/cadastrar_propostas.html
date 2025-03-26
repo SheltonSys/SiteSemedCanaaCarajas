@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">{{ titulo }}</h1>
+            <p class="text-muted">{{ descricao }}</p>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-edit"></i> Configuração da Pesquisa de Preço</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form id="form_propostas" method="POST">
+                    {% csrf_token %}
+
+                    <!-- Seleção de Proponentes -->
+                    <div class="mb-3">
+                        <label class="fw-bold">Selecionar Proponentes:</label>
+                        <div class="d-flex flex-wrap">
+                            {% for proponente in proponentes %}
+                                <div class="form-check me-3">
+                                    <input class="form-check-input proponente-checkbox" type="checkbox" id="proponente_{{ proponente.id }}" value="{{ proponente.id }}">
+                                    <label class="form-check-label" for="proponente_{{ proponente.id }}">{{ proponente.nome }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Seleção de Itens -->
+                    <div class="mb-3">
+                        <label class="fw-bold">Selecionar Itens:</label>
+                        <div class="d-flex flex-wrap">
+                            {% for item in itens %}
+                                <div class="form-check me-3">
+                                    <input class="form-check-input item-checkbox" type="checkbox" id="item_{{ item.id }}" value="{{ item.id }}">
+                                    <label class="form-check-label" for="item_{{ item.id }}">{{ item.nome }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Tabela Dinâmica -->
+                    <div id="empresas-container">
+                        {% for proponente in proponentes %}
+                            <div class="card shadow-lg border-0 mt-4" id="card-proponente-{{ proponente.id }}" style="display: none;">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">{{ proponente.nome }}</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Item</th>
+                                                <th>Unidade</th>
+                                                <th>Quantidade</th>
+                                                <th>Valor Unitário</th>
+                                                <th>Valor Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-body-{{ proponente.id }}">
+                                            <tr>
+                                                <td colspan="5" class="text-center text-muted">Nenhum item selecionado.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-3">
+                        <a href="{% url 'gerar_pdf_orcamento' %}" class="btn btn-danger">
+                            <i class="fas fa-file-pdf"></i> Gerar PDF
+                        </a>
+                        <a href="{% url 'gerar_excel_orcamento' %}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Gerar Excel
+                        </a>
+                        <button type="button" id="btn_salvar" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Propostas
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+
+        <br>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Atualiza as tabelas conforme os checkboxes são selecionados/deselecionados
+    function atualizarTabela() {
+        let selecionadosItens = document.querySelectorAll(".item-checkbox:checked");
+        let selecionadosProponentes = document.querySelectorAll(".proponente-checkbox:checked");
+
+        // Oculta todas as tabelas das empresas inicialmente
+        document.querySelectorAll("[id^='card-proponente-']").forEach(card => {
+            card.style.display = "none";
+        });
+
+        if (selecionadosItens.length === 0 || selecionadosProponentes.length === 0) {
+            return;
+        }
+
+        selecionadosProponentes.forEach(proponente => {
+            let proponenteId = proponente.value;
+            let tableBody = document.getElementById(`table-body-${proponenteId}`);
+            let cardProponente = document.getElementById(`card-proponente-${proponenteId}`);
+
+            // Mostra a empresa
+            if (cardProponente) {
+                cardProponente.style.display = "block";
+            }
+
+            // Limpa a tabela antes de preencher
+            tableBody.innerHTML = "";
+
+            selecionadosItens.forEach(item => {
+                let tr = document.createElement("tr");
+
+                let tdNome = document.createElement("td");
+                tdNome.textContent = item.nextElementSibling.textContent;
+                tr.appendChild(tdNome);
+
+                let tdUnidade = document.createElement("td");
+                tdUnidade.textContent = "Unidade";
+                tr.appendChild(tdUnidade);
+
+                let tdQuantidade = document.createElement("td");
+                let inputQuantidade = document.createElement("input");
+                inputQuantidade.setAttribute("type", "number");
+                inputQuantidade.setAttribute("min", "1");
+                inputQuantidade.classList.add("form-control", "quantidade-input");
+                inputQuantidade.setAttribute("data-item", item.value);
+                inputQuantidade.setAttribute("data-proponente", proponenteId);
+                inputQuantidade.addEventListener("input", calcularValorTotal);
+                tdQuantidade.appendChild(inputQuantidade);
+                tr.appendChild(tdQuantidade);
+
+                let tdPreco = document.createElement("td");
+                let inputPreco = document.createElement("input");
+                inputPreco.setAttribute("type", "number");
+                inputPreco.setAttribute("step", "0.01");
+                inputPreco.setAttribute("min", "0");
+                inputPreco.classList.add("form-control", "preco-input");
+                inputPreco.setAttribute("data-item", item.value);
+                inputPreco.setAttribute("data-proponente", proponenteId);
+                inputPreco.addEventListener("input", calcularValorTotal);
+                tdPreco.appendChild(inputPreco);
+                tr.appendChild(tdPreco);
+
+                let tdTotal = document.createElement("td");
+                let inputTotal = document.createElement("input");
+                inputTotal.setAttribute("type", "text");
+                inputTotal.setAttribute("readonly", "true");
+                inputTotal.classList.add("form-control", "total-input");
+                inputTotal.setAttribute("data-item", item.value);
+                inputTotal.setAttribute("data-proponente", proponenteId);
+                tdTotal.appendChild(inputTotal);
+                tr.appendChild(tdTotal);
+
+                tableBody.appendChild(tr);
+            });
+        });
+    }
+
+    // Calcula o valor total automaticamente
+    function calcularValorTotal() {
+        let itemId = this.getAttribute("data-item");
+        let proponenteId = this.getAttribute("data-proponente");
+        let quantidade = document.querySelector(`.quantidade-input[data-item="${itemId}"][data-proponente="${proponenteId}"]`)?.value || 1;
+        let preco = document.querySelector(`.preco-input[data-item="${itemId}"][data-proponente="${proponenteId}"]`)?.value || 0;
+        let total = (parseFloat(quantidade) * parseFloat(preco)).toFixed(2);
+
+        let inputTotal = document.querySelector(`.total-input[data-item="${itemId}"][data-proponente="${proponenteId}"]`);
+        if (inputTotal) {
+            inputTotal.value = isNaN(total) ? "0.00" : total;
+        }
+    }
+
+    // Eventos para atualização dinâmica
+    document.querySelectorAll(".proponente-checkbox, .item-checkbox").forEach(checkbox => {
+        checkbox.addEventListener("change", atualizarTabela);
+    });
+
+    // Função para salvar propostas via AJAX
+    document.getElementById("btn_salvar").addEventListener("click", function () {
+        let propostas = [];
+
+        document.querySelectorAll(".preco-input").forEach(input => {
+            let itemId = input.getAttribute("data-item");
+            let proponenteId = input.getAttribute("data-proponente");
+            let preco = input.value;
+            let quantidade = document.querySelector(`.quantidade-input[data-item="${itemId}"][data-proponente="${proponenteId}"]`)?.value || 1;
+            let total = document.querySelector(`.total-input[data-item="${itemId}"][data-proponente="${proponenteId}"]`)?.value || 0;
+
+            if (preco && quantidade) {
+                propostas.push({
+                    "item_id": itemId,
+                    "proponente_id": proponenteId,
+                    "preco_unitario": preco,
+                    "quantidade": quantidade,
+                    "valor_total": total
+                });
+            }
+        });
+
+        if (propostas.length === 0) {
+            alert("Nenhuma proposta inserida.");
+            return;
+        }
+
+        console.log("📌 Enviando propostas:", JSON.stringify(propostas));  // LOG PARA DEPURAÇÃO
+
+        fetch("{% url 'cadastrar_propostas' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify({ "propostas": propostas })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            location.reload();
+        })
+        .catch(error => console.error("Erro ao salvar propostas:", error));
+    });
+});
+
+
+
+
+</script>
+
+{% endblock %}

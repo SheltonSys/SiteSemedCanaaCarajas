@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <title>Novo Relatório - PDDE</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 25mm 20mm 25mm 20mm;
+        }
+
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 12px;
+            color: #000;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 16px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .header h2 {
+            font-size: 14px;
+            margin-top: 5px;
+            padding: 5px;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        .identificacao {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #000;
+            font-size: 12px;
+        }
+
+        table { 
+            width: 100%; 
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 12px;
+        }
+
+        th, td { 
+            border: 1px solid black; 
+            padding: 8px; 
+            text-align: left;
+        }
+
+        th {
+            background-color: #d9d9d9;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .text-center { 
+            text-align: center;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Fundo Nacional de Desenvolvimento da Educação</h1>
+        <h2>NOVO Relatório de Execução - PDDE</h2>
+    </div>
+
+    <div class="identificacao">
+        <p><strong>Entidade Executora:</strong> {{ entidade }}</p>
+        <p><strong>CNPJ:</strong> {{ cnpj }}</p>
+        <p><strong>Município:</strong> {{ municipio }}</p>
+        <p><strong>Estado:</strong> {{ estado }}</p>
+        <p><strong>Período:</strong> {{ periodo }}</p>
+    </div>
+
+    <h2>1. Escolas</h2>
+    <table>
+        <tr>
+            <th>ID</th>
+            <th>Nome da Escola</th>
+        </tr>
+        {% for escola in escolas %}
+        <tr>
+            <td>{{ escola.id }}</td>
+            <td>{{ escola.nome }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</body>
+</html>

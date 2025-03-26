@@ -1,0 +1,246 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Cadastrar Item</h1>
+            <p class="text-muted">Preencha os dados do item para inclusão no sistema.</p>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-box"></i> Informações do Item</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="row">
+                        <!-- Nome do Item -->
+                        <div class="col-md-6">
+                            <label for="nome">Nome do Item:</label>
+                            <input type="text" id="nome" name="nome" class="form-control" required>
+                        </div>
+
+                        <!-- Unidade de Medida -->
+                        <div class="col-md-6">
+                            <label for="unidade_medida">Unidade de Medida:</label>
+                            <select id="unidade_medida" name="unidade_medida" class="form-control" required>
+                                <option value="" selected disabled>Selecione...</option>
+                                <option value="Unidade">Unidade</option>
+                                <option value="Metro">Metro</option>
+                                <option value="Litro">Litro</option>
+                                <option value="Quilograma">Quilograma</option>
+                            </select>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="col-md-6">
+                            <label for="categoria">Categoria:</label>
+                            <div class="input-group">
+                                <select id="categoria" name="categoria" class="form-control" required>
+                                    <option value="" selected disabled>Selecione...</option>
+                                    {% for categoria in categorias %}
+                                        <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalCategoria">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Subcategoria -->
+                        <div class="col-md-6">
+                            <label for="subcategoria">Subcategoria:</label>
+                            <div class="input-group">
+                                <select id="subcategoria" name="subcategoria" class="form-control" required>
+                                    <option value="" selected disabled>Selecione uma categoria primeiro</option>
+                                </select>
+                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalSubcategoria">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="col-md-12">
+                            <label for="descricao">Descrição:</label>
+                            <textarea id="descricao" name="descricao" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL PARA CADASTRO DE CATEGORIA -->
+<div class="modal fade" id="modalCategoria" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Cadastrar Nova Categoria</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="novaCategoria" class="form-control" placeholder="Nome da nova categoria">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="cadastrarCategoria()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA CADASTRO DE SUBCATEGORIA -->
+<div class="modal fade" id="modalSubcategoria" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Cadastrar Nova Subcategoria</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <select id="categoriaParaSubcategoria" class="form-control">
+                    <option value="" selected disabled>Selecione a categoria</option>
+                    {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" id="novaSubcategoria" class="form-control mt-2" placeholder="Nome da nova subcategoria">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="cadastrarSubcategoria()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- MODAL DE CONFIRMAÇÃO -->
+<div class="modal fade" id="modalConfirmacao" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Sucesso!</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>O item foi cadastrado com sucesso!</p>
+            </div>
+            <div class="modal-footer">
+                <a href="{% url 'listar_item' %}" class="btn btn-primary">Ver Lista de Itens</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script para Atualizar Subcategorias -->
+<script>
+    document.getElementById("categoria").addEventListener("change", function () {
+        let categoriaId = this.value;
+        let subcategoriaSelect = document.getElementById("subcategoria");
+
+        subcategoriaSelect.innerHTML = '<option value="" selected disabled>Carregando...</option>';
+
+        fetch(`/get-subcategorias/${categoriaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                subcategoriaSelect.innerHTML = '<option value="" selected disabled>Selecione...</option>';
+                data.subcategorias.forEach(subcategoria => {
+                    let option = document.createElement("option");
+                    option.value = subcategoria.id;
+                    option.textContent = subcategoria.nome;
+                    subcategoriaSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Erro ao carregar subcategorias:", error));
+    });
+
+    function cadastrarCategoria() {
+        let nomeCategoria = document.getElementById("novaCategoria").value;
+        if (!nomeCategoria) return;
+
+        fetch('/cadastrar-categoria/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ nome: nomeCategoria })
+        })
+        .then(response => response.json())
+        .then(data => {
+            let categoriaSelect = document.getElementById("categoria");
+            let option = document.createElement("option");
+            option.value = data.id;
+            option.textContent = data.nome;
+            categoriaSelect.appendChild(option);
+            $('#modalCategoria').modal('hide');
+        });
+    }
+
+    function cadastrarSubcategoria() {
+        let categoriaId = document.getElementById("categoriaParaSubcategoria").value;
+        let nomeSubcategoria = document.getElementById("novaSubcategoria").value;
+        if (!categoriaId || !nomeSubcategoria) return;
+
+        fetch('/cadastrar-subcategoria/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ nome: nomeSubcategoria, categoria_id: categoriaId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            $('#modalSubcategoria').modal('hide');
+        });
+    }
+</script>
+
+
+
+<!-- Script para exibir a modal após cadastro -->
+<script>
+    document.getElementById("formCadastro").addEventListener("submit", function(event) {
+        event.preventDefault(); // Impede o envio padrão do formulário
+        
+        let formData = new FormData(this);
+
+        fetch("{% url 'cadastrar_item' %}", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $("#modalConfirmacao").modal("show"); // Exibe a modal de sucesso
+                document.getElementById("formCadastro").reset(); // Limpa o formulário
+            }
+        })
+        .catch(error => console.error("Erro ao cadastrar item:", error));
+    });
+</script>
+
+{% endblock %}

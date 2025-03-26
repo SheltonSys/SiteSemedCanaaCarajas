@@ -1,0 +1,23 @@
+<h2 style="text-align: center;">Relatório de Conciliação Bancária</h2>
+<table border="1" width="100%" cellspacing="0" cellpadding="6">
+    <thead style="background-color: #f0f0f0;">
+        <tr>
+            <th>Banco</th>
+            <th>Agência</th>
+            <th>Conta</th>
+            <th>Saldo Corrigido</th>
+            <th>Conselho</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for conta in contas %}
+        <tr>
+            <td>{{ conta.banco }}</td>
+            <td>{{ conta.agencia }}</td>
+            <td>{{ conta.conta }}</td>
+            <td>R$ {{ conta.saldo_corrigido|floatformat:2 }}</td>
+            <td>{{ conta.escola.nome_conselho }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

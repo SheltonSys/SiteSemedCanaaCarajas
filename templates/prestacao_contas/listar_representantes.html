@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Representantes Legais</h1>
+            <p class="text-muted">Veja abaixo os representantes legais cadastrados para cada escola.</p>
+        </div>
+
+        <!-- Lista de Representantes -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0"><i class="fas fa-user-tie"></i> Lista de Representantes</h2>
+                <a href="{% url 'cadastrar_representante' %}" class="btn btn-light btn-sm">
+                    <i class="fas fa-plus"></i> Novo Representante
+                </a>
+            </div>
+            <div class="card-body bg-light">
+                <table class="table table-bordered table-hover table-sm">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>Nome</th>
+                            <th>CPF</th>
+                            <th>Telefone</th>
+                            <th>Email</th>
+                            <th>Escola</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in representantes %}
+                            <tr>
+                                <td>{{ r.nome }}</td>
+                                <td>{{ r.cpf }}</td>
+                                <td>{{ r.telefone }}</td>
+                                <td>{{ r.email }}</td>
+                                <td>{{ r.escola.nome }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">Nenhum representante cadastrado.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="text-end mt-3">
+                    <a href="{% url 'pdde' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

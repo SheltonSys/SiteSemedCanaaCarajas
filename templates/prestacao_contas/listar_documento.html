@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Documentos Cadastrados</h1>
+            <p class="text-muted">Visualize os documentos enviados pelas escolas vinculadas ao PDDE.</p>
+        </div>
+
+        <!-- Lista de Documentos -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-folder-open"></i> Lista de Documentos</h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover align-middle text-center">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>Número</th>
+                                <th>Tipo</th>
+                                <th>Escola</th>
+                                <th>Data de Emissão</th>
+                                <th>Valor Total (R$)</th>
+                                <th>Arquivo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documentos %}
+                            <tr>
+                                <td>{{ doc.numero }}</td>
+                                <td>{{ doc.get_tipo_display }}</td>
+                                <td>{{ doc.escola.nome }}</td>
+                                <td>{{ doc.data_emissao|date:"d/m/Y" }}</td>
+                                <td>R$ {{ doc.valor_total|floatformat:2|default:"0,00" }}</td>
+                                <td>
+                                    {% if doc.arquivo %}
+                                    <a href="{{ doc.arquivo.url }}" class="btn btn-sm btn-success" target="_blank">
+                                        <i class="fas fa-download"></i> Baixar
+                                    </a>
+                                    {% else %}
+                                    <span class="text-muted">Nenhum</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Nenhum documento cadastrado ainda.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="text-end mt-3">
+                    <a href="{% url 'cadastrar_documento' %}" class="btn btn-primary shadow-sm">
+                        <i class="fas fa-plus"></i> Novo Documento
+                    </a>
+                    <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
