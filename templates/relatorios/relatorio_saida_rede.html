@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Saída - SAMACC</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        h2, h3 { color: #004080; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid #999; padding: 6px; text-align: center; }
+        th { background-color: #f0f4f8; }
+    </style>
+</head>
+<body>
+    <h1>📊 RELATÓRIO - SAMACC 2025</h1>
+
+    {% for unidade in resultado_por_unidade %}
+        <h2>{{ unidade.unidade }}</h2>
+        <p><strong>Total de Alunos:</strong> {{ unidade.total_nei }}</p>
+        <p><strong>% Participação Matemática:</strong> {{ unidade.participacao_matematica }}%</p>
+        <p><strong>% Participação Linguagem:</strong> {{ unidade.participacao_linguagem }}%</p>
+
+        <h3>🧮 Matemática</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Questão</th>
+                    <th>CERTO</th>
+                    <th>ERRADO</th>
+                    <th>PARCIAL</th>
+                    <th>BRANCO</th>
+                    <th>LAUDO</th>
+                    <th>FALTOU</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i, dados in unidade.dados_matematica.items %}
+                <tr>
+                    <td>{{ i }}</td>
+                    <td>{{ dados.CERTO }}</td>
+                    <td>{{ dados.ERRADO }}</td>
+                    <td>{{ dados.PARCIAL }}</td>
+                    <td>{{ dados.BRANCO }}</td>
+                    <td>{{ dados.LAUDO }}</td>
+                    <td>{{ dados.FALTOU }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>📚 Linguagem</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Questão</th>
+                    <th>CERTO</th>
+                    <th>ERRADO</th>
+                    <th>PARCIAL</th>
+                    <th>BRANCO</th>
+                    <th>LAUDO</th>
+                    <th>FALTOU</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i, dados in unidade.dados_linguagem.items %}
+                <tr>
+                    <td>{{ i|add:"-11" }}</td> <!-- transforma 12 em 1, 14 em 3 etc -->
+                    <td>{{ dados.CERTO }}</td>
+                    <td>{{ dados.ERRADO }}</td>
+                    <td>{{ dados.PARCIAL }}</td>
+                    <td>{{ dados.BRANCO }}</td>
+                    <td>{{ dados.LAUDO }}</td>
+                    <td>{{ dados.FALTOU }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>📌 Modalidades Identificadas</h3>
+
+        <h4>🟢 Questão 1 de Linguagem (Q11)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>CC</th>
+                    <th>SC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ unidade.modalidades_q11.CC }}</td>
+                    <td>{{ unidade.modalidades_q11.SC }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>🔵 Questão 3 de Linguagem (Q13)</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>PSI</th>
+                    <th>PSII</th>
+                    <th>SSVS</th>
+                    <th>SCVS</th>
+                    <th>SA</th>
+                    <th>ALF</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ unidade.modalidades_q13.PSI }}</td>
+                    <td>{{ unidade.modalidades_q13.PSII }}</td>
+                    <td>{{ unidade.modalidades_q13.SSVS }}</td>
+                    <td>{{ unidade.modalidades_q13.SCVS }}</td>
+                    <td>{{ unidade.modalidades_q13.SA }}</td>
+                    <td>{{ unidade.modalidades_q13.ALF }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr>
+    {% endfor %}
+
+</body>
+</html>

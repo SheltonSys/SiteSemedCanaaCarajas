@@ -47,73 +47,231 @@
                 </div> -->
         
                 <!-- Tabela de planos -->
-                <div class="table-responsive">
-                    <table id="tabela-planos" class="table table-striped table-bordered align-middle">
-                        <thead class="table-primary text-center">
-                            <tr>
-                                <th>Unidade</th>
-                                <th>Cargo</th>
-                                <th>Servidor</th>
-                                <th>Telefone</th>
-                                <!-- <th>Enviado</th> -->
-                                <th>Status</th>
-                                <th>Arquivo</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for plano in planos %}
-                            <tr class="{% if not plano.deferido_indeferido %}table-warning{% endif %}">
-                                <td>{{ plano.unidade_ensino }}</td>
-                                <td>{{ plano.cargo }}</td>
-                                <td>{{ plano.servidor }}</td>
-                                <td>{{ plano.telefone }}</td>
-                                <!-- <td>{{ plano.enviado|yesno:"Sim,Não" }}</td> -->
-                                <td>
-                                    {% if plano.deferido_indeferido == "Deferido" %}
-                                        <span class="badge bg-success">{{ plano.deferido_indeferido }}</span>
-                                    {% elif plano.deferido_indeferido == "Indeferido" %}
-                                        <span class="badge bg-danger">{{ plano.deferido_indeferido }}</span>
-                                    {% elif plano.deferido_indeferido %}
-                                        <span class="badge bg-secondary">{{ plano.deferido_indeferido }}</span>
-                                    {% else %}
-                                        <span class="badge bg-warning text-dark">Pendente</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    {% if plano.arquivo %}
-                                        <a href="{{ plano.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                            <i class="fas fa-file-pdf me-1"></i> Ver
-                                        </a>
-                                    {% else %}
-                                        Nenhum
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <button type="button" class="btn btn-success btn-sm btn-confirmar-status"
-                                            data-id="{{ plano.id }}"
-                                            data-status="Deferido">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-danger btn-sm btn-confirmar-status"
-                                            data-id="{{ plano.id }}"
-                                            data-status="Indeferido">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+<div class="table-responsive">
+    <table id="tabela-planos" class="table table-striped table-bordered align-middle">
+        <thead class="table-primary text-center">
+            <tr>
+                <th>Unidade</th>
+                <th>Cargo</th>
+                <th>Servidor</th>
+                <th>Telefone</th>
+                <th>Status</th>
+                <th>Arquivo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for plano in planos %}
+            <tr class="{% if not plano.deferido_indeferido %}table-warning{% endif %}">
+                <td>{{ plano.unidade_ensino }}</td>
+                <td>{{ plano.cargo }}</td>
+                <td>{{ plano.servidor }}</td>
+                <td>{{ plano.telefone }}</td>
+                <td class="text-center">
+                    {% if plano.deferido_indeferido == "Deferido" %}
+                        <span class="badge bg-success">{{ plano.deferido_indeferido }}</span>
+                    {% elif plano.deferido_indeferido == "Indeferido" %}
+                        <span class="badge bg-danger">{{ plano.deferido_indeferido }}</span>
+                    {% elif plano.deferido_indeferido %}
+                        <span class="badge bg-secondary">{{ plano.deferido_indeferido }}</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Pendente</span>
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    {% if plano.arquivo %}
+                        <a href="{{ plano.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-file-pdf me-1"></i> Ver
+                        </a>
+                    {% else %}
+                        Nenhum
+                    {% endif %}
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-success btn-sm btn-confirmar-status"
+                            data-id="{{ plano.id }}"
+                            data-status="Deferido">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm btn-confirmar-status"
+                            data-id="{{ plano.id }}"
+                            data-status="Indeferido">
+                        <i class="fas fa-times"></i>
+                    </button>
+
+                    {% if plano.deferido_indeferido == "Indeferido" %}
+                    <!-- Botão abrir modal para motivo -->
+                    <button type="button" class="btn btn-warning btn-sm btn-motivo"
+                            data-id="{{ plano.id }}"
+                            data-unidade="{{ plano.unidade_ensino }}">
+                        <i class="fas fa-edit"></i> Motivo
+                    </button>
+
+                    <!-- Botão gerar PDF -->
+                    <a href="{% url 'gerar_pdf_indeferimento' plano.id %}" class="btn btn-secondary btn-sm" target="_blank">
+                        <i class="fas fa-file-pdf"></i>
+                    </a>
+
+                    <!-- Botão enviar e-mail -->
+                    <button type="button" class="btn btn-info btn-sm btn-enviar-email"
+                            data-id="{{ plano.id }}"
+                            data-unidade="{{ plano.unidade_ensino }}"
+                            data-servidor="{{ plano.servidor }}">
+                        <i class="fas fa-envelope"></i>
+                    </button>
+                {% endif %}
+
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
         
         <!-- Form escondido para submissão -->
         <form id="statusForm" method="POST" enctype="multipart/form-data" style="display: none;">
             {% csrf_token %}
             <input type="hidden" name="status" id="statusInputHidden">
         </form>
+
+
+        <div class="modal fade" id="modalMotivo" tabindex="-1" aria-labelledby="modalMotivoLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg"> <!-- Aumentado para large -->
+                <form id="formMotivo" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-content border-warning">
+                        <div class="modal-header bg-warning text-dark">
+                            <h5 class="modal-title fw-bold" id="modalMotivoLabel">
+                                <i class="fas fa-exclamation-triangle me-2"></i> Justificativa do Indeferimento
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="plano_id" id="planoIdMotivo">
+        
+                            <div class="mb-3">
+                                <label for="motivo" class="form-label fw-bold">Motivo do Indeferimento:</label>
+                                <textarea class="form-control" name="motivo" id="motivo" rows="4"
+                                          placeholder="Descreva detalhadamente o motivo do indeferimento..." required></textarea>
+                            </div>
+        
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="prazo" class="form-label fw-bold">Novo Prazo para Reenvio:</label>
+                                    <input type="date" class="form-control" name="prazo" id="prazo" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="parecer_direcao" class="form-label fw-bold">Assinado por:</label>
+                                    <select class="form-select" name="parecer_direcao" id="parecer_direcao" required>
+                                        <option value="">Selecione</option>
+                                        <option value="Diretor">Diretor de Ensino</option>
+                                        <option value="Vice-Diretor">Coordenador(a)</option>
+                                    </select>
+                                </div>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="orientacoes" class="form-label fw-bold">Orientações Complementares:</label>
+                                <textarea class="form-control" name="orientacoes" id="orientacoes" rows="3"
+                                          placeholder="Informe orientações ou observações adicionais (opcional)..."></textarea>
+                            </div>
+        
+                            <div class="mb-3">
+                                <label for="anexo_parecer" class="form-label fw-bold">Anexar Parecer Formal (PDF):</label>
+                                <input type="file" class="form-control" name="anexo_parecer" id="anexo_parecer" accept=".pdf">
+                                <small class="form-text text-muted">Opcional: Caso exista um documento formal do parecer, anexe aqui.</small>
+                            </div>
+        
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-warning fw-bold">
+                                <i class="fas fa-save me-1"></i> Salvar Indeferimento
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+        <div class="modal fade" id="modalEmail" tabindex="-1" aria-labelledby="modalEmailLabel" aria-hidden="true">
+            <div class="modal-dialog modal-md">
+                <form id="formEmail" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-content border-info">
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title fw-bold" id="modalEmailLabel">
+                                <i class="fas fa-envelope me-2"></i> Enviar Indeferimento por E-mail
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                        </div>
+                        <div class="modal-body">
+                            <input type="hidden" name="plano_id" id="planoIdEmail">
+                            <div class="mb-3">
+                                <label for="email_destino" class="form-label">E-mail do Servidor/Unidade</label>
+                                <input type="email" class="form-control" name="email_destino" id="email_destino" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="mensagem" class="form-label">Mensagem</label>
+                                <textarea class="form-control" name="mensagem" id="mensagem" rows="3">Segue em anexo o Termo de Indeferimento do Plano de Gestão Escolar.</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info fw-bold">
+                                <i class="fas fa-paper-plane me-1"></i> Enviar
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+
+        <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+    const botoesEmail = document.querySelectorAll('.btn-enviar-email');
+    const modalEmail = new bootstrap.Modal(document.getElementById('modalEmail'));
+    const formEmail = document.getElementById('formEmail');
+
+    botoesEmail.forEach(botao => {
+        botao.addEventListener('click', function () {
+            document.getElementById('planoIdEmail').value = this.dataset.id;
+            document.getElementById('email_destino').value = '';
+            modalEmail.show();
+        });
+    });
+
+    formEmail.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(formEmail);
+        fetch('/planos-gestao/enviar-email/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': formEmail.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Sucesso!', 'E-mail enviado com sucesso.', 'success')
+                    .then(() => modalEmail.hide());
+            } else {
+                Swal.fire('Erro!', data.error, 'error');
+            }
+        });
+    });
+});
+
+        </script>
+        
+        
+          
         
 
 <!-- Scripts -->
@@ -175,6 +333,46 @@
         });
     });
 </script>
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const botoesMotivo = document.querySelectorAll('.btn-motivo');
+        const modal = new bootstrap.Modal(document.getElementById('modalMotivo'));
+        const formMotivo = document.getElementById('formMotivo');
+    
+        botoesMotivo.forEach(botao => {
+            botao.addEventListener('click', function () {
+                document.getElementById('planoIdMotivo').value = this.dataset.id;
+                modal.show();
+            });
+        });
+    
+        formMotivo.addEventListener('submit', function (e) {
+            e.preventDefault();
+            const formData = new FormData(formMotivo);
+            fetch('/planos-gestao/salvar-motivo/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': formMotivo.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Sucesso!', 'Motivo salvo.', 'success')
+                        .then(() => window.location.reload());
+                } else {
+                    Swal.fire('Erro!', data.error, 'error');
+                }
+            });
+        });
+    });
+    </script>
+    
 
 
 {% endblock %}

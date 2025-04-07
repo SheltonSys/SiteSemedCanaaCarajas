@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
     <div class="text-center my-4">
         <h2 class="display-5 fw-bold text-primary">🏫 Gestão Escolar - SAMACC EI</h2>
         <p class="text-muted fs-5">
@@ -44,7 +46,6 @@
             </div>
         </div>
     </div>
-    
 
     <!-- 🔍 Área de Filtragem -->
     <div class="card shadow-lg border-0 p-4 mt-4">
@@ -116,7 +117,6 @@
         </div>
     </div>
 
-
     <!-- 📌 Lista de Escolas em Cards -->
 <div class="row mt-4">
     {% for escola in escolas %}
@@ -154,7 +154,6 @@
                         <i class="fas fa-file-alt"></i> Avaliação
                     </button>
 
-                    
                     <!-- <a href="{% url 'excluir_escola' escola.id_matricula %}" class="btn btn-danger btn-sm" disabled>
                         <i class="fas fa-trash"></i> Excluir
                     </a> -->
@@ -168,7 +167,6 @@
         </div>
     </div>
 
-        
         <!-- Modal de Avaliação Melhorada -->
         <div class="modal fade" id="avaliacaoModal{{ escola.id_matricula }}" tabindex="-1" aria-labelledby="avaliacaoModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered"> <!-- Modal maior e centralizado -->
@@ -204,7 +202,6 @@
                                 </div>
                             </div>
 
-                            <!-- Seção de Avaliação -->
                             <!-- Seção de Avaliação Melhorada -->
                     <div class="row">
                         <!-- Avaliação de Matemática -->
@@ -285,9 +282,6 @@
                                         {% endfor %}
                                     </div>
                                 </div>
-
-
-                                
                             </div>
                         </div>
                         <div class="modal-footer bg-light">
@@ -301,20 +295,15 @@
             </div>
         </div>
         <!-- Fim Modal de Avaliação -->
-
-
-
         {% empty %}
         <p class="text-center text-muted">Nenhuma escola cadastrada.</p>
         {% endfor %}
     </div>
 
-
      <br><br>
 
+    </div>
 </div>
-
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -430,56 +419,7 @@
     });
 </script>
 
-
-
-
-<!-- <script>
-    function toggleChat() {
-        const chatBox = document.getElementById('chatBox');
-        if (chatBox.style.display === 'none' || chatBox.style.display === '') {
-            chatBox.style.display = 'block';
-        } else {
-            chatBox.style.display = 'none';
-        }
-    }
-
-    function sendMessage() {
-        const message = document.getElementById('chatMessage').value.trim();
-        if (message) {
-            window.open(`https://wa.me/5599991682697?text=${encodeURIComponent(message)}`, '_blank');
-        } else {
-            alert('Por favor, digite uma mensagem antes de enviar.');
-        }
-    }
-</script> -->
-
-
-
-
-
-<!-- JS para carregar as turmas dinamicamente -->
-<!-- <script>
-    document.getElementById("escolaSelect").addEventListener("change", function () {
-        var escola = this.value;
-        var turmaSelect = document.getElementById("turmaSelect");
-
-        turmaSelect.innerHTML = "<option value=''>Carregando...</option>";
-
-        fetch(`/buscar_turmas/?escola=${escola}`)
-            .then(response => response.json())
-            .then(data => {
-                turmaSelect.innerHTML = "<option value=''>Todas</option>";
-                data.forEach(turma => {
-                    turmaSelect.innerHTML += `<option value="${turma}">${turma}</option>`;
-                });
-            });
-    });
-</script> -->
-
 {% endblock %}
-
-
-
 
 <style>
     .btn-whatsapp {
@@ -544,8 +484,6 @@
 .chat-footer {
     border-top: 1px solid #ddd;
 }
-
-
 
 </style>
 

@@ -3,30 +3,20 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser, BaseUserManager, AbstractBaseUser
-
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-
 from django.contrib.auth import get_user_model
-
 from .managers import UserManager  # Certifique-se de ter um UserManager configurado
-
 from django.conf import settings
-
 from django.core.files.base import ContentFile
 import qrcode
 from io import BytesIO
 import io
 from django.utils import timezone
-
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from functools import wraps
-
 from django.apps import apps
 
-class UserModulePermission(models.Model):
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
-    module = models.ForeignKey('semedapp.Module', on_delete=models.CASCADE)
 
 
 
@@ -72,10 +62,7 @@ class ModuleAccess(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.get_module_display()}"
-    
-
-
-
+# ********************************************************************************************************************************
 
 def module_required(module_name):
     """
@@ -93,9 +80,6 @@ def module_required(module_name):
             return view_func(request, *args, **kwargs)
         return _wrapped_view
     return decorator
-
-
-    
 # ********************************************************************************************************************************
 
 class Habilidade(models.Model):
@@ -133,9 +117,7 @@ class Aluno(models.Model):
 
     def __str__(self):
         return self.pessoa_nome
-
-    
-
+# ********************************************************************************************************************************
 
 from django.db import models
 
@@ -178,14 +160,21 @@ class Diretoria(models.Model):
     email = models.EmailField()
     cep = models.CharField(max_length=10)
     cpf = models.CharField(max_length=14)
+    vencimento = models.DateField(null=True, blank=True)
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
+    conselho = models.CharField(max_length=255, blank=True, null=True)  # ✅ Aqui que estava faltando
 
     def __str__(self):
         return f"{self.nome} - {self.cargo}"
+
+
+
 # ********************************************************************************************************************************
 
 class MembroConselho(models.Model):
     inep = models.CharField(max_length=20)
     escola = models.CharField(max_length=255)
+    conselho = models.CharField(max_length=255, blank=True, null=True)  # Conselho vinculado
     data_abertura = models.DateField()
     data_vencimento = models.DateField()
     nome = models.CharField(max_length=255)
@@ -206,18 +195,22 @@ class MembroConselho(models.Model):
 # ********************************************************************************************************************************
 
 class LivroCaixa(models.Model):
-    TIPO_CHOICES = [
-        ('Receita', 'Receita'),
-        ('Despesa', 'Despesa'),
-    ]
-
-    descricao = models.CharField(max_length=255)
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES)
-    valor = models.DecimalField(max_digits=10, decimal_places=2)
-    data = models.DateField()
+    ano_base = models.IntegerField()
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
+    conselho_escolar = models.CharField(max_length=255)
+    cnpj = models.CharField(max_length=20)
+    rendimentos_aplicacao = models.DecimalField(max_digits=10, decimal_places=2)
+    saldo_anterior = models.DecimalField(max_digits=10, decimal_places=2)
+    receita_total = models.DecimalField(max_digits=10, decimal_places=2)
+    despesas_manutencao = models.DecimalField(max_digits=10, decimal_places=2)
+    despesa_total = models.DecimalField(max_digits=10, decimal_places=2)
+    superavit_deficit = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.descricao} - {self.tipo} - {self.valor}"
+        return f"{self.ano_base} - {self.escola.nome}"
+
+
+
 # ********************************************************************************************************************************
 
 class EscrituraFiscal(models.Model):
@@ -371,13 +364,17 @@ class Caixa(models.Model):
         return self.descricao
 # ********************************************************************************************************************************
 
+from django.db import models
+
 class Certidao(models.Model):
     nome = models.CharField(max_length=255)
     descricao = models.TextField()
     data_emissao = models.DateField(auto_now_add=True)
+    arquivo = models.FileField(upload_to='certidoes/', null=True, blank=True)  # Novo campo
 
     def __str__(self):
         return self.nome
+
 # ********************************************************************************************************************************
 
 class Legislacao(models.Model):
@@ -1884,8 +1881,6 @@ class CandidatoCurriculo(models.Model):
 
 from django.db import models
 
-
-
 class CandidatoAutenticado(models.Model):
     #user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil_candidato")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -2041,8 +2036,6 @@ class CurriculoAntigo(models.Model):
         """
         return self.nome.encode('utf-8').decode('utf-8') if self.nome else "Sem Nome"
 # ********************************************************************************************************************************
-
-
 
 class Resposta(models.Model):
     aluno = models.ForeignKey('Aluno', on_delete=models.CASCADE)
@@ -2264,6 +2257,7 @@ class ProfessorEI(models.Model):
 
     def __str__(self):
         return self.nome_professor
+############################################################################################################################
 
 class Coordenador(models.Model):
     unidade_ensino = models.CharField(max_length=255)
@@ -2276,7 +2270,7 @@ class Coordenador(models.Model):
 
     def __str__(self):
         return self.nome_Coordenadora
-    
+############################################################################################################################
 
 class CoordenadorEI(models.Model):
     unidade_ensino = models.CharField(max_length=255)
@@ -2289,13 +2283,11 @@ class CoordenadorEI(models.Model):
 
     def __str__(self):
         return self.nome_Coordenadora
-
-
+############################################################################################################################
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
 
 class CustomUserProfManager(BaseUserManager):
     """ Gerenciador de usuários personalizados """
@@ -2318,7 +2310,7 @@ class CustomUserProfManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
 
         return self.create_user(username, cpf, first_name, last_name, password, **extra_fields)
-    
+############################################################################################################################
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -2369,7 +2361,7 @@ class CustomUserProf(AbstractUser):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name} ({self.username})"
-
+############################################################################################################################
 
 class Permissao(models.Model):
     """ Define permissões personalizadas para os usuários """
@@ -2377,7 +2369,7 @@ class Permissao(models.Model):
 
     def __str__(self):
         return self.nome
-
+############################################################################################################################
 
 class UserPermissao(models.Model):
     """ Relaciona usuários com permissões específicas """
@@ -2386,10 +2378,7 @@ class UserPermissao(models.Model):
 
     def __str__(self):
         return f"{self.usuario.username} - {self.permissao.nome}"
-
-
-
-
+############################################################################################################################
 
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -2406,7 +2395,7 @@ class UnidadeEscolar(models.Model):
 
     def __str__(self):
         return self.nome
-    
+############################################################################################################################
 
 # models.py
 from django.db import models
@@ -2415,7 +2404,7 @@ class Professor(models.Model):
     nome = models.CharField(max_length=255)
     cpf = models.CharField(max_length=11, unique=True)
     email = models.EmailField()
-
+############################################################################################################################
 
 class Turma(models.Model):
     nome = models.CharField(max_length=255)  # <-- Removido unique=True
@@ -2433,6 +2422,7 @@ class Turma(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.escola.nome}"
+############################################################################################################################
     
 class CadastroEscola(models.Model):
     unidade_ensino = models.CharField(max_length=255)
@@ -2454,7 +2444,7 @@ class CadastroEscola(models.Model):
 
     def __str__(self):
         return self.unidade_ensino
-
+############################################################################################################################
 
 
 class ProfessorEscola(models.Model):
@@ -2471,8 +2461,7 @@ class ProfessorEscola(models.Model):
 
     def __str__(self):
         return f"{self.professor.username} - {self.escolas.nome}"
-
-
+############################################################################################################################
 
 class CadastroEI(models.Model):
     professor = models.ForeignKey(
@@ -2585,7 +2574,6 @@ class ModuleModulosPermitidos(models.Model):
 # ********************************************************************************************************************************
 # *****************************************************SEPECC*********************************************************************
 # ********************************************************************************************************************************
-
 
 from decimal import Decimal
 from django.db import models
@@ -2924,6 +2912,13 @@ class ContaBancaria(models.Model):
         null=True,
         help_text="Conselho vinculado à escola."
     )
+    programa = models.ForeignKey(
+        "Programa",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        help_text="Programa vinculado à conta bancária."
+    )
     nome = models.CharField(
         max_length=100, 
         help_text="Nome da conta bancária (ex: Conta Principal)",
@@ -2964,11 +2959,12 @@ class ContaBancaria(models.Model):
     def save(self, *args, **kwargs):
         """Ao salvar a conta, automaticamente adiciona o conselho vinculado à escola."""
         if self.escola:
-            self.conselho = self.escola.nome_conselho  # Obtém o nome do conselho vinculado à escola
+            self.conselho = self.escola.nome_conselho
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.banco} - {self.agencia}/{self.conta} ({self.escola.nome})"
+
 
 # ********************************************************************************************************************************
 
@@ -3154,9 +3150,6 @@ class ApuracaoResultado(models.Model):
 
 # ********************************************************************************************************************************
 
-
-
-
 from django.db import models
 
 class Orcamento(models.Model):
@@ -3167,7 +3160,7 @@ class Orcamento(models.Model):
 
     def __str__(self):
         return f"{self.item} - {self.proponente} - R$ {self.preco}"
-
+############################################################################################################################
 
 
 from django.db import models
@@ -3236,7 +3229,7 @@ class Documento(models.Model):
 
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.numero} ({self.escola.nome})"
-
+############################################################################################################################
 
 class BemAdquirido(models.Model):
     documento = models.ForeignKey(Documento, on_delete=models.CASCADE, related_name="bens")
@@ -3250,6 +3243,7 @@ class BemAdquirido(models.Model):
 
     def __str__(self):
         return self.especificacao
+############################################################################################################################
 
 from django.db import models
 
@@ -3262,9 +3256,7 @@ class RepresentanteLegal(models.Model):
 
     def __str__(self):
         return self.nome
-
-
-
+############################################################################################################################
 
 from django.db import models
 
@@ -3296,8 +3288,7 @@ class Bem(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.escola.nome}"
-
-
+############################################################################################################################
 
 # models.py
 from django.db import models
@@ -3307,9 +3298,7 @@ class TermoDoacao(models.Model):
     conselho = models.CharField(max_length=255)
     bem = models.ForeignKey('BemDoado', on_delete=models.CASCADE, null=True, blank=True)
     data_emissao = models.DateField(auto_now_add=True)
-
-
-
+############################################################################################################################
 
 class BemDoado(models.Model):
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, verbose_name="Escola")
@@ -3328,9 +3317,6 @@ class BemDoado(models.Model):
 
     def __str__(self):
         return f"{self.descricao} - {self.escola.nome}"
-
-
-
 
 ##########################################################################################################################################
 ##########################################################################################################################################
@@ -3358,8 +3344,7 @@ class PlanoGestaoEscolar(models.Model):
 
     def __str__(self):
         return f"{self.servidor} - {self.unidade_ensino}"
-
-
+############################################################################################################################
 
 from django.db import models
 
@@ -3374,3 +3359,45 @@ class PGEPlanoGestaoEscolar(models.Model):
 
     def __str__(self):
         return f"{self.unidade_ensino} - {self.servidor}"
+############################################################################################################################
+
+from django.db import models
+
+class Conselho(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField()
+
+    def __str__(self):
+        return self.nome
+
+
+
+
+from django.db import models
+
+class LancamentoDiario(models.Model):
+    data = models.DateField()
+    historico = models.CharField(max_length=255)
+    recebimento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    pagamento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    saldo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+
+    def __str__(self):
+        return f"{self.data} - {self.historico}"
+
+
+
+
+from django.db import models
+
+class MotivoIndeferimento(models.Model):
+    plano = models.ForeignKey('PlanoGestaoEscolar', on_delete=models.CASCADE, related_name='motivos')
+    motivo = models.TextField()
+    prazo_reenvio = models.DateField()
+    parecer_direcao = models.CharField(max_length=50, choices=[('Diretor', 'Diretor de Ensino'), ('Vice-Diretor', 'Coordenador(a)')])
+    orientacoes = models.TextField(blank=True, null=True)
+    anexo_parecer = models.FileField(upload_to='indeferimentos/', blank=True, null=True)
+    data_registro = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Indeferimento - {self.plano.unidade_ensino}"

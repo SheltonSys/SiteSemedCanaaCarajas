@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Termo de Indeferimento - Plano de Gestão Escolar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 1px;
+            line-height: 1.6;
+            font-size: 13px;
+        }
+    
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            position: relative;
+            width: 90%;
+        }
+    
+        .header img {
+            width: 680px;
+            height: auto;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    
+        .linha-colorida {
+            height: 3px;
+            background: linear-gradient(to right, #0066cc, #3cb043, #ffd700);
+            margin: 10px 0 20px 0;
+        }
+    
+        h1,
+        h3 {
+            color: #dc3545;
+            text-align: center;
+        }
+    
+        .section-title {
+            background-color: #f8d7da;
+            padding: 8px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    
+        .content {
+            margin-top: 10px;
+        }
+    
+        .content p {
+            margin: 5px 0;
+        }
+    
+        .assinatura {
+            margin-top: 50px;
+            text-align: center;
+        }
+    
+        .assinatura p {
+            margin: 5px 0;
+        }
+    
+        .footer {
+    margin-top: 7.5px;
+    text-align: center;
+    width: 100%;
+    position: relative;
+}
+
+.footer img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+
+    </style>
+    
+</head>
+<body>
+
+    <div class="header">
+        <img src="{{ logo_url }}" alt="Logo Prefeitura">
+        <!-- <div class="title">
+            <p>ESTADO DO PARÁ</p>
+            <p>PREFEITURA MUNICIPAL DE CANAÃ DOS CARAJÁS</p>
+            <p>SECRETARIA MUNICIPAL DE EDUCAÇÃO</p>
+        </div> -->
+    </div>
+    <!-- <div class="linha-colorida"></div> -->
+
+    <h1>TERMO DE INDEFERIMENTO</h1>
+    <h3>Plano de Gestão Escolar - {{ plano.unidade_ensino }}</h3>
+
+    <div class="section-title">1. Identificação da Unidade Escolar</div>
+    <div class="content">
+        <p><strong>Unidade Escolar:</strong> {{ plano.unidade_ensino }}</p>
+        <p><strong>Servidor Responsável:</strong> {{ plano.servidor }}</p>
+        <p><strong>Cargo:</strong> {{ plano.cargo }}</p>
+        <p><strong>Telefone:</strong> {{ plano.telefone }}</p>
+        <p><strong>Data de Envio do Plano:</strong> {{ plano.data_envio|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="section-title">2. Justificativa do Indeferimento</div>
+    <div class="content">
+        <p><strong>Motivo do Indeferimento:</strong></p>
+        <p>{{ indeferimento.motivo }}</p>
+
+        {% if indeferimento.orientacoes %}
+        <p><strong>Orientações Complementares:</strong></p>
+        <p>{{ indeferimento.orientacoes }}</p>
+        {% else %}
+        <p><strong>Orientações Complementares:</strong> Não informadas.</p>
+        {% endif %}
+    </div>
+
+    <div class="section-title">3. Prazo para Reenvio</div>
+    <div class="content">
+        {% if indeferimento.prazo_reenvio %}
+            <p><strong>Novo prazo estabelecido:</strong> {{ indeferimento.prazo_reenvio|date:"d/m/Y" }}</p>
+        {% else %}
+            <p><strong>Novo prazo estabelecido:</strong> Não definido.</p>
+        {% endif %}
+    </div>
+
+    <div class="section-title">4. Responsável pelo Parecer</div>
+    <div class="content">
+        <p><strong>Parecer assinado por:</strong> {{ indeferimento.parecer_direcao }}</p>
+        {% if indeferimento.anexo_parecer %}
+        <p><strong>Anexo:</strong> Documento formal de parecer anexado.</p>
+        {% else %}
+        <p><strong>Anexo:</strong> Não informado.</p>
+        {% endif %}
+    </div>
+
+    <div class="assinatura">
+        <p>__________________________________________</p>
+        <p>{{ indeferimento.parecer_direcao }}</p>
+        <p>Canaã dos Carajás, {{ indeferimento.data_registro|date:"d/m/Y" }}</p>
+    </div>
+
+    <div class="footer">
+        <img src="{{ footer_logo_url }}" alt="Logo Footer">
+    </div>
+    
+    
+    
+    
+
+</body>
+</html>

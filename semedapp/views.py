@@ -115,6 +115,10 @@ from .forms import TipoDemandaForm
 from .models import TipoDemanda
 from .models import Candidato
 
+import matplotlib
+matplotlib.use('Agg')  # Usa o backend de renderização para arquivos, sem interface gráfica
+
+
 import qrcode
 from io import BytesIO
 from django.template.loader import render_to_string
@@ -982,24 +986,119 @@ def pdde_view(request):
     return render(request, 'contabilidade/pdde.html', {'anos': anos, 'pdde_data': pdde_data})
 # *********************************************************************************************************************
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import Diretoria, EscolaPdde
+from datetime import datetime
+
 def conselho_diretoria(request):
-    # Example context data
-    diretoria_data = [
-        {'nome': 'João Silva', 'cargo': 'Presidente'},
-        {'nome': 'Maria Oliveira', 'cargo': 'Vice-presidente'},
-        {'nome': 'Carlos Souza', 'cargo': 'Tesoureiro'},
-    ]
-    return render(request, 'contabilidade/conselho/diretoria.html', {'diretoria_data': diretoria_data})
+    membros = Diretoria.objects.all().order_by("cargo")
+    escolas = EscolaPdde.objects.all().order_by("nome")
+    conselhos = EscolaPdde.objects.values_list("nome_conselho", flat=True).distinct()
+
+    if request.method == "POST":
+        try:
+            nome = request.POST.get("nome")
+            cargo = request.POST.get("cargo")
+            endereco = request.POST.get("endereco")
+            bairro = request.POST.get("bairro")
+            telefone = request.POST.get("telefone")
+            email = request.POST.get("email")
+            cep = request.POST.get("cep")
+            cpf = request.POST.get("cpf")
+            vencimento = request.POST.get("vencimento")
+            escola_id = request.POST.get("escola")
+            conselho_nome = request.POST.get("conselho")
+
+            if not all([nome, cargo, endereco, bairro, telefone, email, cep, cpf, vencimento, escola_id, conselho_nome]):
+                raise ValueError("Todos os campos são obrigatórios.")
+
+            vencimento_date = datetime.strptime(vencimento, "%Y-%m-%d").date()
+            escola_obj = get_object_or_404(EscolaPdde, id=escola_id)
+
+            Diretoria.objects.create(
+                nome=nome,
+                cargo=cargo,
+                endereco=endereco,
+                bairro=bairro,
+                telefone=telefone,
+                email=email,
+                cep=cep,
+                cpf=cpf,
+                vencimento=vencimento_date,
+                escola=escola_obj,
+                conselho=conselho_nome
+            )
+            messages.success(request, "✅ Membro cadastrado com sucesso!")
+
+        except Exception as e:
+            print(f"Erro ao cadastrar membro: {e}")
+            messages.error(request, "❌ Erro ao cadastrar membro. Tente novamente.")
+
+        return redirect("conselho_diretoria")
+
+    return render(request, "contabilidade/conselho/diretoria.html", {
+        "diretoria_data": membros,
+        "escolas": escolas,
+        "conselhos": conselhos
+    })
+
+
+
+
+
+
 # *********************************************************************************************************************
 
-def conselho_membros(request):
-    # Example context data
-    membros_data = [
-        {'nome': 'Ana Pereira', 'funcao': 'Conselheira'},
-        {'nome': 'Carlos Silva', 'funcao': 'Conselheiro'},
-        {'nome': 'Beatriz Costa', 'funcao': 'Secretária'},
-    ]
-    return render(request, 'contabilidade/conselho/membros.html', {'membros_data': membros_data})
+def editar_diretoria(request, id):
+    membro = get_object_or_404(Diretoria, id=id)
+    escolas = EscolaPdde.objects.all()
+
+    if request.method == "POST":
+        try:
+            membro.nome = request.POST.get("nome")
+            membro.cargo = request.POST.get("cargo")
+            membro.endereco = request.POST.get("endereco")
+            membro.bairro = request.POST.get("bairro")
+            membro.telefone = request.POST.get("telefone")
+            membro.email = request.POST.get("email")
+            membro.cep = request.POST.get("cep")
+            membro.cpf = request.POST.get("cpf")
+            vencimento = request.POST.get("vencimento")
+            escola_id = request.POST.get("escola")
+            conselho_nome = request.POST.get("conselho")
+
+            if not all([membro.nome, membro.cargo, membro.endereco, membro.bairro, membro.telefone, membro.email, membro.cep, membro.cpf, vencimento, escola_id, conselho_nome]):
+                messages.error(request, "Todos os campos são obrigatórios!")
+                return redirect("editar_diretoria", id=id)
+
+            membro.vencimento = datetime.strptime(vencimento, "%Y-%m-%d").date()
+            membro.escola_id = escola_id
+            membro.conselho = conselho_nome
+            membro.save()
+            messages.success(request, "✅ Membro atualizado com sucesso!")
+        except Exception as e:
+            print(f"Erro ao editar membro: {e}")
+            messages.error(request, "❌ Erro ao atualizar o membro.")
+
+        return redirect("conselho_diretoria")
+
+    return render(request, "contabilidade/conselho/editar_diretoria.html", {
+        "membro": membro,
+        "escolas": escolas
+    })
+
+
+
+# *********************************************************************************************************************
+
+def excluir_diretoria(request, id):
+    membro = get_object_or_404(Diretoria, id=id)
+    if request.method == "POST":
+        membro.delete()
+        messages.success(request, "✅ Membro excluído com sucesso!")
+        return redirect('conselho_diretoria')
+
 # *********************************************************************************************************************
 
 def download_page(request):
@@ -1069,6 +1168,11 @@ def pdde_view(request):
     return render(request, 'app/pdde.html', context)
 # *********************************************************************************************************************
 
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .models import Diretoria
+from datetime import datetime
+
 def cadastro_diretoria(request):
     if request.method == "POST":
         nome = request.POST.get("nome")
@@ -1079,22 +1183,43 @@ def cadastro_diretoria(request):
         email = request.POST.get("email")
         cep = request.POST.get("cep")
         cpf = request.POST.get("cpf")
+        vencimento = request.POST.get("vencimento")
 
-        # Salvar os dados no banco
-        Diretoria.objects.create(
-            nome=nome,
-            cargo=cargo,
-            endereco=endereco,
-            bairro=bairro,
-            telefone=telefone,
-            email=email,
-            cep=cep,
-            cpf=cpf,
-        )
-        messages.success(request, "Membro cadastrado com sucesso!")
-        return redirect("diretoria")  # Substitua por sua URL correspondente à página da diretoria
+        try:
+            # Validação simples de campos obrigatórios
+            if not all([nome, cargo, endereco, bairro, telefone, email, cep, cpf, vencimento]):
+                messages.error(request, "Todos os campos são obrigatórios!")
+                return redirect("conselho_diretoria")
+
+            # Validação da data
+            try:
+                data_vencimento = datetime.strptime(vencimento, "%Y-%m-%d").date()
+            except ValueError:
+                messages.error(request, "Data de vencimento inválida! Use o formato AAAA-MM-DD.")
+                return redirect("conselho_diretoria")
+
+            # Salvar no banco
+            Diretoria.objects.create(
+                nome=nome,
+                cargo=cargo,
+                endereco=endereco,
+                bairro=bairro,
+                telefone=telefone,
+                email=email,
+                cep=cep,
+                cpf=cpf,
+                vencimento=data_vencimento,
+            )
+            messages.success(request, "Membro cadastrado com sucesso!")
+        except Exception as e:
+            print(e)
+            messages.error(request, "Erro ao cadastrar membro. Tente novamente.")
+
+        return redirect("conselho_diretoria")
 
     return render(request, "contabilidade/conselho/diretoria.html")
+
+
 # *********************************************************************************************************************
 
 def listar_membros(request):
@@ -1106,14 +1231,12 @@ def listar_membros(request):
 # *********************************************************************************************************************
 
 def cadastrar_membro(request):
-    """
-    Processa o formulário de cadastro de novos membros do conselho.
-    """
+    escolas = EscolaPdde.objects.all().order_by("nome")
+
     if request.method == 'POST':
         try:
-            # Recuperar dados do formulário
             inep = request.POST.get('inep')
-            escola = request.POST.get('escola')
+            escola_nome = request.POST.get('escola')
             data_abertura = request.POST.get('data_abertura')
             data_vencimento = request.POST.get('data_vencimento')
             nome = request.POST.get('nome')
@@ -1125,10 +1248,17 @@ def cadastrar_membro(request):
             cep = request.POST.get('cep')
             cpf = request.POST.get('cpf')
 
-            # Criar novo membro
-            novo_membro = MembroConselho(
+            if not all([inep, escola_nome, data_abertura, data_vencimento, nome, funcao, endereco, bairro, telefone, email, cep, cpf]):
+                messages.error(request, "❌ Todos os campos são obrigatórios.")
+                return redirect('conselho_membros')
+
+            escola_obj = EscolaPdde.objects.filter(nome=escola_nome).first()
+            conselho_nome = escola_obj.nome_conselho if escola_obj else ""
+
+            novo_membro = MembroConselho.objects.create(
                 inep=inep,
-                escola=escola,
+                escola=escola_nome,
+                conselho=conselho_nome,
                 data_abertura=data_abertura,
                 data_vencimento=data_vencimento,
                 nome=nome,
@@ -1140,73 +1270,213 @@ def cadastrar_membro(request):
                 cep=cep,
                 cpf=cpf,
             )
-            novo_membro.save()
 
-            # Mensagem de sucesso
-            messages.success(request, 'Membro cadastrado com sucesso!')
+            messages.success(request, f"✅ Membro cadastrado com sucesso! Conselho: {conselho_nome}")
             return redirect('listar_membros')
 
         except Exception as e:
-            # Mensagem de erro
-            messages.error(request, f'Ocorreu um erro ao cadastrar o membro: {e}')
-            return redirect('listar_membros')
-    else:
-        return redirect('listar_membros')
+            print(f"Erro ao cadastrar membro: {e}")
+            messages.error(request, f"❌ Ocorreu um erro ao cadastrar o membro: {e}")
+            return redirect('conselho_membros')
+
+    return render(request, "contabilidade/conselho/membros.html", {
+        "escolas": escolas
+    })
+
+
 # *********************************************************************************************************************
 
-def listar_livro_caixa(request):
-    """
-    Exibe o Livro Caixa com as entradas cadastradas.
-    """
-    entradas_caixa = LivroCaixa.objects.all().order_by('-data')
-    return render(request, 'contabilidade/conselho/caixa.html', {'entradas_caixa': entradas_caixa})
+from .models import MembroConselho
 
+def conselho_membros(request):
+    membros_data = MembroConselho.objects.all().order_by("nome")
+    escolas = EscolaPdde.objects.all().order_by("nome")
+    return render(request, 'contabilidade/conselho/membros.html', {
+        'membros_data': membros_data,
+        'escolas': escolas
+    })
+# *********************************************************************************************************************
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.http import JsonResponse
+from .models import LivroCaixa, EscolaPdde
+
+
+def listar_livro_caixa(request):
+    livros = LivroCaixa.objects.all().order_by('-ano_base')
+    return render(request, 'contabilidade/livro_caixa/listar.html', {'livros': livros})
+# *********************************************************************************************************************
 
 def adicionar_livro_caixa(request):
-    """
-    Adiciona uma nova entrada ao Livro Caixa.
-    """
-    if request.method == 'POST':
+    escolas = EscolaPdde.objects.all().order_by("nome")
+
+    if request.method == "POST":
         try:
-            descricao = request.POST.get('descricao')
-            tipo = request.POST.get('tipo')  # 'Receita' ou 'Despesa'
-            valor = float(request.POST.get('valor'))
-            data = request.POST.get('data')
+            ano_base = request.POST.get('ano_base')
+            escola_id = request.POST.get('escola')
+            rendimentos = float(request.POST.get('rendimentos_aplicacao') or 0)
+            saldo = float(request.POST.get('saldo_anterior') or 0)
+            despesas = float(request.POST.get('despesas_manutencao') or 0)
 
-            nova_entrada = LivroCaixa(
-                descricao=descricao,
-                tipo=tipo,
-                valor=valor,
-                data=data,
+            receita_total = rendimentos + saldo
+            despesa_total = despesas
+            superavit_deficit = receita_total - despesa_total
+
+            escola = get_object_or_404(EscolaPdde, id=escola_id)
+
+            LivroCaixa.objects.create(
+                ano_base=ano_base,
+                escola=escola,
+                conselho_escolar=escola.nome_conselho,
+                cnpj=escola.cnpj,
+                rendimentos_aplicacao=rendimentos,
+                saldo_anterior=saldo,
+                receita_total=receita_total,
+                despesas_manutencao=despesas,
+                despesa_total=despesa_total,
+                superavit_deficit=superavit_deficit
             )
-            nova_entrada.save()
-
-            # Mensagem de sucesso
-            messages.success(request, 'Entrada adicionada com sucesso ao Livro Caixa!')
-            return redirect('listar_livro_caixa')
-
+            messages.success(request, "✅ Escrituração cadastrada com sucesso!")
         except Exception as e:
-            # Mensagem de erro
-            messages.error(request, f'Ocorreu um erro ao adicionar a entrada: {e}')
-            return redirect('listar_livro_caixa')
+            messages.error(request, f"❌ Erro ao cadastrar: {e}")
 
-    return render(request, 'contabilidade/conselho/adicionar_caixa.html')
+        return redirect('listar_livro_caixa')
+
+    return render(request, 'contabilidade/adicionar_caixa.html', {'escolas': escolas})
+
 # *********************************************************************************************************************
-# View para listar o Livro Caixa
-def listar_livro_caixa(request):
-    registros = LivroCaixa.objects.all()
-    return render(request, 'contabilidade/caixa.html', {'registros': registros})
+
+def editar_livro_caixa(request, id):
+    livro = get_object_or_404(LivroCaixa, id=id)
+    escolas = EscolaPdde.objects.all().order_by('nome')
+
+    if request.method == "POST":
+        try:
+            livro.ano_base = request.POST.get('ano_base')
+            escola_id = request.POST.get('escola')
+            escola = get_object_or_404(EscolaPdde, id=escola_id)
+
+            livro.escola = escola
+            livro.conselho_escolar = escola.nome_conselho
+            livro.cnpj = escola.cnpj
+            livro.rendimentos_aplicacao = float(request.POST.get('rendimentos_aplicacao') or 0)
+            livro.saldo_anterior = float(request.POST.get('saldo_anterior') or 0)
+            livro.receita_total = livro.rendimentos_aplicacao + livro.saldo_anterior
+            livro.despesas_manutencao = float(request.POST.get('despesas_manutencao') or 0)
+            livro.despesa_total = livro.despesas_manutencao
+            livro.superavit_deficit = livro.receita_total - livro.despesa_total
+            livro.save()
+            messages.success(request, "✅ Escrituração atualizada com sucesso!")
+        except Exception as e:
+            messages.error(request, f"❌ Erro ao atualizar: {e}")
+
+        return redirect('listar_livro_caixa')
+
+    return render(request, 'contabilidade/livro_caixa/editar.html', {
+        'livro': livro,
+        'escolas': escolas
+    })
 # *********************************************************************************************************************
-# View para adicionar um registro no Livro Caixa
-def adicionar_livro_caixa(request):
-    if request.method == 'POST':
-        form = LivroCaixaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('listar_livro_caixa')
-    else:
-        form = LivroCaixaForm()
-    return render(request, 'contabilidade/adicionar_caixa.html', {'form': form})
+
+def excluir_livro_caixa(request, id):
+    livro = get_object_or_404(LivroCaixa, id=id)
+    if request.method == "POST":
+        livro.delete()
+        messages.success(request, "✅ Escrituração excluída com sucesso!")
+        return redirect('listar_livro_caixa')
+    return render(request, 'contabilidade/livro_caixa/excluir.html', {'livro': livro})
+# *********************************************************************************************************************
+
+from django.http import JsonResponse
+from .models import EscolaPdde, SemedAppEscolaPddeProgramas, Programa, Receita
+
+def escola_info(request, escola_id):
+    """
+    Retorna dados da escola + programas vinculados + dados financeiros.
+    """
+    try:
+        escola = EscolaPdde.objects.get(id=escola_id)
+        vinculos = SemedAppEscolaPddeProgramas.objects.filter(escolapdde=escola).select_related('programa')
+        programas = [v.programa.nome for v in vinculos]
+
+        # Busca dados financeiros mais recentes
+        receita = Receita.objects.filter(escola=escola).order_by('-data_inicio').first()
+
+        if receita:
+            rendimentos = receita.rendimento_aplicacao_custeio + receita.rendimento_aplicacao_capital
+            saldo_anterior = (
+                receita.saldo_anterior_custeio + receita.saldo_anterior_capital +
+                receita.valor_creditado_custeio + receita.valor_creditado_capital +
+                receita.recursos_proprios_custeio + receita.recursos_proprios_capital
+            )
+        else:
+            rendimentos = 0.00
+            saldo_anterior = 0.00
+
+        data = {
+            'conselho': escola.nome_conselho,
+            'cnpj': escola.cnpj,
+            'programas': programas,
+            'rendimentos': float(rendimentos),
+            'saldo_anterior': float(saldo_anterior),
+        }
+        return JsonResponse(data)
+    except EscolaPdde.DoesNotExist:
+        return JsonResponse({'error': 'Escola não encontrada.'}, status=404)
+
+
+
+# *********************************************************************************************************************
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import MembroConselho, EscolaPdde
+from datetime import datetime
+
+def editar_membro(request, id):
+    membro = get_object_or_404(MembroConselho, id=id)
+    escolas = EscolaPdde.objects.all().order_by("nome")
+
+    if request.method == "POST":
+        try:
+            membro.inep = request.POST.get('inep')
+            membro.escola = request.POST.get('escola')
+            membro.data_abertura = request.POST.get('data_abertura')
+            membro.data_vencimento = request.POST.get('data_vencimento')
+            membro.nome = request.POST.get('nome')
+            membro.funcao = request.POST.get('funcao')
+            membro.endereco = request.POST.get('endereco')
+            membro.bairro = request.POST.get('bairro')
+            membro.telefone = request.POST.get('telefone')
+            membro.email = request.POST.get('email')
+            membro.cep = request.POST.get('cep')
+            membro.cpf = request.POST.get('cpf')
+            membro.save()
+            messages.success(request, "✅ Membro atualizado com sucesso!")
+            return redirect('conselho_membros')
+        except Exception as e:
+            print(e)
+            messages.error(request, "❌ Erro ao atualizar membro.")
+            return redirect('conselho_membros')
+
+    return render(request, 'contabilidade/conselho/editar_membro.html', {
+        'membro': membro,
+        'escolas': escolas
+    })
+# *********************************************************************************************************************
+
+def excluir_membro(request, id):
+    membro = get_object_or_404(MembroConselho, id=id)
+    try:
+        membro.delete()
+        messages.success(request, "✅ Membro excluído com sucesso!")
+    except Exception as e:
+        print(e)
+        messages.error(request, "❌ Erro ao excluir membro.")
+    return redirect('conselho_membros')
+
+
 # *********************************************************************************************************************
 
 def adicionar_escritura_fiscal(request):
@@ -1215,17 +1485,6 @@ def adicionar_escritura_fiscal(request):
         if form.is_valid():
             form.save()
             return redirect('listar_livro_caixa')
-    else:
-        form = EscrituraFiscalForm()
-    return render(request, 'contabilidade/adicionar_caixa.html', {'form': form})
-# *********************************************************************************************************************
-
-def adicionar_escritura_fiscal(request):
-    if request.method == 'POST':
-        form = EscrituraFiscalForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('listar_livro_caixa')  # Certifique-se de que essa URL está configurada
     else:
         form = EscrituraFiscalForm()
     return render(request, 'contabilidade/adicionar_caixa.html', {'form': form})
@@ -1290,24 +1549,6 @@ def listar_relatorios_pdde(request):
         'relatorios_data': relatorios,
     }
     return render(request, 'contabilidade/relatorios_pdde.html', context)
-# *********************************************************************************************************************
-
-def emissao_certidoes(request):
-    certidoes_data = [
-        {'id': 1, 'nome': 'DEMOSTRATIVO EDUCAÇAO BÁSICA', 'descricao': 'Confirma a inexistência de débitos.', 'data_emissao': date.today()},
-        {'id': 2, 'nome': 'SALDO BANCARIO PDDE EDUCAÇÃO BASICA', 'descricao': 'Atesta a regularidade cadastral.', 'data_emissao': date.today()},
-        {'id': 3, 'nome': 'CHECK LIST EXECUÇÃO RECURSO', 'descricao': 'Declara a quitação de obrigações.', 'data_emissao': date.today()},
-        {'id': 4, 'nome': 'PDDE PRESTAÇÃO DE CONTAS', 'descricao': 'Declara a quitação de obrigações.', 'data_emissao': date.today()},
-        {'id': 5, 'nome': 'DADOS FINANCEIRO', 'descricao': 'Declara a quitação de obrigações.', 'data_emissao': date.today()},
-        {'id': 6, 'nome': 'ATA DE PLANEJAMENTO ANUAL', 'descricao': 'Declara a quitação de obrigações.', 'data_emissao': date.today()},
-        {'id': 7, 'nome': 'RECURSOS POR ESCOLA', 'descricao': 'Declara a quitação de obrigações.', 'data_emissao': date.today()},
-    ]
-
-    context = {
-        'certidoes': certidoes_data,
-    }
-
-    return render(request, 'contabilidade/emissao_certidoes.html', context)
 # *********************************************************************************************************************
 
 def dashboard(request):
@@ -7406,17 +7647,17 @@ def get_pagamentos(request, escola_id):
                     "origem": pagamento.origem if pagamento.origem else "FNDE",
                     "tipo_pagamento": pagamento.tipo_pagamento or "N/A",
                     "tipo_documento": pagamento.tipo_documento or "N/A",
+                    "numero_documento": pagamento.numero_documento or "",
+                    "data_documento": pagamento.data_documento.strftime("%d/%m/%Y") if pagamento.data_documento else "",
                     "data_pagamento": pagamento.data_pagamento.strftime("%d/%m/%Y") if pagamento.data_pagamento else "Não informado",
+                    "numero_pagamento": pagamento.numero_documento_pagamento or "",
                     "valor": float(pagamento.valor) if pagamento.valor else 0.00,
                     "url_editar": f"/editar-pagamento/{pagamento.id}/",
                 })
             except Exception as e:
                 print(f"❌ Erro ao processar pagamento {pagamento.id}: {e}")  # Log de erro específico
-
         #print(f"🔹 Pagamentos enviados: {lista_pagamentos}")  # Log para verificar resposta
-
         return JsonResponse({"pagamentos": lista_pagamentos}, safe=False)
-
     except Exception as e:
         #print(f"❌ Erro geral na view get_pagamentos: {e}")  # Mostra erro no console do servidor
         return JsonResponse({"erro": f"Erro ao buscar pagamentos: {str(e)}"}, status=500)
@@ -7484,9 +7725,24 @@ def pddereceita_despesa(request, escola_id):
 
         # 🔹 Obtém os pagamentos realizados pela escola
         pagamentos = Pagamento.objects.filter(escola=escola).values(
-            "nome_favorecido", "cnpj_cpf", "tipo_pagamento", "tipo_bem_servico",
-            "tipo_documento", "numero_documento", "data_pagamento", "valor"
+            "id",
+            "nome_favorecido",
+            "cnpj_cpf",
+            "tipo_pagamento",
+            "tipo_bem_servico",
+            "tipo_documento",
+            "numero_documento",
+            "data_documento",
+            "numero_pagamento",
+            "data_pagamento",
+            "origem",
+            "valor"
         )
+
+        # Adiciona o campo "url_editar" dinamicamente
+        for pagamento in pagamentos:
+            pagamento["url_editar"] = f"/editar-pagamento/{pagamento['id']}/"
+
 
         # 🔹 Calcula o total de receitas e despesas
         total_receita = sum([
@@ -7652,23 +7908,24 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.db import transaction
 from decimal import Decimal
+from django.utils.dateparse import parse_date
 from .models import Pagamento, EscolaPdde
 
 def pddelancar_pagamento(request):
     escolas = EscolaPdde.objects.all()
-    pagamentos = Pagamento.objects.all().order_by("-data_pagamento")  # Ordena por data de pagamento (do mais recente para o mais antigo)
+    pagamentos = Pagamento.objects.all().order_by("-data_pagamento")  # Pagamentos mais recentes primeiro
 
     if request.method == "POST":
         try:
             with transaction.atomic():
-                # 📌 Pegando os dados do formulário
+                # 📌 Pegando dados do formulário
                 escola_id = request.POST.get("escola")
                 programa = request.POST.get("programa")
                 nome_favorecido = request.POST.get("nome_favorecido")
                 cnpj_cpf = request.POST.get("cnpj_cpf")
                 tipo_pagamento = request.POST.get("tipo_pagamento")
                 tipo_bem_servico = request.POST.get("tipo_bem_servico")
-                
+
                 tipo_documento = request.POST.get("tipo_documento")
                 numero_documento = request.POST.get("numero_documento")
                 data_documento = request.POST.get("data_documento")
@@ -7676,11 +7933,11 @@ def pddelancar_pagamento(request):
                 tipo_pagamento_efetuado = request.POST.get("tipo_pagamento_efetuado")
                 numero_documento_pagamento = request.POST.get("numero_documento_pagamento")
                 data_pagamento = request.POST.get("data_pagamento")
-                
+
                 valor = request.POST.get("valor")
                 exercicio = request.POST.get("exercicio", "2025")
 
-                # 🚨 Validação de campos obrigatórios
+                # ✅ Validação de campos obrigatórios
                 campos_obrigatorios = [
                     escola_id, programa, nome_favorecido, cnpj_cpf, tipo_pagamento, tipo_bem_servico,
                     tipo_documento, numero_documento, data_documento,
@@ -7688,17 +7945,25 @@ def pddelancar_pagamento(request):
                 ]
 
                 if not all(campos_obrigatorios):
-                    messages.error(request, "Todos os campos são obrigatórios. Preencha corretamente antes de continuar.")
+                    messages.error(request, "⚠️ Todos os campos são obrigatórios. Preencha corretamente.")
                     return redirect("pddelancar_pagamento")
 
-                # 🔎 Verifica se a escola existe
+                # 🔍 Verifica se a escola existe
                 escola = EscolaPdde.objects.get(id=escola_id)
 
-                # 🔄 Converte valor para Decimal (corrigindo formatação)
+                # 📅 Converte datas
+                data_documento = parse_date(data_documento)
+                data_pagamento = parse_date(data_pagamento)
+
+                if not data_documento or not data_pagamento:
+                    messages.error(request, "⚠️ Datas inválidas. Verifique os campos de data.")
+                    return redirect("pddelancar_pagamento")
+
+                # 💰 Converte valor para Decimal
                 valor = Decimal(valor.replace(",", ".").strip())
 
-                # 📌 Salva o pagamento na tabela `Pagamento`
-                pagamento = Pagamento.objects.create(
+                # 🚀 Cria o pagamento
+                Pagamento.objects.create(
                     escola=escola,
                     programa=programa,
                     nome_favorecido=nome_favorecido,
@@ -7727,6 +7992,7 @@ def pddelancar_pagamento(request):
             return redirect("pddelancar_pagamento")
 
     return render(request, "pdde/lancar_pagamento.html", {"escolas": escolas, "pagamentos": pagamentos})
+
 
 
 
@@ -8251,40 +8517,43 @@ def listar_pdde(request):
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from .models import ContaBancaria, EscolaPdde
+from .models import ContaBancaria, EscolaPdde, Programa
 
 def criar_conta_bancaria(request):
-    """Cria uma nova conta bancária vinculada a uma escola."""
+    """Cria uma nova conta bancária vinculada a uma escola e programa."""
     if request.method == "POST":
         escola_id = request.POST.get("escola")
+        programa_id = request.POST.get("programa")
         banco = request.POST.get("banco")
         agencia = request.POST.get("agencia")
         conta = request.POST.get("conta")
         tipo_conta = request.POST.get("tipo_conta")
 
-        # Validação: Verifica se a escola foi selecionada
         if not escola_id:
             messages.error(request, "Selecione uma escola para vincular a conta bancária.")
             return redirect("nova_conta")
 
         escola = get_object_or_404(EscolaPdde, id=escola_id)
+        programa = get_object_or_404(Programa, id=programa_id)
 
-        # Criar a conta bancária vinculada à escola
+        # Criar a conta bancária vinculada à escola e ao programa
         ContaBancaria.objects.create(
             escola=escola,
             banco=banco,
             agencia=agencia,
             conta=conta,
             tipo_conta=tipo_conta,
-            conselho=escola.nome_conselho  # Obtém o conselho vinculado à escola
+            conselho=escola.nome_conselho,
+            programa=programa  # Supondo que você adicionou o campo ForeignKey no modelo
         )
 
         messages.success(request, "Conta bancária criada com sucesso!")
         return redirect("listar_contas")
 
-    # Obtém todas as escolas para o dropdown
-    escolas = EscolaPdde.objects.all()
+    # GET
+    escolas = EscolaPdde.objects.prefetch_related("semedappescolapddeprogramas_set__programa")
     return render(request, "conciliacao/criar_conta.html", {"escolas": escolas})
+
 
 
 ###***********************************************************************************************************************
@@ -9885,8 +10154,7 @@ from .models import RepresentanteLegal
 def listar_documento(request):
     documentos = Documento.objects.all()
     return render(request, "prestacao_contas/listar_documento.html", {"documentos": documentos})
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from .models import RepresentanteLegal
@@ -9895,9 +10163,7 @@ from .models import RepresentanteLegal
 def listar_representantes(request):
     representantes = RepresentanteLegal.objects.all()
     return render(request, 'prestacao_contas/listar_representantes.html', {'representantes': representantes})
-
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
@@ -9934,10 +10200,7 @@ def cadastrar_termo_doacao(request):
         "termos_emitidos": termos_com_bens,
         "bens_disponiveis": bens_disponiveis
     })
-
-
-
-
+###***********************************************************************************************************************
 
 # Visualizar termo de doação
 def visualizar_termo_doacao(request, termo_id):
@@ -9950,7 +10213,7 @@ def visualizar_termo_doacao(request, termo_id):
         "bens": bens,
         "total_geral": total_geral
     })
-
+###***********************************************************************************************************************
 
 # Cadastrar bem doado
 def cadastrar_bem_doado(request):
@@ -9983,7 +10246,7 @@ def cadastrar_bem_doado(request):
             print("Erro ao salvar o bem doado:", e)
 
     return render(request, 'prestacao_contas/cadastrar_bem_doado.html', {'escolas': escolas})
-
+###***********************************************************************************************************************
 
 # Listar bens doados
 def listar_bens_doados(request):
@@ -9991,7 +10254,7 @@ def listar_bens_doados(request):
     return render(request, "prestacao_contas/listar_bens_doados.html", {
         "bens_doados": bens_doados
     })
-
+###***********************************************************************************************************************
 
 # Gerar versão HTML do termo (ex: para visualização ou conversão em PDF)
 def gerar_pdf_termo_doacao(request, termo_id):
@@ -10010,8 +10273,7 @@ def gerar_pdf_termo_doacao(request, termo_id):
 
     html = render_to_string("prestacao_contas/termo_doacao_pdf.html", context)
     return HttpResponse(html)  # substitua por geração real de PDF se necessário
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from .models import BemDoado
@@ -10026,8 +10288,7 @@ def gerar_termo_doacao(request):
         "bens": bens,
         "data": data_atual
     })
-
-
+###***********************************************************************************************************************
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
@@ -10081,8 +10342,7 @@ def enviar_plano_gestao(request):
         form = PlanoGestaoEscolarForm()
     
     return render(request, 'webapp/novo_plano.html', {'form': form})
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import PGEPlanoGestaoEscolar
@@ -10102,6 +10362,7 @@ def listar_pge_planos(request):
         'unidades': unidades,
         'filtro': filtro
     })
+###***********************************************************************************************************************
 
 def atualizar_status_plano(request, plano_id):
     if request.method == 'POST':
@@ -10115,8 +10376,7 @@ def atualizar_status_plano(request, plano_id):
         except PlanoGestaoEscolar.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Plano não encontrado'})
     return JsonResponse({'success': False, 'error': 'Requisição inválida'})
-
-
+###***********************************************************************************************************************
 
 from django.http import JsonResponse
 from .models import PGEPlanoGestaoEscolar
@@ -10134,7 +10394,7 @@ def obter_dados_unidade(request, unidade_nome):
         return JsonResponse({'erro': str(e)}, status=500)
     
     return JsonResponse({'erro': 'Unidade não encontrada'}, status=404)
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from .models import PlanoGestaoEscolar  # <- este é o modelo correto da tabela semedapp_planogestaoescolar
@@ -10153,8 +10413,7 @@ def plano_gestao_escolar_admin(request):
         'unidades': unidades,
         'filtro': filtro
     })
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from .forms import PlanoGestaoEscolarForm
@@ -10162,10 +10421,7 @@ from .forms import PlanoGestaoEscolarForm
 def novo_plano_gestao(request):
     form = PlanoGestaoEscolarForm()
     return render(request, 'webapp/novo_plano.html', {'form': form})
-
-
-
-
+###***********************************************************************************************************************
 
 from django.db.utils import OperationalError
 from django.contrib.auth import get_user_model
@@ -10227,3 +10483,1921 @@ def importar_dados(request):
 
     except OperationalError as e:
         return JsonResponse({"erro": f"Erro de banco de dados: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from .models import Certidao
+from datetime import date
+
+
+def emissao_certidoes(request):
+    certidoes = Certidao.objects.all().order_by('id')
+    return render(request, 'contabilidade/emissao_certidoes.html', {
+        'certidoes': certidoes,
+    })
+
+
+
+
+###***********************************************************************************************************************
+
+@csrf_exempt
+@require_POST
+def upload_arquivo_certidao(request):
+    certidao_id = request.POST.get('certidao_id')
+    arquivo = request.FILES.get('arquivo')
+
+    if not certidao_id or not arquivo:
+        return JsonResponse({'status': 'erro', 'mensagem': 'Dados incompletos'}, status=400)
+
+    try:
+        certidao = Certidao.objects.get(id=certidao_id)
+        certidao.arquivo = arquivo
+        certidao.save()
+        return JsonResponse({'status': 'ok'})
+    except Certidao.DoesNotExist:
+        return JsonResponse({'status': 'erro', 'mensagem': 'Certidão não encontrada'}, status=404)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from .models import Item  # ajuste conforme seu app/modelo
+
+def gerar_cotacao(request):
+    if request.method == 'POST':
+        selecionados_ids = request.POST.getlist('selecionados')
+        dados = []
+
+        itens = Item.objects.filter(id__in=selecionados_ids)
+
+        for item in itens:
+            quantidade = int(request.POST.get(f'quantidade_{item.id}', 1))
+            valor_raw = request.POST.get(f'valor_{item.id}', '').replace(',', '.')
+            valor_unitario = float(valor_raw) if valor_raw else 0.0
+            total = quantidade * valor_unitario
+
+            dados.append({
+                'item': item,
+                'quantidade': quantidade,
+                'valor_unitario': valor_unitario,
+                'total': total,
+            })
+
+        context = {
+            'dados': dados,
+        }
+
+        template = get_template('cotacao/pdf_cotacao.html')
+        html = template.render(context)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="cotacao.pdf"'
+
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return HttpResponse('Erro ao gerar PDF', status=500)
+        return response
+
+    # GET (exibe os itens)
+    itens = Item.objects.all()
+    return render(request, 'cotacao/gerar_cotacao.html', {'itens': itens})
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from django.db.models import Sum, F, ExpressionWrapper, FloatField
+from datetime import datetime
+from .models import LancamentoDiario
+
+def livro_diario(request):
+    lancamentos = LancamentoDiario.objects.all().order_by('data')
+    saldo = 0
+    resultados_mensais = {}
+    total_semestre1 = 0
+    total_semestre2 = 0
+
+    # Atualiza saldo de cada lançamento
+    for lanc in lancamentos:
+        saldo += lanc.recebimento or 0
+        saldo -= lanc.pagamento or 0
+        lanc.saldo = saldo
+
+    # Dicionário para nomes dos meses em português
+    meses_pt = {
+        1: 'Janeiro',
+        2: 'Fevereiro',
+        3: 'Março',
+        4: 'Abril',
+        5: 'Maio',
+        6: 'Junho',
+        7: 'Julho',
+        8: 'Agosto',
+        9: 'Setembro',
+        10: 'Outubro',
+        11: 'Novembro',
+        12: 'Dezembro'
+    }
+
+    # Cálculo mês a mês
+    for mes in range(1, 13):
+        recebimentos = lancamentos.filter(data__month=mes).aggregate(total=Sum('recebimento'))['total'] or 0
+        pagamentos = lancamentos.filter(data__month=mes).aggregate(total=Sum('pagamento'))['total'] or 0
+        total = recebimentos - pagamentos
+        nome_mes = meses_pt[mes]
+        resultados_mensais[nome_mes] = total
+
+    # Cálculo semestral e anual
+    total_semestre1 = sum([v for k, v in resultados_mensais.items() if k in ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho']])
+    total_semestre2 = sum([v for k, v in resultados_mensais.items() if k in ['Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']])
+    total_ano = total_semestre1 + total_semestre2
+
+    context = {
+        'lancamentos': lancamentos,
+        'saldo_hoje': saldo,
+        'resultados_mensais': resultados_mensais,
+        'resultado_semestre1': total_semestre1,
+        'resultado_semestre2': total_semestre2,
+        'resultado_ano': total_ano,
+    }
+    return render(request, 'contabilidade/livro_diario/listar.html', context)
+###***********************************************************************************************************************
+
+def adicionar_lancamento_diario(request):
+    if request.method == "POST":
+        try:
+            data = request.POST.get('data')
+            historico = request.POST.get('historico')
+            recebimento = float(request.POST.get('recebimento') or 0)
+            pagamento = float(request.POST.get('pagamento') or 0)
+
+            LancamentoDiario.objects.create(
+                data=data,
+                historico=historico,
+                recebimento=recebimento,
+                pagamento=pagamento
+            )
+            messages.success(request, "✅ Lançamento adicionado com sucesso!")
+        except Exception as e:
+            messages.error(request, f"❌ Erro ao adicionar lançamento: {e}")
+
+        return redirect('livro_diario')
+
+    return render(request, 'contabilidade/livro_diario/adicionar.html')
+###***********************************************************************************************************************
+
+def excluir_lancamento_diario(request, id):
+    lancamento = get_object_or_404(LancamentoDiario, id=id)
+    if request.method == "POST":
+        lancamento.delete()
+        messages.success(request, "✅ Lançamento excluído com sucesso!")
+        return redirect('livro_diario')
+    return render(request, 'contabilidade/livro_diario/excluir.html', {'lancamento': lancamento})
+###***********************************************************************************************************************
+
+import csv
+import pandas as pd
+from django.http import HttpResponse
+from xhtml2pdf import pisa
+from django.template.loader import render_to_string
+
+# Exportar PDF
+def exportar_livro_diario_pdf(request):
+    lancamentos = LancamentoDiario.objects.all().order_by('data')
+    saldo = 0
+    for lanc in lancamentos:
+        saldo += lanc.recebimento or 0
+        saldo -= lanc.pagamento or 0
+        lanc.saldo = saldo
+
+    html = render_to_string('contabilidade/livro_diario/livro_diario_pdf.html', {'lancamentos': lancamentos, 'saldo_hoje': saldo})
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="livro_diario.pdf"'
+    pisa.CreatePDF(html, dest=response)
+    return response
+
+# Exportar CSV
+def exportar_livro_diario_csv(request):
+    lancamentos = LancamentoDiario.objects.all().order_by('data')
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="livro_diario.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Data', 'Histórico', 'Recebimento', 'Pagamento', 'Saldo'])
+
+    saldo = 0
+    for lanc in lancamentos:
+        saldo += lanc.recebimento or 0
+        saldo -= lanc.pagamento or 0
+        writer.writerow([lanc.data, lanc.historico, lanc.recebimento, lanc.pagamento, saldo])
+
+    return response
+###***********************************************************************************************************************
+
+# Exportar Excel
+def exportar_livro_diario_excel(request):
+    lancamentos = LancamentoDiario.objects.all().order_by('data')
+    data = []
+    saldo = 0
+    for lanc in lancamentos:
+        saldo += lanc.recebimento or 0
+        saldo -= lanc.pagamento or 0
+        data.append({
+            'Data': lanc.data,
+            'Histórico': lanc.historico,
+            'Recebimento': lanc.recebimento,
+            'Pagamento': lanc.pagamento,
+            'Saldo': saldo
+        })
+
+    df = pd.DataFrame(data)
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="livro_diario.xlsx"'
+    df.to_excel(response, index=False)
+    return response
+###***********************************************************************************************************************
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Receita, EscolaPdde
+
+
+def get_info_receita_despesa(request, escola_id):
+    try:
+        escola = get_object_or_404(EscolaPdde, id=escola_id)
+        dados = Receita.objects.filter(escola=escola).aggregate(
+            saldo_anterior_custeio=Sum("saldo_anterior_custeio") or 0,
+            saldo_anterior_capital=Sum("saldo_anterior_capital") or 0,
+            valor_creditado_custeio=Sum("valor_creditado_custeio") or 0,
+            valor_creditado_capital=Sum("valor_creditado_capital") or 0,
+            recursos_proprios_custeio=Sum("recursos_proprios_custeio") or 0,
+            recursos_proprios_capital=Sum("recursos_proprios_capital") or 0,
+            rendimento_aplicacao_custeio=Sum("rendimento_aplicacao_custeio") or 0,
+            rendimento_aplicacao_capital=Sum("rendimento_aplicacao_capital") or 0,
+            valor_despesa_realizada_custeio=Sum("valor_despesa_realizada_custeio") or 0,
+            valor_despesa_realizada_capital=Sum("valor_despesa_realizada_capital") or 0,
+        )
+
+        saldo_anterior = (
+            dados["saldo_anterior_custeio"] + dados["saldo_anterior_capital"] +
+            dados["valor_creditado_custeio"] + dados["valor_creditado_capital"] +
+            dados["recursos_proprios_custeio"] + dados["recursos_proprios_capital"]
+        )
+        rendimentos = dados["rendimento_aplicacao_custeio"] + dados["rendimento_aplicacao_capital"]
+        receita_total = saldo_anterior + rendimentos
+        despesa_total = dados["valor_despesa_realizada_custeio"] + dados["valor_despesa_realizada_capital"]
+        superavit_deficit = receita_total - despesa_total
+
+        return JsonResponse({
+            "saldo_anterior": float(saldo_anterior),
+            "rendimentos": float(rendimentos),
+            "receita_total": float(receita_total),
+            "despesa_total": float(despesa_total),
+            "superavit_deficit": float(superavit_deficit),
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao buscar informações: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+def get_receita_info(request, escola_id):
+    try:
+        escola = get_object_or_404(EscolaPdde, id=escola_id)
+        receita = Receita.objects.filter(escola=escola).first()
+
+        if not receita:
+            return JsonResponse({"error": "Nenhuma receita encontrada."})
+
+        return JsonResponse({
+            "conselho": escola.nome_conselho or "",
+            "cnpj": escola.cnpj or "",
+            "programas": [receita.programa.nome],
+            "rendimentos": float(receita.rendimento_aplicacao_custeio) + float(receita.rendimento_aplicacao_capital),
+            "saldo_anterior": float(receita.saldo_anterior_custeio) + float(receita.saldo_anterior_capital) +
+                              float(receita.valor_creditado_custeio) + float(receita.valor_creditado_capital) +
+                              float(receita.recursos_proprios_custeio) + float(receita.recursos_proprios_capital),
+            "valor_total_receita_custeio": float(receita.valor_total_receita_custeio),
+            "valor_total_receita_capital": float(receita.valor_total_receita_capital),
+            "valor_despesa_realizada_custeio": float(receita.valor_despesa_realizada_custeio),
+            "valor_despesa_realizada_capital": float(receita.valor_despesa_realizada_capital),
+            "superavit_deficit": (float(receita.valor_total_receita_custeio) +
+                                  float(receita.valor_total_receita_capital) -
+                                  float(receita.valor_despesa_realizada_custeio) -
+                                  float(receita.valor_despesa_realizada_capital))
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao buscar informações: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+from django.db.models import Sum
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Receita, EscolaPdde, Programa, SemedAppEscolaPddeProgramas
+
+
+def get_info_completa_escola(request, escola_id):
+    try:
+        escola = get_object_or_404(EscolaPdde, id=escola_id)
+
+        # Programas vinculados
+        programas_ids = SemedAppEscolaPddeProgramas.objects.filter(escolapdde_id=escola_id).values_list('programa_id', flat=True)
+        programas = Programa.objects.filter(id__in=programas_ids).values_list('nome', flat=True)
+
+        # Consulta dados financeiros
+        dados = Receita.objects.filter(escola=escola).aggregate(
+            saldo_anterior_custeio=Sum("saldo_anterior_custeio") or 0,
+            saldo_anterior_capital=Sum("saldo_anterior_capital") or 0,
+            valor_creditado_custeio=Sum("valor_creditado_custeio") or 0,
+            valor_creditado_capital=Sum("valor_creditado_capital") or 0,
+            recursos_proprios_custeio=Sum("recursos_proprios_custeio") or 0,
+            recursos_proprios_capital=Sum("recursos_proprios_capital") or 0,
+            rendimento_aplicacao_custeio=Sum("rendimento_aplicacao_custeio") or 0,
+            rendimento_aplicacao_capital=Sum("rendimento_aplicacao_capital") or 0,
+            valor_despesa_realizada_custeio=Sum("valor_despesa_realizada_custeio") or 0,
+            valor_despesa_realizada_capital=Sum("valor_despesa_realizada_capital") or 0,
+        )
+
+        saldo_anterior = (
+            dados["saldo_anterior_custeio"] + dados["saldo_anterior_capital"] +
+            dados["valor_creditado_custeio"] + dados["valor_creditado_capital"] +
+            dados["recursos_proprios_custeio"] + dados["recursos_proprios_capital"]
+        )
+        rendimentos = dados["rendimento_aplicacao_custeio"] + dados["rendimento_aplicacao_capital"]
+        receita_total = saldo_anterior + rendimentos
+        despesa_total = dados["valor_despesa_realizada_custeio"] + dados["valor_despesa_realizada_capital"]
+        superavit_deficit = receita_total - despesa_total
+
+        return JsonResponse({
+            # Dados financeiros
+            "saldo_anterior": float(saldo_anterior),
+            "rendimentos": float(rendimentos),
+            "receita_total": float(receita_total),
+            "despesa_total": float(despesa_total),
+            "superavit_deficit": float(superavit_deficit),
+
+            # Dados da escola
+            "conselho": escola.nome_conselho or "",
+            "cnpj": escola.cnpj or "",
+            "endereco": escola.endereco or "",
+            "uf": escola.uf or "",
+            "programas": list(programas),
+        })
+
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao buscar informações: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+from django.db.models import Sum
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.utils import timezone
+from .models import LancamentoBancario, Receita
+
+# Consolidado Contas Bancárias
+def get_consolidado_contas(request):
+    try:
+        hoje = timezone.now()
+        inicio_mes = hoje.replace(day=1)
+
+        saldo_total = LancamentoBancario.objects.aggregate(total=Sum('valor'))['total'] or 0
+        despesas_mes = LancamentoBancario.objects.filter(tipo='debito', data__gte=inicio_mes).aggregate(total=Sum('valor'))['total'] or 0
+        receitas_mes = LancamentoBancario.objects.filter(tipo='credito', data__gte=inicio_mes).aggregate(total=Sum('valor'))['total'] or 0
+
+        detalhes = LancamentoBancario.objects.all().values(
+            'id', 'categoria', 'tipo', 'valor', 'data'
+        )
+
+        dados = {
+            "saldo_total": round(saldo_total, 2),
+            "despesas_mes": round(despesas_mes, 2),
+            "receitas_mes": round(receitas_mes, 2),
+            "detalhes_contas": list(detalhes)
+        }
+        return JsonResponse(dados)
+    
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao buscar dados das contas: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+# Consolidado Receita PDDE
+def get_consolidado_receita(request):
+    try:
+        dados = Receita.objects.aggregate(
+            total_receita_custeio=Sum('valor_total_receita_custeio'),
+            total_receita_capital=Sum('valor_total_receita_capital'),
+            total_despesa_custeio=Sum('valor_despesa_realizada_custeio'),
+            total_despesa_capital=Sum('valor_despesa_realizada_capital')
+        )
+
+        receita_custeio = dados['total_receita_custeio'] or 0
+        receita_capital = dados['total_receita_capital'] or 0
+        despesa_custeio = dados['total_despesa_custeio'] or 0
+        despesa_capital = dados['total_despesa_capital'] or 0
+
+        total_entradas = receita_custeio + receita_capital
+        total_despesas = despesa_custeio + despesa_capital
+        saldo_final = total_entradas - total_despesas
+
+        detalhes = Receita.objects.values(
+            'programa', 'data_inicio', 'data_fim',
+            'valor_total_receita_custeio', 'valor_total_receita_capital',
+            'valor_despesa_realizada_custeio', 'valor_despesa_realizada_capital'
+        )
+
+        dados = {
+            "saldo_total": round(saldo_final, 2),
+            "despesas_total": round(total_despesas, 2),
+            "receitas_total": round(total_entradas, 2),
+            "detalhes_receita": list(detalhes)
+        }
+
+        return JsonResponse(dados)
+
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao buscar dados: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+# Síntese Receita PDDE
+from django.http import JsonResponse
+from django.db.models import Sum
+from .models import Receita
+
+def get_sintese_receita(request):
+    try:
+        dados = Receita.objects.aggregate(
+            saldo_reprogramado_ea_custeio=Sum('saldo_anterior_custeio') or 0,
+            saldo_reprogramado_ea_capital=Sum('saldo_anterior_capital') or 0,
+            valor_creditado_fnde_ee_custeio=Sum('valor_creditado_custeio') or 0,
+            valor_creditado_fnde_ee_capital=Sum('valor_creditado_capital') or 0,
+            recursos_proprios_custeio=Sum('recursos_proprios_custeio') or 0,
+            recursos_proprios_capital=Sum('recursos_proprios_capital') or 0,
+            rendimento_aplicacao_custeio=Sum('rendimento_aplicacao_custeio') or 0,
+            rendimento_aplicacao_capital=Sum('rendimento_aplicacao_capital') or 0,
+            devolucao_fnde_custeio=Sum('devolucao_fnde_custeio') or 0,
+            devolucao_fnde_capital=Sum('devolucao_fnde_capital') or 0,
+            valor_despesa_realizada_custeio=Sum('valor_despesa_realizada_custeio') or 0,
+            valor_despesa_realizada_capital=Sum('valor_despesa_realizada_capital') or 0,
+            saldo_reprogramado_es_custeio=Sum('saldo_reprogramar_custeio') or 0,
+            saldo_reprogramado_es_capital=Sum('saldo_reprogramar_capital') or 0,
+            saldo_devolvido_custeio=Sum('saldo_devolvido_custeio') or 0,
+            saldo_devolvido_capital=Sum('saldo_devolvido_capital') or 0,
+            escolas_atendidas=Sum('escolas_atendidas') or 0,
+        )
+
+        total_receita_custeio = (
+            (dados['saldo_reprogramado_ea_custeio'] or 0) + 
+            (dados['valor_creditado_fnde_ee_custeio'] or 0) + 
+            (dados['recursos_proprios_custeio'] or 0) + 
+            (dados['rendimento_aplicacao_custeio'] or 0)
+        )
+        total_receita_capital = (
+            (dados['saldo_reprogramado_ea_capital'] or 0) + 
+            (dados['valor_creditado_fnde_ee_capital'] or 0) + 
+            (dados['recursos_proprios_capital'] or 0) + 
+            (dados['rendimento_aplicacao_capital'] or 0)
+        )
+        total_receita = total_receita_custeio + total_receita_capital
+
+        total_despesa = (dados['valor_despesa_realizada_custeio'] or 0) + (dados['valor_despesa_realizada_capital'] or 0)
+
+        saldo_reprogramado = (dados['saldo_reprogramado_es_custeio'] or 0) + (dados['saldo_reprogramado_es_capital'] or 0)
+
+        percentual_execucao = (total_despesa / total_receita * 100) if total_receita > 0 else 0
+
+        recursos_proprios = (dados['recursos_proprios_custeio'] or 0) + (dados['recursos_proprios_capital'] or 0)
+        rendimentos_aplicacao = (dados['rendimento_aplicacao_custeio'] or 0) + (dados['rendimento_aplicacao_capital'] or 0)
+        devolucoes_fnde = (dados['devolucao_fnde_custeio'] or 0) + (dados['devolucao_fnde_capital'] or 0)
+        escolas_atendidas = dados['escolas_atendidas'] or 0
+
+        response = {
+            "sintese": {
+                "saldo_reprogramado_ea": {
+                    "custeio": float(dados['saldo_reprogramado_ea_custeio'] or 0),
+                    "capital": float(dados['saldo_reprogramado_ea_capital'] or 0),
+                },
+                "valor_creditado_fnde_ee": {
+                    "custeio": float(dados['valor_creditado_fnde_ee_custeio'] or 0),
+                    "capital": float(dados['valor_creditado_fnde_ee_capital'] or 0),
+                },
+                "recursos_proprios": {
+                    "custeio": float(dados['recursos_proprios_custeio'] or 0),
+                    "capital": float(dados['recursos_proprios_capital'] or 0),
+                },
+                "rendimento_aplicacao": {
+                    "custeio": float(dados['rendimento_aplicacao_custeio'] or 0),
+                    "capital": float(dados['rendimento_aplicacao_capital'] or 0),
+                },
+                "devolucao_fnde": {
+                    "custeio": float(dados['devolucao_fnde_custeio'] or 0),
+                    "capital": float(dados['devolucao_fnde_capital'] or 0),
+                },
+                "valor_total_receita": {
+                    "custeio": float(total_receita_custeio),
+                    "capital": float(total_receita_capital),
+                },
+                "valor_despesa_realizada": {
+                    "custeio": float(dados['valor_despesa_realizada_custeio'] or 0),
+                    "capital": float(dados['valor_despesa_realizada_capital'] or 0),
+                },
+                "saldo_reprogramado_es": {
+                    "custeio": float(dados['saldo_reprogramado_es_custeio'] or 0),
+                    "capital": float(dados['saldo_reprogramado_es_capital'] or 0),
+                },
+                "saldo_devolvido": {
+                    "custeio": float(dados['saldo_devolvido_custeio'] or 0),
+                    "capital": float(dados['saldo_devolvido_capital'] or 0),
+                },
+                "escolas_atendidas": int(escolas_atendidas),
+                # 👇 Mantendo para Dashboard
+                "resumo_cards": {
+                    "receita_total": float(total_receita),
+                    "despesa_total": float(total_despesa),
+                    "saldo_reprogramado": float(saldo_reprogramado),
+                    "percentual_execucao": round(percentual_execucao, 2),
+                    "recursos_proprios": float(recursos_proprios),
+                    "rendimentos_aplicacao": float(rendimentos_aplicacao),
+                    "devolucoes_fnde": float(devolucoes_fnde),
+                    "escolas_atendidas": int(escolas_atendidas),
+                }
+            }
+        }
+        return JsonResponse(response)
+
+    except Exception as e:
+        return JsonResponse({"error": f"Erro ao buscar síntese: {str(e)}"}, status=500)
+###***********************************************************************************************************************
+
+# Views da Página
+def sintese_pdde_view(request):
+    return render(request, 'pdde/sintese_pdde.html')
+###***********************************************************************************************************************
+
+def cadastrar_info_pdde(request):
+    return render(request, 'pdde/cadastrar_info_pdde.html')
+
+###***********************************************************************************************************************
+
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+import json
+
+def gerar_pdf_sintese(request):
+    try:
+        # Busca os dados da API interna
+        from .views import get_sintese_receita
+        response = get_sintese_receita(request)
+
+        # Converte o JSON para dicionário
+        data = json.loads(response.content.decode('utf-8'))
+
+        # Renderiza o template para HTML com os dados
+        html_string = render_to_string('contabilidade/sintese_pdf.html', {'dados': data})
+
+        # Gera o PDF
+        html = HTML(string=html_string)
+        pdf = html.write_pdf()
+
+        # Retorna o PDF como resposta HTTP
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="sintese_execucao_pdde.pdf"'
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Erro ao gerar PDF: {str(e)}", status=500)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from django.http import FileResponse, Http404
+import os
+from django.conf import settings
+
+def lista_manuais(request):
+    manuais = [
+        {"nome": "Constituição da UEX 2024", "arquivo": "CONSTITUIÇÃO DA UEX 2024.pdf"},
+        {"nome": "Guia de Execução dos Recursos do PDDE", "arquivo": "GUIADEEXECUODOSRECURSOSDOPDDEv4FINAL novo.pdf"},
+        {"nome": "Novidades Resolução 15 PDDE", "arquivo": "Novidades_Resoluo15PDDE.pdf"},
+        {"nome": "Resolução nº 6/2023 - Utilização de Saldos Financeiros", "arquivo": "RESOLUÇÃO 6, de 4-5-23 Autoriza utilização de saldos financeiros.pdf"},
+        {"nome": "Resolução nº 15/2021", "arquivo": "RESOLUÇÃO Nº 15, DE 16 DE SETEMBRO DE 2021.pdf"},
+    ]
+    return render(request, 'contabilidade/manuais.html', {'manuais': manuais})
+###***********************************************************************************************************************
+
+def download_manual(request, arquivo):
+    caminho = os.path.join(settings.MEDIA_ROOT, 'download_manual', arquivo)
+    if os.path.exists(caminho):
+        return FileResponse(open(caminho, 'rb'), as_attachment=True, filename=arquivo)
+    else:
+        raise Http404("Arquivo não encontrado.")
+
+###***********************************************************************************************************************
+
+from django.http import JsonResponse
+from .models import PlanoGestaoEscolar, MotivoIndeferimento
+
+def salvar_motivo_indeferimento(request):
+    if request.method == 'POST':
+        plano_id = request.POST.get('plano_id')
+        motivo = request.POST.get('motivo')
+        prazo = request.POST.get('prazo')
+        parecer_direcao = request.POST.get('parecer_direcao')
+        orientacoes = request.POST.get('orientacoes')
+
+        if not plano_id or not motivo or not prazo or not parecer_direcao:
+            return JsonResponse({'success': False, 'error': 'Todos os campos obrigatórios devem ser preenchidos.'})
+
+        try:
+            plano = PlanoGestaoEscolar.objects.get(id=plano_id)
+            indeferimento = MotivoIndeferimento.objects.create(
+                plano=plano,
+                motivo=motivo,
+                prazo_reenvio=prazo,
+                parecer_direcao=parecer_direcao,
+                orientacoes=orientacoes
+            )
+
+            if request.FILES.get('anexo_parecer'):
+                indeferimento.anexo_parecer = request.FILES['anexo_parecer']
+                indeferimento.save()
+
+            return JsonResponse({'success': True})
+        except PlanoGestaoEscolar.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Plano de gestão não encontrado.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'success': False, 'error': 'Método inválido.'})
+###***********************************************************************************************************************
+
+from django.templatetags.static import static
+from django.shortcuts import get_object_or_404
+from weasyprint import HTML, CSS
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from .models import PlanoGestaoEscolar, MotivoIndeferimento
+
+def gerar_pdf_indeferimento(request, plano_id):
+    plano = get_object_or_404(PlanoGestaoEscolar, id=plano_id)
+    indeferimento = MotivoIndeferimento.objects.filter(plano=plano).first()
+
+    # URLs absolutas das imagens
+    logo_url = request.build_absolute_uri(static('assets/dist/img/logo_prefeitura.png'))
+    footer_logo_url = request.build_absolute_uri(static('assets/dist/img/logoFooter.png'))
+
+    # Renderização do template
+    html_string = render_to_string(
+        'setor_pedagogico/pge_indeferimento_pdf.html',
+        {
+            'plano': plano,
+            'indeferimento': indeferimento,
+            'logo_url': logo_url,
+            'footer_logo_url': footer_logo_url,
+        }
+    )
+
+    # Geração do PDF com base_url e página A4 configurada
+    pdf = HTML(string=html_string, base_url=request.build_absolute_uri()).write_pdf()
+
+    # Retorno do PDF na resposta
+    response = HttpResponse(pdf, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="indeferimento_plano_{plano.id}.pdf"'
+    return response
+###***********************************************************************************************************************
+
+from django.core.mail import EmailMessage
+
+def enviar_email_indeferimento(request):
+    if request.method == "POST":
+        plano_id = request.POST.get('plano_id')
+        email_destino = request.POST.get('email_destino')
+        mensagem = request.POST.get('mensagem')
+
+        plano = get_object_or_404(PlanoGestaoEscolar, id=plano_id)
+        indeferimento = MotivoIndeferimento.objects.filter(plano=plano).first()
+
+        # Gera o PDF
+        from .views import gerar_pdf_indeferimento
+        response = gerar_pdf_indeferimento(request, plano_id)
+        pdf_content = response.content
+
+        # Enviar e-mail
+        email = EmailMessage(
+            subject=f"Indeferimento do Plano de Gestão - {plano.unidade_ensino}",
+            body=mensagem,
+            to=[email_destino],
+        )
+        email.attach(f"Indeferimento_{plano.unidade_ensino}.pdf", pdf_content, 'application/pdf')
+        email.send()
+
+        return JsonResponse({'success': True})
+    return JsonResponse({'error': 'Requisição inválida'})
+###***********************************************************************************************************************
+
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+from .models import CadastroEI
+import tempfile
+import os
+
+def gerar_pdf_mapeamento(request):
+    nome_escola = request.GET.get('nome_escola')
+    turma = request.GET.get('turma')
+    ano = request.GET.get('ano')
+    modalidade = request.GET.get('modalidade')
+
+    alunos = CadastroEI.objects.all()
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if turma:
+        alunos = alunos.filter(turma__nome__icontains=turma)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    # Contagens com base no filtro
+    total_escolas = alunos.values('unidade_ensino').distinct().count()
+    total_alunos = alunos.count()
+    total_educadores = alunos.values('professor').distinct().exclude(professor=None).count()
+    
+    formulario_1 = alunos.exclude(questao_linguagem_11=None).exclude(questao_linguagem_11='').count()
+    formulario_2 = alunos.exclude(questao_matematica_1=None).exclude(questao_matematica_1='').count()
+
+    contexto = {
+        'total_escolas': total_escolas,
+        'total_alunos': total_alunos,
+        'total_educadores': total_educadores,
+        'formulario_1': formulario_1,
+        'formulario_2': formulario_2,
+    }
+
+    html_string = render_to_string('relatorios/mapeamento_aplicacao.html', contexto)
+
+    # Criação do PDF
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string).write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="mapeamento_aplicacao.pdf"'
+        return response
+    finally:
+        os.remove(path)
+###***********************************************************************************************************************
+
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+from semedapp.models import CadastroEI, Turma
+from django.db.models import Q
+import tempfile, os
+
+def gerar_pdf_detalhado(request):
+    # Contar todas as crianças com LAUDO na REDE inteira
+    campos_gerais_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
+    campos_gerais_linguagem = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
+    filtro_total_laudo = Q()
+    for campo in campos_gerais_matematica + campos_gerais_linguagem:
+        filtro_total_laudo |= Q(**{campo: 'CRIANÇA COM LAUDO'})
+    total_laudo_rede = CadastroEI.objects.filter(avaliado='SIM').filter(filtro_total_laudo).values('id_matricula').distinct().count()
+
+    # Filtros de busca
+    nome_escola = request.GET.get('nome_escola', '')
+    turma = request.GET.get('turma', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    alunos = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if turma:
+        alunos = alunos.filter(turma__nome__icontains=turma)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    total_alunos = alunos.count()
+    total_turmas = Turma.objects.count()
+
+    total_excelente = 0
+    total_regular = 0
+    total_necessita_melhorar = 0
+    menor_desempenho_qtd = 0
+    faltantes_matematica = 0
+    faltantes_linguagem = 0
+
+    dados_linguagem = {}
+    dados_matematica = {}
+
+    total_respostas = {
+        'CERTO': 0, 'ERRADO': 0, 'PARCIAL': 0,
+        'BRANCO': 0, 'FALTOU': 0, 'CRIANÇA COM LAUDO': total_laudo_rede
+    }
+
+    # Linguagem (exceto Q11 e Q13)
+    linguagem_validas = [i for i in range(12, 21) if i != 13]
+    for i in linguagem_validas:
+        campo = f"questao_linguagem_{i}"
+        dados_linguagem[str(i)] = {
+            'CERTO': alunos.filter(**{campo: 'CERTO'}).count(),
+            'ERRADO': alunos.filter(**{campo: 'ERRADO'}).count(),
+            'PARCIAL': alunos.filter(**{campo: 'PARCIAL'}).count(),
+            'BRANCO': alunos.filter(Q(**{campo: ''}) | Q(**{campo: 'BRANCO'})).count(),
+            'FALTOU': alunos.filter(Q(**{campo: None}) | Q(**{campo: 'FALTOU'})).count(),
+            'LAUDO': alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+        }
+        for tipo in ['CERTO', 'ERRADO', 'PARCIAL']:
+            total_respostas[tipo] += dados_linguagem[str(i)][tipo]
+        total_respostas['BRANCO'] += dados_linguagem[str(i)]['BRANCO']
+        total_respostas['FALTOU'] += dados_linguagem[str(i)]['FALTOU']
+
+    # Matemática
+    for i in range(1, 11):
+        campo = f"questao_matematica_{i}"
+        dados_matematica[str(i)] = {
+            'CERTO': alunos.filter(**{campo: 'CERTO'}).count(),
+            'ERRADO': alunos.filter(**{campo: 'ERRADO'}).count(),
+            'PARCIAL': alunos.filter(**{campo: 'PARCIAL'}).count(),
+            'BRANCO': alunos.filter(Q(**{campo: ''}) | Q(**{campo: 'BRANCO'})).count(),
+            'FALTOU': alunos.filter(Q(**{campo: None}) | Q(**{campo: 'FALTOU'})).count(),
+            'LAUDO': alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+        }
+        for tipo in ['CERTO', 'ERRADO', 'PARCIAL']:
+            total_respostas[tipo] += dados_matematica[str(i)][tipo]
+        total_respostas['BRANCO'] += dados_matematica[str(i)]['BRANCO']
+        total_respostas['FALTOU'] += dados_matematica[str(i)]['FALTOU']
+
+    # Classificação por desempenho
+    for aluno in alunos:
+        q_mat = [getattr(aluno, f"questao_matematica_{i}") for i in range(1, 11)]
+        q_lin = [getattr(aluno, f"questao_linguagem_{i}") for i in linguagem_validas]
+        acertos = q_mat.count('CERTO') + q_lin.count('CERTO')
+        media = (acertos / 18) * 100 if acertos else 0
+
+        if media >= 90:
+            total_excelente += 1
+        elif media >= 50:
+            total_regular += 1
+        else:
+            total_necessita_melhorar += 1
+            menor_desempenho_qtd += 1
+
+        if all(q in [None, '', 'FALTOU'] for q in q_mat):
+            faltantes_matematica += 1
+        if all(q in [None, '', 'FALTOU'] for q in q_lin):
+            faltantes_linguagem += 1
+
+
+    participacao_linguagem = f"{round(((total_alunos - faltantes_linguagem) / total_alunos) * 100)}%" if total_alunos else "0%"
+    participacao_matematica = f"{round(((total_alunos - faltantes_matematica) / total_alunos) * 100)}%" if total_alunos else "0%"
+
+    # Modalidades por questão 11 e 13 (sem duplicações)
+    modalidades = ['CC', 'SC', 'PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']
+    modalidade_counts = {}
+    for mod in modalidades:
+        alunos_com_modalidade = alunos.filter(
+            Q(questao_linguagem_11=mod) | Q(questao_linguagem_13=mod)
+        ).values('id_matricula').distinct()
+        modalidade_counts[mod] = alunos_com_modalidade.count()
+
+    contexto = {
+        'total_alunos_avaliados': total_alunos,
+        'total_turmas': total_turmas,
+        'total_excelente': total_excelente,
+        'total_regular': total_regular,
+        'total_necessita_melhorar': total_necessita_melhorar,
+        'menor_desempenho_qtd': menor_desempenho_qtd,
+        'total_faltantes_matematica': faltantes_matematica,
+        'total_faltantes_linguagem': faltantes_linguagem,
+        'participacao_linguagem': participacao_linguagem,
+        'participacao_matematica': participacao_matematica,
+        'dados_linguagem': dados_linguagem,
+        'dados_matematica': dados_matematica,
+        'total_laudo': total_laudo_rede,
+        'total_modalidade': modalidade_counts,
+        'total_respostas': total_respostas,
+        'escola': nome_escola or 'Todas',
+    }
+
+    html_string = render_to_string('relatorios/relatorio_detalhado.html', contexto)
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+    try:
+        HTML(string=html_string).write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="relatorio_detalhado.pdf"'
+        return response
+    finally:
+        os.remove(path)
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from semedapp.models import CadastroEI, Turma
+from django.db.models import Q
+
+def relatorio_saida_rede(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    alunos = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    unidades = alunos.values_list('unidade_ensino', flat=True).distinct()
+    resultado_por_unidade = []
+
+    for unidade in unidades:
+        alunos_nei = alunos.filter(unidade_ensino=unidade)
+        total_nei = alunos_nei.count()
+
+        dados_matematica = {}
+        dados_linguagem = {}
+        faltantes_matematica = 0
+        faltantes_linguagem = 0
+
+        # Modalidades
+        modalidades_q11 = {}
+        modalidades_q13 = {}
+        modalidades_q11_labels = ['CC', 'SC']
+        modalidades_q13_labels = ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']
+
+        for label in modalidades_q11_labels:
+            modalidades_q11[label] = alunos_nei.filter(questao_linguagem_11=label).values('id_matricula').distinct().count()
+
+        for label in modalidades_q13_labels:
+            modalidades_q13[label] = alunos_nei.filter(questao_linguagem_13=label).values('id_matricula').distinct().count()
+
+        # Matemática
+        for i in range(1, 11):
+            campo = f"questao_matematica_{i}"
+            dados_matematica[i] = {
+                'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{campo: ''}).count(),
+                'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{f"{campo}__isnull": True}).count(),
+            }
+            faltantes_matematica += dados_matematica[i]['FALTOU']
+
+        # Linguagem (excluindo Q13)
+        for i in [i for i in range(12, 21) if i != 13]:
+            campo = f"questao_linguagem_{i}"
+            dados_linguagem[i] = {
+                'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{campo: ''}).count(),
+                'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{f"{campo}__isnull": True}).count(),
+            }
+            faltantes_linguagem += dados_linguagem[i]['FALTOU']
+
+        participacao_matematica = round(((total_nei - faltantes_matematica) / total_nei) * 100) if total_nei else 0
+        participacao_linguagem = round(((total_nei - faltantes_linguagem) / total_nei) * 100) if total_nei else 0
+
+        resultado_por_unidade.append({
+            'unidade': unidade,
+            'total_nei': total_nei,
+            'dados_matematica': dados_matematica,
+            'dados_linguagem': dados_linguagem,
+            'participacao_matematica': participacao_matematica,
+            'participacao_linguagem': participacao_linguagem,
+            'modalidades_q11': modalidades_q11,
+            'modalidades_q13': modalidades_q13,
+        })
+
+    contexto = {
+        'resultado_por_unidade': resultado_por_unidade,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'ano': ano,
+            'modalidade': modalidade,
+        }
+    }
+
+    return render(request, 'relatorios/relatorio_saida_rede.html', contexto)
+###***********************************************************************************************************************
+
+def gerar_pdf_saida_rede(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    alunos = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    unidades = alunos.values_list('unidade_ensino', flat=True).distinct()
+    resultado_por_unidade = []
+
+    for unidade in unidades:
+        alunos_nei = alunos.filter(unidade_ensino=unidade)
+        total_nei = alunos_nei.count()
+
+        dados_matematica = {}
+        dados_linguagem = {}
+
+        faltantes_matematica = 0
+        faltantes_linguagem = 0
+
+        # Questões de Matemática
+        for i in range(1, 11):
+            campo = f"questao_matematica_{i}"
+            dados_matematica[i] = {
+                'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{campo: 'BRANCO'}).count(),  # ✅ corrigido
+                'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{campo: 'FALTOU'}).count(),  # ✅ corrigido
+            }
+            faltantes_matematica += dados_matematica[i]['FALTOU']
+
+
+        # Questões de Linguagem (exceto Q13)
+        for i in [i for i in range(12, 21) if i != 13]:
+            campo = f"questao_linguagem_{i}"
+            dados_linguagem[i] = {
+                'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{campo: 'BRANCO'}).count(),  # ✅ corrigido
+                'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{campo: 'FALTOU'}).count(),  # ✅ corrigido
+            }
+            faltantes_linguagem += dados_linguagem[i]['FALTOU']
+
+
+        # ✅ Modalidades Q13 (tem que estar dentro do loop)
+        # Modalidades da questão 13 (Q13)
+        # Modalidades Q13
+        # Modalidades da questão 13 (Q13)
+        modalidades_q13 = {}
+        for modalidade in ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']:
+            modalidades_q13[modalidade] = alunos_nei.filter(questao_linguagem_13=modalidade).count()
+
+        # Modalidades da questão 11 (Q11)
+        modalidades_q11 = {}
+        for modalidade in ['CC', 'SC']:
+            modalidades_q11[modalidade] = alunos_nei.filter(questao_linguagem_11=modalidade).count()
+
+
+
+        # Participação
+        participacao_matematica = round(((total_nei - faltantes_matematica) / total_nei) * 100) if total_nei else 0
+        participacao_linguagem = round(((total_nei - faltantes_linguagem) / total_nei) * 100) if total_nei else 0
+
+        # Resultado final por unidade
+        resultado_por_unidade.append({
+        'unidade': unidade,
+        'total_nei': total_nei,
+        'dados_matematica': dados_matematica,
+        'dados_linguagem': dados_linguagem,
+        'participacao_matematica': participacao_matematica,
+        'participacao_linguagem': participacao_linguagem,
+        'modalidades_q11': modalidades_q11,
+        'modalidades_q13': modalidades_q13,
+    })
+
+        
+    contexto = {
+        'resultado_por_unidade': resultado_por_unidade,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'ano': ano,
+            'modalidade': modalidade,
+        }
+    }
+
+    # renderiza PDF com weasyprint
+    html_string = render_to_string('relatorios/relatorio_saida_rede.html', contexto)
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string).write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="relatorio_saida_rede.pdf"'
+        return response
+    finally:
+        os.remove(path)
+###***********************************************************************************************************************
+
+from pptx import Presentation
+from pptx.util import Inches, Pt
+from io import BytesIO
+from django.http import HttpResponse
+from .models import CadastroEI
+import matplotlib.pyplot as plt
+import base64
+
+
+# 🔧 Função para gerar gráficos em base64
+def gerar_grafico_base64(campo, categorias, alunos, titulo):
+    escolas = alunos.values_list('unidade_ensino', flat=True).distinct()
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    width = 0.8 / len(escolas)  # largura de cada barra ajustada ao número de escolas
+    x = range(len(categorias))
+
+    for idx, escola in enumerate(escolas):
+        dados = [alunos.filter(unidade_ensino=escola, **{campo: c}).count() for c in categorias]
+        positions = [i + (idx * width) for i in x]
+        bars = ax.bar(positions, dados, width=width, label=escola)
+        ax.bar_label(bars, labels=[str(d) for d in dados], fontsize=8, padding=2)
+
+    ax.set_title(titulo)
+    ax.set_ylabel("Total")
+    ax.set_xticks([i + width*(len(escolas)-1)/2 for i in x])
+    ax.set_xticklabels(categorias, rotation=45)
+    ax.legend(fontsize=6)
+    plt.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png')
+    plt.close(fig)
+    return base64.b64encode(buffer.getvalue()).decode()
+
+
+# 🔧 Função para adicionar slide com imagem (gráfico)
+def adicionar_slide_com_imagem(prs, titulo, imagem_base64):
+    slide = prs.slides.add_slide(prs.slide_layouts[5])
+    slide.shapes.title.text = titulo
+    imagem_bytes = BytesIO(base64.b64decode(imagem_base64))
+    slide.shapes.add_picture(imagem_bytes, Inches(0.5), Inches(1.5), height=Inches(4.5))
+
+
+def exportar_pptx_saida_rede(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    alunos = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    unidades = alunos.values_list('unidade_ensino', flat=True).distinct()
+    prs = Presentation()
+
+    # Slide de título
+    title_slide_layout = prs.slide_layouts[0]
+    prs.slides.add_slide(title_slide_layout).shapes.title.text = "RELATÓRIO SAMACC 2025"
+
+    # Slide de Mapeamento
+    slide_mapeamento = prs.slides.add_slide(prs.slide_layouts[5])
+    slide_mapeamento.shapes.title.text = "Mapeamento de Aplicação"
+    total_escolas = alunos.values('unidade_ensino').distinct().count()
+    total_alunos = alunos.count()
+    total_educadores = alunos.values('professor').distinct().exclude(professor=None).count()
+    formulario_1 = alunos.exclude(questao_linguagem_11=None).exclude(questao_linguagem_11='').count()
+    formulario_2 = alunos.exclude(questao_matematica_1=None).exclude(questao_matematica_1='').count()
+
+    table = slide_mapeamento.shapes.add_table(5, 2, Inches(0.5), Inches(1.5), Inches(9), Inches(3)).table
+    dados_mapeamento = [
+        ("Escolas Atendidas", total_escolas),
+        ("Total de Alunos", f"{total_alunos} alunos"),
+        ("Educadores", total_educadores),
+        ("Formulários - 1º Caderno (Linguagem)", formulario_1),
+        ("Formulários - 2º Caderno (Matemática)", formulario_2),
+    ]
+    for i, (label, value) in enumerate(dados_mapeamento):
+        table.cell(i, 0).text = label
+        table.cell(i, 1).text = str(value)
+        for paragraph in table.cell(i, 0).text_frame.paragraphs + table.cell(i, 1).text_frame.paragraphs:
+            paragraph.font.size = Pt(14)
+
+    # Tabelas por unidade (questões)
+    def add_table(slide, title_text, dados, top):
+        rows = len(dados) + 1
+        cols = 7
+        table_shape = slide.shapes.add_table(rows, cols, Inches(0.3), top, Inches(9), Inches(0.4 + 0.2 * rows))
+        table = table_shape.table
+        headers = ['Q', 'CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'LAUDO', 'FALTOU']
+        for j, header in enumerate(headers):
+            table.cell(0, j).text = header
+            table.cell(0, j).text_frame.paragraphs[0].font.bold = True
+        for i, (q, resultado) in enumerate(dados.items(), start=1):
+            table.cell(i, 0).text = str(q)
+            table.cell(i, 1).text = str(resultado['CERTO'])
+            table.cell(i, 2).text = str(resultado['ERRADO'])
+            table.cell(i, 3).text = str(resultado['PARCIAL'])
+            table.cell(i, 4).text = str(resultado['BRANCO'])
+            table.cell(i, 5).text = str(resultado['LAUDO'])
+            table.cell(i, 6).text = str(resultado['FALTOU'])
+
+    # Loop das escolas (por unidade)
+    for unidade in unidades:
+        alunos_nei = alunos.filter(unidade_ensino=unidade)
+        total_nei = alunos_nei.count()
+
+        # Matemática
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        slide.shapes.title.text = f"{unidade} - {total_nei} alunos"
+        dados_matematica = {
+            i: {
+                'CERTO': alunos_nei.filter(**{f"questao_matematica_{i}": 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{f"questao_matematica_{i}": 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{f"questao_matematica_{i}": 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{f"questao_matematica_{i}": 'BRANCO'}).count(),
+                'LAUDO': alunos_nei.filter(**{f"questao_matematica_{i}": 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{f"questao_matematica_{i}": 'FALTOU'}).count(),
+            }
+            for i in range(1, 11)
+        }
+        add_table(slide, "Matemática", dados_matematica, top=Inches(1.8))
+
+        # Linguagem
+        slide2 = prs.slides.add_slide(prs.slide_layouts[5])
+        slide2.shapes.title.text = f"{unidade} - Linguagem"
+        dados_linguagem = {
+            i - 11: {
+                'CERTO': alunos_nei.filter(**{f"questao_linguagem_{i}": 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{f"questao_linguagem_{i}": 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{f"questao_linguagem_{i}": 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{f"questao_linguagem_{i}": 'BRANCO'}).count(),
+                'LAUDO': alunos_nei.filter(**{f"questao_linguagem_{i}": 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{f"questao_linguagem_{i}": 'FALTOU'}).count(),
+            }
+            for i in [i for i in range(12, 21) if i != 13]
+        }
+        add_table(slide2, "Linguagem", dados_linguagem, top=Inches(1.8))
+
+        # Modalidades (por unidade)
+        slide3 = prs.slides.add_slide(prs.slide_layouts[5])
+        slide3.shapes.title.text = f"{unidade} - Modalidades"
+
+        q11 = {'CC': alunos_nei.filter(questao_linguagem_11='CC').count(),
+               'SC': alunos_nei.filter(questao_linguagem_11='SC').count()}
+        q13 = {m: alunos_nei.filter(questao_linguagem_13=m).count()
+               for m in ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']}
+
+        table_q11 = slide3.shapes.add_table(2, 2, Inches(0.5), Inches(1.8), Inches(4), Inches(1)).table
+        table_q11.cell(0, 0).text = "CC"
+        table_q11.cell(0, 1).text = "SC"
+        table_q11.cell(1, 0).text = str(q11['CC'])
+        table_q11.cell(1, 1).text = str(q11['SC'])
+
+        table_q13 = slide3.shapes.add_table(2, 6, Inches(0.5), Inches(2.9), Inches(9), Inches(1.2)).table
+        for idx, key in enumerate(q13.keys()):
+            table_q13.cell(0, idx).text = key
+            table_q13.cell(1, idx).text = str(q13[key])
+
+    # ✅ SLIDE FINAL 1: RELATÓRIO GERAL (compactado)
+    slide_final = prs.slides.add_slide(prs.slide_layouts[5])
+    slide_final.shapes.title.text = "Relatório Geral - Efetivados x Pretendidos"
+
+    escolas = alunos.values_list('unidade_ensino', flat=True).distinct()
+    num_escolas = len(escolas)
+
+    altura_por_linha = 0.25
+    altura_total = altura_por_linha * (num_escolas + 2)
+    table_final = slide_final.shapes.add_table(num_escolas + 2, 5, Inches(0.3), Inches(1.9), Inches(9), Inches(altura_total)).table
+
+    headers = ["Escola", "Pretendidos C1", "Efetivados C1", "Pretendidos C2", "Efetivados C2"]
+    for j, h in enumerate(headers):
+        cell = table_final.cell(0, j)
+        cell.text = h
+        cell.text_frame.paragraphs[0].font.size = Pt(10)
+        cell.text_frame.paragraphs[0].font.bold = True
+
+    total_c1_pret = total_c1_efet = total_c2_pret = total_c2_efet = 0
+    for i, escola in enumerate(escolas, start=1):
+        c1_pret = alunos.filter(unidade_ensino=escola).count()
+        c1_efet = alunos.filter(unidade_ensino=escola).exclude(questao_linguagem_11__in=[None, '']).count()
+        c2_efet = alunos.filter(unidade_ensino=escola).exclude(questao_matematica_1__in=[None, '']).count()
+
+        total_c1_pret += c1_pret
+        total_c1_efet += c1_efet
+        total_c2_pret += c1_pret
+        total_c2_efet += c2_efet
+
+        valores = [escola, c1_pret, c1_efet, c1_pret, c2_efet]
+        for j, valor in enumerate(valores):
+            cell = table_final.cell(i, j)
+            cell.text = str(valor)
+            cell.text_frame.paragraphs[0].font.size = Pt(9)
+
+    totais = ["TOTAL", total_c1_pret, total_c1_efet, total_c2_pret, total_c2_efet]
+    for j, valor in enumerate(totais):
+        cell = table_final.cell(num_escolas + 1, j)
+        cell.text = str(valor)
+        cell.text_frame.paragraphs[0].font.size = Pt(10)
+        cell.text_frame.paragraphs[0].font.bold = True
+
+
+    # ✅ SLIDE FINAL 2: AVALIAÇÃO DAS HABILIDADES (CERTO, ERRADO, etc.)
+    slide_aval = prs.slides.add_slide(prs.slide_layouts[5])
+    slide_aval.shapes.title.text = "Avaliação das Habilidades - Linguagem"
+
+    habilidades_config = {
+        'EI05LGH1': 'questao_linguagem_11',
+        'EI05LGH10': 'questao_linguagem_13',
+    }
+
+    headers_avaliacao = ['Habilidade', 'CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
+    table_aval = slide_aval.shapes.add_table(len(habilidades_config)+1, len(headers_avaliacao), Inches(0.5), Inches(1.9), Inches(8.5), Inches(4.5)).table
+
+    for j, header in enumerate(headers_avaliacao):
+        cell = table_aval.cell(0, j)
+        cell.text = header
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.size = Pt(10)
+
+    for i, (habilidade, campo) in enumerate(habilidades_config.items(), start=1):
+        table_aval.cell(i, 0).text = habilidade
+        table_aval.cell(i, 1).text = str(alunos.filter(**{campo: 'CERTO'}).count())
+        table_aval.cell(i, 2).text = str(alunos.filter(**{campo: 'ERRADO'}).count())
+        table_aval.cell(i, 3).text = str(alunos.filter(**{campo: 'PARCIAL'}).count())
+        table_aval.cell(i, 4).text = str(alunos.filter(**{campo: 'BRANCO'}).count())
+        table_aval.cell(i, 5).text = str(alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count())
+
+
+    # ✅ SLIDE FINAL 3: HABILIDADES POR MODALIDADE (CC, SC, PSI...)
+    slide_modal = prs.slides.add_slide(prs.slide_layouts[5])
+    slide_modal.shapes.title.text = "Habilidades Específicas por Modalidade"
+
+    modalidades = ['CC', 'SC', 'PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']
+    table_mod = slide_modal.shapes.add_table(len(habilidades_config)+1, len(modalidades)+1, Inches(0.5), Inches(1.9), Inches(8.5), Inches(4.5)).table
+
+    table_mod.cell(0, 0).text = "Hab."
+    table_mod.cell(0, 0).text_frame.paragraphs[0].font.bold = True
+    for j, mod in enumerate(modalidades, start=1):
+        cell = table_mod.cell(0, j)
+        cell.text = mod
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.size = Pt(9)
+
+    for i, (cod, campo) in enumerate(habilidades_config.items(), start=1):
+        table_mod.cell(i, 0).text = cod
+        table_mod.cell(i, 0).text_frame.paragraphs[0].font.size = Pt(9)
+        for j, mod in enumerate(modalidades, start=1):
+            count = alunos.filter(**{campo: mod}).count()
+            cell = table_mod.cell(i, j)
+            cell.text = str(count)
+            cell.text_frame.paragraphs[0].font.size = Pt(9)
+
+
+        # ✅ Geração dos gráficos (fora do loop)
+        grafico_q11 = gerar_grafico_base64(
+            campo='questao_linguagem_11',
+            categorias=['CC', 'SC', 'BRANCO', 'CRIANÇA COM LAUDO', 'FALTOU'],
+            alunos=alunos,
+            titulo='Q11 por Escola'
+        )
+
+        grafico_q13 = gerar_grafico_base64(
+            campo='questao_linguagem_13',
+            categorias=['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF', 'BRANCO', 'CRIANÇA COM LAUDO', 'FALTOU'],
+            alunos=alunos,
+            titulo='Q13 por Escola'
+        )
+
+        # ✅ Inserção dos gráficos no PowerPoint
+        def adicionar_slide_com_imagem(prs, titulo, imagem_base64):
+            slide = prs.slides.add_slide(prs.slide_layouts[5])
+            slide.shapes.title.text = titulo
+            imagem_bytes = BytesIO(base64.b64decode(imagem_base64))
+            slide.shapes.add_picture(imagem_bytes, Inches(0.5), Inches(1.5), height=Inches(4.5))
+
+        adicionar_slide_com_imagem(prs, "📊 Gráfico Q11 por Escola", grafico_q11)
+        adicionar_slide_com_imagem(prs, "📊 Gráfico Q13 por Escola", grafico_q13)
+
+
+        # ✅ SLIDE FINAL 4: AVALIAÇÃO DAS HABILIDADES - MATEMÁTICA
+    slide_aval_mat = prs.slides.add_slide(prs.slide_layouts[5])
+    slide_aval_mat.shapes.title.text = "Avaliação das Habilidades - Matemática"
+
+    habilidades_matematica = {
+        'EI05CMH1': 'questao_matematica_1',
+        'EI05CMH2': 'questao_matematica_2',
+        'EI05CMH3': 'questao_matematica_3',
+        'EI05CMH4': 'questao_matematica_4',
+        'EI05CMH5': 'questao_matematica_5',
+        'EI05CMH6': 'questao_matematica_6',
+        'EI05CMH7': 'questao_matematica_7',
+        'EI05CMH8': 'questao_matematica_8',
+        'EI05CMH9': 'questao_matematica_9',
+        'EI05CMH10': 'questao_matematica_10',
+    }
+
+    headers_mat = ['Habilidade', 'CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
+    table_mat = slide_aval_mat.shapes.add_table(len(habilidades_matematica)+1, len(headers_mat), Inches(0.3), Inches(1.9), Inches(9), Inches(4.5)).table
+
+    for j, header in enumerate(headers_mat):
+        cell = table_mat.cell(0, j)
+        cell.text = header
+        cell.text_frame.paragraphs[0].font.bold = True
+        cell.text_frame.paragraphs[0].font.size = Pt(10)
+
+    for i, (habilidade, campo) in enumerate(habilidades_matematica.items(), start=1):
+        table_mat.cell(i, 0).text = habilidade
+        table_mat.cell(i, 1).text = str(alunos.filter(**{campo: 'CERTO'}).count())
+        table_mat.cell(i, 2).text = str(alunos.filter(**{campo: 'ERRADO'}).count())
+        table_mat.cell(i, 3).text = str(alunos.filter(**{campo: 'PARCIAL'}).count())
+        table_mat.cell(i, 4).text = str(alunos.filter(**{campo: 'BRANCO'}).count())
+        table_mat.cell(i, 5).text = str(alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count())
+
+
+        # ✅ GRÁFICO DE MATEMÁTICA - POR HABILIDADE
+        # ✅ GRÁFICO DE MATEMÁTICA - POR HABILIDADE COM RÓTULOS
+    habilidades_codigos = list(habilidades_matematica.keys())
+    categorias = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CRIANÇA COM LAUDO']
+    dados = {categoria: [] for categoria in categorias}
+
+    for cod, campo in habilidades_matematica.items():
+        for categoria in categorias:
+            dados[categoria].append(alunos.filter(**{campo: categoria}).count())
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    x = list(range(len(habilidades_codigos)))
+    bottom = [0] * len(habilidades_codigos)
+
+    for cat in categorias:
+        valores = dados[cat]
+        bars = ax.bar(x, valores, bottom=bottom, label=cat)
+        for idx, bar in enumerate(bars):
+            height = bar.get_height()
+            if height > 0:
+                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_y() + height + 1,
+                        str(valores[idx]), ha='center', fontsize=8)
+        bottom = [i + j for i, j in zip(bottom, valores)]
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(habilidades_codigos, rotation=45)
+    ax.set_title("📊 Respostas por Habilidade - Matemática")
+    ax.set_ylabel("Total")
+    ax.legend()
+    plt.tight_layout()
+
+    buffer = BytesIO()
+    fig.savefig(buffer, format='png')
+    plt.close(fig)
+    img_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+    adicionar_slide_com_imagem(prs, "📊 Gráfico Geral - Habilidades de Matemática", img_base64)
+
+
+
+
+
+    # EXPORTAÇÃO DO ARQUIVO .pptx
+    buffer = BytesIO()
+    prs.save(buffer)
+    buffer.seek(0)
+
+    response = HttpResponse(
+        buffer.read(),
+        content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    )
+    response['Content-Disposition'] = 'attachment; filename=relatorio_samacc_2025.pptx'
+    return response
+
+###***********************************************************************************************************************
+
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from weasyprint import HTML
+from .models import CadastroEI
+import tempfile
+import os
+
+def gerar_pdf_relatorio_geral(request):
+    nome_escola = request.GET.get('nome_escola')
+    ano = request.GET.get('ano')
+    modalidade = request.GET.get('modalidade')
+
+    alunos = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    unidades = alunos.values_list('unidade_ensino', flat=True).distinct()
+
+    tabela_dados = []
+    for unidade in unidades:
+        registros = alunos.filter(unidade_ensino=unidade)
+
+        tabela_dados.append({
+            'nome': unidade,
+            'pretendidos_1': registros.exclude(questao_linguagem_11=None).count(),
+            'efetivados_1': registros.exclude(questao_linguagem_11__in=[None, '']).count(),
+            'pretendidos_2': registros.exclude(questao_matematica_1=None).count(),
+            'efetivados_2': registros.exclude(questao_matematica_1__in=[None, '']).count()
+        })
+
+    contexto = {
+        'data_aplicacao': '26 e 27/11',
+        'tabela_dados': tabela_dados,
+        'filtros': {
+            'nome_escola': nome_escola,
+            'ano': ano,
+            'modalidade': modalidade,
+        }
+    }
+
+    html_string = render_to_string('relatorios/relatorio_geral.html', contexto)
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string).write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="relatorio_geral.pdf"'
+        return response
+    finally:
+        os.remove(path)
+###***********************************************************************************************************************
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import tempfile, os
+from .models import CadastroEI
+
+def gerar_pdf_habilidades_especificas(request):
+    habilidades = {
+        'EI05LGH1': {'descricao': 'Grafar o nome próprio com auxílio do crachá.', 'campo': 'questao_linguagem_11'},
+        'EI05LGH2': {'descricao': 'Identificar as letras do nome no alfabeto.', 'campo': 'questao_linguagem_12'},
+        'EI05LGH3': {'descricao': 'Escrever palavras fazendo ajuste do falado com o escrito.', 'campo': 'questao_linguagem_14'},
+        'EI05LGH4': {'descricao': 'Diferenciar letras de outros sinais gráficos como números, desenhos e sinais.', 'campo': 'questao_linguagem_15'},
+        'EI05LGH5': {'descricao': 'Identificar e escrever na tabela as letras do alfabeto que estão faltando.', 'campo': 'questao_linguagem_16'},
+        'EI05LGH6': {'descricao': 'Reconhecer o valor sonoro da letra inicial da palavra.', 'campo': 'questao_linguagem_17'},
+        'EI05LGH7': {'descricao': 'Reconhecer o valor sonoro da letra final da palavra.', 'campo': 'questao_linguagem_18'},
+        'EI05LGH8': {'descricao': 'Relacionar o significante ao significado (imagem/palavra).', 'campo': 'questao_linguagem_19'},
+        'EI05LGH9': {'descricao': 'Identificar o número de letras de uma palavra para contagem.', 'campo': 'questao_linguagem_20'},
+        'EI05LGH10': {'descricao': 'Identificar personagens e suas ações em conto conhecido.', 'campo': 'questao_linguagem_13'},
+    }
+
+    # Nomes para exibição
+    modalidades = ['CC', 'SC', 'PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF', 'BRANCO', 'CCL']
+    avaliacoes = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
+
+    # Mapeamento interno (banco de dados)
+    mapeamento_valores = {
+        'CCL': 'CRIANÇA COM LAUDO'
+    }
+
+    dados = {}
+
+    for cod, info in habilidades.items():
+        campo = info['campo']
+
+        totais_modalidade = {}
+        for modalidade in modalidades:
+            valor_real = mapeamento_valores.get(modalidade, modalidade)
+            totais_modalidade[modalidade] = CadastroEI.objects.filter(**{campo: valor_real}).count()
+
+        totais_avaliacao = {}
+        for avaliacao in avaliacoes:
+            valor_real = mapeamento_valores.get(avaliacao, avaliacao)
+            totais_avaliacao[avaliacao] = CadastroEI.objects.filter(**{campo: valor_real}).count()
+
+        if any(totais_modalidade.values()) or any(totais_avaliacao.values()):
+            dados[cod] = {
+                'descricao': info['descricao'],
+                'totais_modalidade': totais_modalidade,
+                'totais_avaliacao': totais_avaliacao,
+            }
+
+    contexto = {
+        'dados': dados,
+        'modalidades': modalidades,
+        'avaliacoes': avaliacoes,
+    }
+
+    html_string = render_to_string('relatorios/relatorio_habilidades_especificas.html', contexto)
+
+    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as output:
+        HTML(string=html_string).write_pdf(target=output.name)
+        output.seek(0)
+        response = HttpResponse(output.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="relatorio_habilidades_especificas.pdf"'
+
+    os.remove(output.name)
+    return response
+
+###***********************************************************************************************************************
+
+import matplotlib.pyplot as plt
+import tempfile
+import os
+from .models import CadastroEI
+from weasyprint import HTML
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+
+
+def gerar_grafico_habilidade_resposta():
+    habilidades = {
+        'EI05LGH1': 'questao_linguagem_11',
+        'EI05LGH2': 'questao_linguagem_12',
+        'EI05LGH3': 'questao_linguagem_14',
+        'EI05LGH4': 'questao_linguagem_15',
+        'EI05LGH5': 'questao_linguagem_16',
+    }
+
+    # Nomes para legenda
+    avaliacoes_exibicao = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
+
+    # Mapeamento interno do valor para consulta no banco
+    mapeamento = {
+        'CCL': 'CRIANÇA COM LAUDO'
+    }
+
+    labels = list(habilidades.keys())
+    data_por_avaliacao = {aval: [] for aval in avaliacoes_exibicao}
+
+    for cod, campo in habilidades.items():
+        for aval in avaliacoes_exibicao:
+            valor_banco = mapeamento.get(aval, aval)
+            total = CadastroEI.objects.filter(**{campo: valor_banco}).count()
+            data_por_avaliacao[aval].append(total)
+
+    # Gerar gráfico
+    fig, ax = plt.subplots(figsize=(10, 6))
+    bottom = [0] * len(labels)
+
+    for aval in avaliacoes_exibicao:
+        valores = data_por_avaliacao[aval]
+        bars = ax.bar(labels, valores, bottom=bottom, label=aval)
+        bottom = [sum(x) for x in zip(bottom, valores)]
+
+    ax.set_title("Respostas por Habilidade", fontsize=14)
+    ax.set_ylabel("Total")
+    ax.legend()
+
+    temp_img = tempfile.NamedTemporaryFile(suffix=".png", delete=False)
+    plt.tight_layout()
+    plt.savefig(temp_img.name, dpi=150)
+    plt.close(fig)
+
+    return temp_img.name  # retorna o caminho da imagem
+
+###***********************************************************************************************************************
+
+def gerar_pdf_grafico_habilidades(request):
+    caminho_imagem = gerar_grafico_habilidade_resposta()
+
+    contexto = {
+        'imagem_grafico': caminho_imagem,
+    }
+
+    html_string = render_to_string('relatorios/relatorio_com_grafico.html', contexto)
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string, base_url='.').write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="grafico_habilidades.pdf"'
+            return response
+    finally:
+        os.remove(path)
+        os.remove(caminho_imagem)  # remove a imagem temporária
+###***********************************************************************************************************************
+
+from io import BytesIO
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import matplotlib.pyplot as plt
+import tempfile
+import os
+import base64
+from .models import CadastroEI
+
+
+def gerar_graficos_pdf(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    alunos = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    escolas = alunos.values_list('unidade_ensino', flat=True).distinct()
+
+    # ✅ Mapeamento para exibição
+    tipos_resposta_display = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
+    tipo_mapeamento = {
+        'CCL': 'CRIANÇA COM LAUDO'
+    }
+
+    grafico_base64 = []
+
+    for escola in escolas:
+        contagens = {}
+        for tipo_display in tipos_resposta_display:
+            tipo_banco = tipo_mapeamento.get(tipo_display, tipo_display)
+            contagens[tipo_display] = alunos.filter(
+                unidade_ensino=escola, questao_linguagem_11=tipo_banco
+            ).count()
+
+        labels = list(contagens.keys())
+        valores = list(contagens.values())
+
+        fig, ax = plt.subplots()
+        ax.bar(labels, valores, color='skyblue')
+        ax.set_title(f'{escola} - Linguagem Q11')
+        ax.set_ylabel('Quantidade')
+        ax.set_ylim(0, max(valores + [1]) + 10)
+
+        for i, v in enumerate(valores):
+            ax.text(i, v + 0.5, str(v), ha='center', fontsize=8)
+
+        buffer = BytesIO()
+        plt.tight_layout()
+        fig.savefig(buffer, format='png')
+        buffer.seek(0)
+        image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
+        grafico_base64.append({'escola': escola, 'grafico': image_base64})
+        plt.close(fig)
+
+    contexto = {
+        'graficos': grafico_base64,
+    }
+
+    html_string = render_to_string('relatorios/relatorio_graficos.html', contexto)
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string).write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="graficos_relatorio.pdf"'
+            return response
+    finally:
+        os.remove(path)
+
+###***********************************************************************************************************************
+
+import matplotlib.pyplot as plt
+import tempfile, os, base64
+from io import BytesIO
+from django.http import HttpResponse
+from weasyprint import HTML
+from django.template.loader import render_to_string
+from .models import CadastroEI
+
+
+def gerar_graficos_q11_q13(request):
+    escolas = CadastroEI.objects.filter(avaliado='SIM').values_list('unidade_ensino', flat=True).distinct()
+
+    # ✅ Mapeamento dos rótulos
+    respostas_q11_display = ['CC', 'SC', 'BRANCO', 'CCL', 'FALTOU']
+    respostas_q13_display = ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF', 'BRANCO', 'CCL', 'FALTOU']
+
+    mapeamento_valores = {
+        'CCL': 'CRIANÇA COM LAUDO'
+    }
+
+    graficos = []
+
+    for escola in escolas:
+        alunos = CadastroEI.objects.filter(unidade_ensino=escola, avaliado='SIM')
+
+        # Questão 11
+        dados_q11 = [
+            alunos.filter(questao_linguagem_11=mapeamento_valores.get(r, r)).count()
+            for r in respostas_q11_display
+        ]
+        fig1, ax1 = plt.subplots()
+        ax1.bar(respostas_q11_display, dados_q11, color='skyblue')
+        ax1.set_title(f'{escola} - Questão 11 (Com/sem crachá)')
+        ax1.set_ylabel('Quantidade')
+        for i, v in enumerate(dados_q11):
+            ax1.text(i, v + 0.5, str(v), ha='center', fontsize=8)
+        buffer1 = BytesIO()
+        plt.tight_layout()
+        fig1.savefig(buffer1, format='png')
+        plt.close(fig1)
+        imagem_q11 = base64.b64encode(buffer1.getvalue()).decode()
+
+        # Questão 13
+        dados_q13 = [
+            alunos.filter(questao_linguagem_13=mapeamento_valores.get(r, r)).count()
+            for r in respostas_q13_display
+        ]
+        fig2, ax2 = plt.subplots()
+        ax2.bar(respostas_q13_display, dados_q13, color='lightcoral')
+        ax2.set_title(f'{escola} - Questão 13 (Níveis de Escrita)')
+        ax2.set_ylabel('Quantidade')
+        for i, v in enumerate(dados_q13):
+            ax2.text(i, v + 0.5, str(v), ha='center', fontsize=8)
+        buffer2 = BytesIO()
+        plt.tight_layout()
+        fig2.savefig(buffer2, format='png')
+        plt.close(fig2)
+        imagem_q13 = base64.b64encode(buffer2.getvalue()).decode()
+
+        graficos.append({
+            'escola': escola,
+            'grafico_q11': imagem_q11,
+            'grafico_q13': imagem_q13,
+        })
+
+    contexto = {
+        'graficos': graficos
+    }
+
+    html_string = render_to_string('relatorios/relatorio_graficos_q11_q13.html', contexto)
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string).write_pdf(path)
+        with open(path, 'rb') as pdf:
+            response = HttpResponse(pdf.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="graficos_q11_q13.pdf"'
+            return response
+    finally:
+        os.remove(path)
+
+###***********************************************************************************************************************
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.db.models import Count
+from weasyprint import HTML, CSS
+import os
+from .models import CadastroEI
+
+def relatorio_saida_matematica_view(request):
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
+
+    alunos = CadastroEI.objects.filter(avaliado="SIM")
+    if nome_escola:
+        alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos = alunos.filter(ano=ano)
+    if modalidade:
+        alunos = alunos.filter(modalidade__icontains=modalidade)
+
+    escolas = alunos.values_list("unidade_ensino", flat=True).distinct()
+
+    resultado_matematica = {}
+    for escola in escolas:
+        alunos_escola = alunos.filter(unidade_ensino=escola)
+        questoes = {}
+        for i in range(1, 11):
+            campo = f'questao_matematica_{i}'
+            contagem = alunos_escola.values(campo).annotate(total=Count(campo))
+            questoes[i] = {
+                'CERTO': sum(c['total'] for c in contagem if c[campo] == 'CERTO'),
+                'ERRADO': sum(c['total'] for c in contagem if c[campo] == 'ERRADO'),
+                'PARCIAL': sum(c['total'] for c in contagem if c[campo] == 'PARCIAL'),
+                'BRANCO': sum(c['total'] for c in contagem if c[campo] == 'BRANCO'),
+                'LAUDO': sum(c['total'] for c in contagem if c[campo] == 'CRIANÇA COM LAUDO'),
+                'FALTOU': sum(c['total'] for c in contagem if c[campo] == 'FALTOU'),
+            }
+        resultado_matematica[escola] = questoes
+
+    context = {
+        'titulo': "Relatório de Saída - SAMACC 2025 - Matemática",
+        'resultado_matematica': resultado_matematica,
+    }
+
+    html_string = render_to_string("relatorios/relatorio_saida_matematica.html", context)
+    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+    css_path = os.path.join(settings.STATIC_ROOT, "css", "relatorio_pdf.css")
+    pdf_file = html.write_pdf(stylesheets=[CSS(css_path)])
+
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename=relatorio_saida_matematica.pdf'
+    return response

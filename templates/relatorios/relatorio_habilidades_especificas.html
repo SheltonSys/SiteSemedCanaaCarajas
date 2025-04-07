@@ -1,0 +1,121 @@
+{% load extras %}
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Habilidades Específicas</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background-color: #fff;
+            color: #2c3e50;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22pt;
+            margin-bottom: 50px;
+            text-transform: uppercase;
+            color: #1a252f;
+        }
+
+        .descricao {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 35px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        h4 {
+            margin: 10px 0 6px;
+            font-size: 11pt;
+            color: #2c3e50;
+            text-transform: uppercase;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 10pt;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #ecf0f1;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f9f9f9;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 10pt;
+            color: #999;
+            margin-top: 60px;
+            border-top: 1px solid #ddd;
+            padding-top: 12px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Relatório de Habilidades Específicas</h1>
+
+    {% for cod, info in dados.items %}
+        <div class="descricao">{{ cod }} – {{ info.descricao }}</div>
+
+        <h4>Totais por Modalidade</h4>
+        <table>
+            <thead>
+                <tr>
+                    {% for modalidade in modalidades %}
+                        <th>{{ modalidade }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for modalidade in modalidades %}
+                        <td>{{ info.totais_modalidade|dict_get:modalidade }}</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+
+        <h4>Totais por Tipo de Resposta</h4>
+        <table>
+            <thead>
+                <tr>
+                    {% for avaliacao in avaliacoes %}
+                        <th>{{ avaliacao }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    {% for avaliacao in avaliacoes %}
+                        <td>{{ info.totais_avaliacao|dict_get:avaliacao }}</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    {% endfor %}
+
+    <div class="footer">
+        Sistema SIEDGE – Secretaria Municipal de Educação de Canaã dos Carajás
+    </div>
+
+</body>
+</html>

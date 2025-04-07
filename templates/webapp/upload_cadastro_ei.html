@@ -1,46 +1,55 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="text-center mb-4">
-        <h2 class="display-5 fw-bold text-primary">📤 Upload de Cadastro Educação Infantil</h2>
-        <p class="text-muted fs-5">Envie um arquivo CSV contendo os dados das escolas, turmas e alunos de forma segura e eficiente.</p>
-        <hr class="mt-3 stylish-divider">
-    </div>
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
 
-    <!-- Card de Upload -->
-    <!-- Card de Upload -->
-    <div class="card shadow-lg border-0">
-        <div class="card-body p-4">
-            <h5 class="card-title text-secondary"><i class="fas fa-cloud-upload-alt"></i> Envio de Arquivo</h5>
-            <form method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <div class="mb-4">
-                    <label class="form-label fw-bold">📁 Selecione o Arquivo CSV:</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-file-csv"></i></span>
-                        {{ form.file }}
-                    </div>
-                    <small class="form-text text-muted">Certifique-se de que o arquivo está no formato CSV e segue o modelo disponibilizado.</small>
-                </div>
-                <div class="text-end">
-                    <button type="submit" class="btn btn-gradient-primary btn-lg">
-                        <i class="fas fa-upload"></i> Enviar Arquivo
-                    </button>
-                </div>
-            </form>
+        <!-- Cabeçalho -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h2 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-file-upload me-2"></i> Upload de Cadastro - Educação Infantil
+                </h2>
+                <small class="text-muted">Envie um arquivo CSV contendo os dados das escolas, turmas e alunos.</small>
+            </div>
         </div>
-    </div>
 
-      <!-- Área de Mensagens -->
-      {% if messages %}
-      <div class="mt-4">
-          {% for message in messages %}
-          <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} shadow-sm" role="alert">
-              <i class="fas fa-info-circle"></i> {{ message }}
-          </div>
-          {% endfor %}
-      </div>
-      {% endif %}
-  </div>
-  {% endblock %}
+        <!-- Linha divisória -->
+        <hr class="mt-2 mb-3">
+
+        <!-- Área do Formulário -->
+        <div class="card shadow-sm border-0">
+            <div class="card-body bg-light">
+                <h6 class="text-secondary fw-bold mb-3"><i class="fas fa-cloud-upload-alt me-1"></i> Envio de Arquivo</h6>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">📄 Selecione o Arquivo CSV:</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-file-csv"></i></span>
+                            {{ form.file }}
+                        </div>
+                        <small class="form-text text-muted">O arquivo deve estar no formato CSV seguindo o modelo disponibilizado.</small>
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-primary fw-bold">
+                            <i class="fas fa-upload me-1"></i> Enviar Arquivo
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Área de Mensagens -->
+        {% if messages %}
+        <div class="mt-3">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} shadow-sm" role="alert">
+                <i class="fas fa-info-circle me-1"></i> {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

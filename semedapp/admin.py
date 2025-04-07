@@ -1,10 +1,8 @@
 from django.contrib import admin
 from .models import Module, UserModulePermission
 from .models import TipoDemanda
+from .models import RoleModulePermission
 
-admin.site.register(Module)
-
-admin.site.register(UserModulePermission)
 
 
 @admin.register(TipoDemanda)
@@ -14,8 +12,7 @@ class TipoDemandaAdmin(admin.ModelAdmin):
     search_fields = ['nome', 'descricao']
 
 
-from django.contrib import admin
-from .models import RoleModulePermission
+
 
 @admin.register(RoleModulePermission)
 class RoleModulePermissionAdmin(admin.ModelAdmin):

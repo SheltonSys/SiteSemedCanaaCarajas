@@ -4,115 +4,293 @@
 {% block content %}
 <div class="content-wrapper" style="margin-left: 0; padding: 20px;">
     <div class="container-fluid">
+
         <!-- Cabeçalho -->
         <div class="text-center mb-4">
-            <h1 class="display-4 text-primary font-weight-bold">Painel ADM SEPPEC</h1>
-            <p class="text-muted">Bem-vindo(a) {{ user.first_name }}! Explore os principais indicadores e módulos disponíveis.</p>
+            <h1 class="display-4 text-primary font-weight-bold">Painel Administrativo - SEPPEC</h1>
+            <p class="text-muted">Bem-vindo(a), {{ user.first_name }}! Acompanhe os principais dados e módulos do sistema.</p>
         </div>
 
         <!-- Indicadores -->
         <div class="row mb-4">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card shadow-sm border-0">
                     <div class="card-body text-center bg-light">
-                        <i class="fas fa-school fa-3x text-primary mb-3"></i>
-                        <h5 class="card-title font-weight-bold">Escolas</h5>
-                        <p class="card-text text-muted">Número total de escolas: <strong>{{ total_escolas }}</strong></p>
-                        <a href="{% url 'escolas' %}" class="btn btn-primary btn-sm">Ver Detalhes</a>
+                        <i class="fas fa-school fa-3x text-primary mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Escolas</h6>
+                        <p class="text-muted">Total: <strong>{{ total_escolas }}</strong></p>
+                        <a href="{% url 'escolas' %}" class="btn btn-outline-primary btn-sm">Detalhes</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card shadow-sm border-0">
                     <div class="card-body text-center bg-light">
-                        <i class="fas fa-users fa-3x text-success mb-3"></i>
-                        <h5 class="card-title font-weight-bold">Membros</h5>
-                        <p class="card-text text-muted">Total de membros cadastrados: <strong>{{ total_membros }}</strong></p>
-                        <a href="{% url 'conselho_membros' %}" class="btn btn-success btn-sm">Ver Detalhes</a>
+                        <i class="fas fa-users fa-3x text-success mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Membros Conselho</h6>
+                        <p class="text-muted">Total: <strong>{{ total_membros }}</strong></p>
+                        <a href="{% url 'conselho_membros' %}" class="btn btn-outline-success btn-sm">Detalhes</a>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="card shadow-sm border-0">
                     <div class="card-body text-center bg-light">
-                        <i class="fas fa-file-alt fa-3x text-warning mb-3"></i>
-                        <h5 class="card-title font-weight-bold">Certidões Emitidas</h5>
-                        <p class="card-text text-muted">Total emitido: <strong>{{ total_certidoes }}</strong></p>
-                        <a href="{% url 'emissao_certidoes' %}" class="btn btn-warning btn-sm">Ver Detalhes</a>
+                        <i class="fas fa-file-alt fa-3x text-warning mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Documentos Enviados</h6>
+                        <p class="text-muted">Total: <strong>{{ total_certidoes }}</strong></p>
+                        <a href="{% url 'emissao_certidoes' %}" class="btn btn-outline-warning btn-sm">Ver</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-chart-pie fa-3x text-info mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Informações e Orientações</h6>
+                        <p class="text-muted">Análise Consolidada</p>
+                        <a href="{% url 'sintese_pdde' %}" class="btn btn-outline-info btn-sm">Visualizar</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Módulos Permitidos -->
-        <div class="card shadow-lg border-0">
+        <!-- Gráfico Resumo -->
+        <div class="card shadow-lg border-0 mb-4">
             <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
-                <h2 class="h5 mb-0">
-                    <i class="fas fa-cogs"></i> Módulos Permitidos
-                </h2>
+                <h2 class="h6 mb-0"><i class="fas fa-chart-bar me-2"></i> Indicadores Financeiros</h2>
             </div>
             <div class="card-body bg-light">
-                <ul class="list-group list-group-flush">
-                    {% for permission in user_modules %}
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-folder-open text-primary fa-lg me-3"></i>
-                            <a href="{% url 'nome_da_view_modulo' permission.module.slug %}" class="text-decoration-none text-dark font-weight-bold hover-underline-animation">
-                                {{ permission.module.name }}
-                            </a>
-                        </div>
-                        <span class="badge bg-success rounded-pill px-3 py-2">Acesso Permitido</span>
-                    </li>
-                    {% empty %}
-                    <li class="list-group-item text-center bg-warning text-dark font-italic">
-                        <i class="fas fa-exclamation-circle fa-lg"></i> Sem módulos permitidos
-                    </li>
-                    {% endfor %}
-                </ul>
+                <canvas id="graficoResumo" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Elementos Contábeis -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-coins me-2"></i> Elementos Contábeis - PDDE</h2>
+    </div>
+    <div class="card-body bg-light">
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-arrow-down text-success fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Receita Total</h6>
+                    <p class="h5 text-success receita-total">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-arrow-up text-danger fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Despesa Total</h6>
+                    <p class="h5 text-danger despesa-total">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-wallet text-primary fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Saldo Reprogramado</h6>
+                    <p class="h5 text-primary saldo-reprogramado">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+        <div class="row text-center mt-3">
+            <div class="col-md-6 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+                    <p class="h5 text-warning percentual-execucao">0,00%</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Último Lançamento</h6>
+                    <p class="h6 text-secondary ultimo-lancamento">--</p>
+                </div>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
+
+
+
+
+<!-- Outros Elementos Contábeis -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-balance-scale me-2"></i> Informações Complementares - PDDE</h2>
+    </div>
+    <div class="card-body bg-light">
+        <div class="row text-center">
+            <div class="col-md-4 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-hand-holding-usd text-info fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Recursos Próprios</h6>
+                    <p class="h5 text-info recursos-proprios">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-piggy-bank text-success fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Rendimentos de Aplicação</h6>
+                    <p class="h5 text-success rendimentos-aplicacao">R$ 0,00</p>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-undo text-danger fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Devoluções FNDE</h6>
+                    <p class="h5 text-danger devolucoes-fnde">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+        <div class="row text-center mt-3">
+            <div class="col-md-6 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-school text-primary fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Nº Escolas Atendidas</h6>
+                    <p class="h5 text-primary escolas-atendidas">0</p>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="border rounded bg-white p-3 shadow-sm">
+                    <i class="fas fa-check-circle text-secondary fa-2x mb-2"></i>
+                    <h6 class="fw-bold text-muted">Situação Financeira</h6>
+                    <p class="h6 situacao-financeira fw-bold">Neutra</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById('graficoResumo').getContext('2d');
+
+    fetch('/contas/sintese-receita/')
+        .then(response => response.json())
+        .then(data => {
+            const s = data.sintese;
+
+
+            
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Receita Custeio', 'Despesa Custeio', 'Líquido Custeio', 'Receita Capital', 'Despesa Capital', 'Líquido Capital'],
+                    datasets: [{
+                        label: 'Valores (R$)',
+                        data: [
+                            s.valor_total_receita.custeio,
+                            s.valor_despesa_realizada.custeio,
+                            s.valor_total_receita.custeio - (s.devolucao_fnde.custeio + s.valor_despesa_realizada.custeio + s.saldo_devolvido.custeio),
+                            s.valor_total_receita.capital,
+                            s.valor_despesa_realizada.capital,
+                            s.valor_total_receita.capital - (s.devolucao_fnde.capital + s.valor_despesa_realizada.capital + s.saldo_devolvido.capital)
+                        ],
+                        backgroundColor: ['#007bff', '#dc3545', '#28a745', '#17a2b8', '#ffc107', '#20c997']
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        })
+        .catch(error => {
+            console.error('❌ Erro ao carregar dados do gráfico:', error);
+        });
+});
+</script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    fetch('/contas/sintese-receita/')
+        .then(response => response.json())
+        .then(data => {
+            const r = data.sintese.resumo_cards;
+
+            document.querySelector('.receita-total').textContent = `R$ ${formatarValor(r.receita_total)}`;
+            document.querySelector('.despesa-total').textContent = `R$ ${formatarValor(r.despesa_total)}`;
+            document.querySelector('.saldo-reprogramado').textContent = `R$ ${formatarValor(r.saldo_reprogramado)}`;
+            document.querySelector('.percentual-execucao').textContent = `${r.percentual_execucao}%`;
+            document.querySelector('.ultimo-lancamento').textContent = "--"; // ajuste depois
+
+            document.querySelector('.recursos-proprios').textContent = `R$ ${formatarValor(r.recursos_proprios)}`;
+            document.querySelector('.rendimentos-aplicacao').textContent = `R$ ${formatarValor(r.rendimentos_aplicacao)}`;
+            document.querySelector('.devolucoes-fnde').textContent = `R$ ${formatarValor(r.devolucoes_fnde)}`;
+            document.querySelector('.escolas-atendidas').textContent = r.escolas_atendidas;
+
+            const situacao = document.querySelector('.situacao-financeira');
+            situacao.classList.remove('text-success', 'text-danger', 'text-warning');
+            if (r.percentual_execucao >= 100) {
+                situacao.textContent = 'Positiva';
+                situacao.classList.add('text-success');
+            } else if (r.percentual_execucao <= 30) {
+                situacao.textContent = 'Negativa';
+                situacao.classList.add('text-danger');
+            } else {
+                situacao.textContent = 'Neutra';
+                situacao.classList.add('text-warning');
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erro ao carregar dados dos cards:', error);
+        });
+
+    function formatarValor(valor) {
+        return parseFloat(valor).toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    }
+});
+
+    </script>
+    
 
 <style>
-    .content-wrapper {
-        margin-left: 0; /* Remove margem do sidebar */
-        padding: 20px; /* Ajuste de padding */
-    }
+.content-wrapper {
+    margin-left: 0;
+    padding: 20px;
+}
 
-    .hover-underline-animation {
-        position: relative;
-        display: inline-block;
-    }
+.hover-underline-animation {
+    position: relative;
+    display: inline-block;
+}
 
-    .hover-underline-animation::after {
-        content: '';
-        position: absolute;
-        width: 100%;
-        transform: scaleX(0);
-        height: 3px;
-        bottom: -3px;
-        left: 0;
-        background-color: #007bff;
-        transform-origin: bottom right;
-        transition: transform 0.25s ease-out;
-    }
+.hover-underline-animation::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 3px;
+    bottom: -3px;
+    left: 0;
+    background-color: #007bff;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+}
 
-    .hover-underline-animation:hover::after {
-        transform: scaleX(1);
-        transform-origin: bottom left;
-    }
-
-    .btn {
-        font-size: 1rem;
-    }
-
-    .card-title {
-        font-weight: bold;
-    }
-
-    .card-text {
-        font-size: 0.9rem;
-    }
+.hover-underline-animation:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
 </style>
+
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Síntese Financeira - PDDE</h1>
+            <p class="text-muted">Resumo consolidado das receitas e despesas do Programa Dinheiro Direto na Escola.</p>
+        </div>
+
+        <!-- Card Informativo -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="h5 mb-0">
+                    <i class="fas fa-chart-pie me-2"></i> Painel de Síntese Financeira
+                </h2>
+                <div class="d-flex">
+                    <a href="{% url 'cadastrar_info_pdde' %}" class="btn btn-sm btn-success shadow-sm me-2">
+                        <i class="fas fa-plus-circle me-1"></i> Nova Informação
+                    </a>
+                    <a href="{% url 'pdde' %}" class="btn btn-sm btn-light text-primary shadow-sm">
+                        <i class="fas fa-arrow-left me-1"></i> Voltar
+                    </a>
+                </div>
+            </div>
+            <div class="card-body bg-light text-center">
+                <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
+                <h5 class="fw-bold text-muted">Em breve você poderá visualizar aqui o demonstrativo detalhado da execução orçamentária do PDDE.</h5>
+                <p class="text-muted mt-3">Estamos preparando um painel completo com gráficos, indicadores e dados atualizados.</p>
+                <div class="mt-4">
+                    <a href="{% url 'pdde' %}" class="btn btn-outline-primary shadow-sm me-2">
+                        <i class="fas fa-home me-1"></i> Ir para PDDE
+                    </a>
+                    <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary shadow-sm">
+                        <i class="fas fa-tachometer-alt me-1"></i> Voltar ao Painel
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório Detalhado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            color: #333;
+        }
+        h1, h2 {
+            color: #004080;
+        }
+        .section {
+            margin-top: 40px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #bbb;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #e9f0f7;
+            font-weight: bold;
+        }
+        .stats {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-top: 20px;
+        }
+        .highlight {
+            font-weight: bold;
+            color: #007BFF;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            text-align: center;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>📊 Relatório Detalhado de Avaliação</h1>
+
+    <div class="stats">
+        <p><strong>Unidade de Ensino:</strong> {{ escola }}</p>
+        <p><strong>Total de Alunos Avaliados:</strong> {{ total_alunos_avaliados }}</p>
+        <p><strong>Total de Turmas:</strong> {{ total_turmas }}</p>
+        <p><strong>Avaliação Excelente:</strong> {{ total_excelente }}</p>
+        <p><strong>Avaliação Regular:</strong> {{ total_regular }}</p>
+        <p><strong>Necessita Melhorar:</strong> {{ total_necessita_melhorar }}</p>
+        <p><strong>Desempenho Abaixo de 50%:</strong> {{ menor_desempenho_qtd }}</p>
+        <p><strong>Crianças com Laudo (Rede):</strong> {{ total_laudo }}</p>
+        <p><em>(Número total de alunos que marcaram "CRIANÇA COM LAUDO" em ao menos uma questão)</em></p>
+        <p><strong>Faltaram em Matemática:</strong> {{ total_faltantes_matematica }}</p>
+        <p><strong>Faltaram em Linguagem:</strong> {{ total_faltantes_linguagem }}</p>
+        <p><strong>% Participação Matemática:</strong> {{ participacao_matematica }}</p>
+        <p><strong>% Participação Linguagem:</strong> {{ participacao_linguagem }}</p>
+    </div>
+
+    <div class="section">
+        <h2>🧮 Matemática - Resultados por Questão</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Questão</th>
+                    <th>CERTO</th>
+                    <th>ERRADO</th>
+                    <th>PARCIAL</th>
+                    <th>BRANCO</th>
+                    <th>LAUDO<br><span style="font-weight: normal; font-size: 11px;">(Qtd por questão)</span></th>
+                    <th>FALTOU</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for numero, dados in dados_matematica.items %}
+                <tr>
+                    <td>{{ numero }}</td>
+                    <td>{{ dados.CERTO }}</td>
+                    <td>{{ dados.ERRADO }}</td>
+                    <td>{{ dados.PARCIAL }}</td>
+                    <td>{{ dados.BRANCO }}</td>
+                    <td>{{ dados.LAUDO }}</td>
+                    <td>{{ dados.FALTOU }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>📚 Linguagem - Resultados por Questão</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Questão</th>
+                    <th>CERTO</th>
+                    <th>ERRADO</th>
+                    <th>PARCIAL</th>
+                    <th>BRANCO</th>
+                    <th>LAUDO<br><span style="font-weight: normal; font-size: 11px;">(Qtd por questão)</span></th>
+                    <th>FALTOU</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for numero, dados in dados_linguagem.items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ dados.CERTO }}</td>
+                    <td>{{ dados.ERRADO }}</td>
+                    <td>{{ dados.PARCIAL }}</td>
+                    <td>{{ dados.BRANCO }}</td>
+                    <td>{{ dados.LAUDO }}</td>
+                    <td>{{ dados.FALTOU }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section">
+        <h2>📌 Modalidades Identificadas</h2>
+
+        <h3>🟢 Questão 1 de Linguagem (Q11)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>CC</th>
+                    <th>SC</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ total_modalidade.CC }}</td>
+                    <td>{{ total_modalidade.SC }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>🔵 Questão 3 de Linguagem (Q13)</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>PSI</th>
+                    <th>PSII</th>
+                    <th>SSVS</th>
+                    <th>SCVS</th>
+                    <th>SA</th>
+                    <th>ALF</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ total_modalidade.PSI }}</td>
+                    <td>{{ total_modalidade.PSII }}</td>
+                    <td>{{ total_modalidade.SSVS }}</td>
+                    <td>{{ total_modalidade.SCVS }}</td>
+                    <td>{{ total_modalidade.SA }}</td>
+                    <td>{{ total_modalidade.ALF }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        Sistema SIEDGE - SEMED Canaã dos Carajás • Relatório gerado automaticamente
+    </div>
+
+</body>
+</html>

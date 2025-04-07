@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <!-- Header -->
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users"></i> Editar Membro da Diretoria
+                    </h1>
+                </div>
+                <div class="col-md-6 text-md-right text-center">
+                    <ol class="breadcrumb float-md-right bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'conselho' %}" class="text-primary">Conselho</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'conselho_diretoria' %}" class="text-primary">Diretoria</a></li>
+                        <li class="breadcrumb-item active">Editar</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="card-title font-weight-bold">
+                        <i class="fas fa-edit"></i> Editar Informações do Membro
+                    </h5>
+                </div>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Escola:</label>
+                                <select class="form-control" id="escola" name="escola" required>
+                                    <option value="">Selecione...</option>
+                                    {% for escola in escolas %}
+                                        <option value="{{ escola.id }}" data-conselho="{{ escola.nome_conselho }}" {% if membro.escola.id == escola.id %}selected{% endif %}>
+                                            {{ escola.nome }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Conselho:</label>
+                                <input type="text" name="conselho" id="conselho" class="form-control" value="{{ membro.conselho }}" readonly required>
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Nome:</label>
+                                <input type="text" name="nome" class="form-control" value="{{ membro.nome }}" required>
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Cargo:</label>
+                                <select class="form-control" name="cargo" required>
+                                    <option value="Presidente" {% if membro.cargo == "Presidente" %}selected{% endif %}>Presidente</option>
+                                    <option value="Vice-Presidente" {% if membro.cargo == "Vice-Presidente" %}selected{% endif %}>Vice-Presidente</option>
+                                    <option value="Secretário" {% if membro.cargo == "Secretário" %}selected{% endif %}>Secretário</option>
+                                    <option value="Tesoureiro" {% if membro.cargo == "Tesoureiro" %}selected{% endif %}>Tesoureiro</option>
+                                </select>
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Endereço:</label>
+                                <input type="text" name="endereco" class="form-control" value="{{ membro.endereco }}">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Bairro:</label>
+                                <input type="text" name="bairro" class="form-control" value="{{ membro.bairro }}">
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Telefone:</label>
+                                <input type="text" name="telefone" class="form-control" value="{{ membro.telefone }}">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>Email:</label>
+                                <input type="email" name="email" class="form-control" value="{{ membro.email }}">
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>CEP:</label>
+                                <input type="text" name="cep" class="form-control" value="{{ membro.cep }}">
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label>CPF:</label>
+                                <input type="text" name="cpf" class="form-control" value="{{ membro.cpf }}">
+                            </div>
+                        </div>
+                
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label>Data de Vencimento:</label>
+                                <input type="date" name="vencimento" class="form-control" value="{{ membro.vencimento|date:'Y-m-d' }}" required>
+                            </div>
+                        </div>
+                
+                    </div>
+                    <div class="card-footer text-right">
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                        <a href="{% url 'conselho_diretoria' %}" class="btn btn-secondary">Cancelar</a>
+                    </div>
+                </form>
+                
+                
+                
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const escolaSelect = document.getElementById("escola");
+        const conselhoInput = document.getElementById("conselho");
+
+        escolaSelect.addEventListener("change", function () {
+            const selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
+            const conselhoNome = selectedOption.getAttribute("data-conselho");
+
+            conselhoInput.value = conselhoNome || "";
+        });
+    });
+</script>
+
+{% endblock %}

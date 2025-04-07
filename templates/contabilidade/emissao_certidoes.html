@@ -3,15 +3,15 @@
 {% block content %}
 <div class="content-wrapper" style="padding: 0; margin: 0;">
     <div class="container-fluid">
-        <!-- Header -->
         <div class="card shadow-lg border-0 mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5 class="card-title font-weight-bold">
-                    <i class="fas fa-file-alt"></i> Emissão de Certidões
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title font-weight-bold mb-0">
+                    <i class="fas fa-file-alt"></i> Envio de Documentos
                 </h5>
+                <small class="text-light">Os três primeiros documentos são obrigatórios para liberar o acesso ao PDDE.</small>
             </div>
             <div class="card-body">
-                <p class="text-muted">Selecione uma certidão para emitir:</p>
+                <p class="text-muted">Selecione um documento abaixo e envie o arquivo correspondente.</p>
                 <div class="table-responsive">
                     <table class="table table-hover table-striped">
                         <thead class="thead-dark">
@@ -19,21 +19,41 @@
                                 <th>#</th>
                                 <th>Nome</th>
                                 <th>Descrição</th>
-                                <th>Data de Emissão</th>
+                                <th>Data de Envio</th>
                                 <th class="text-center">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for certidao in certidoes %}
-                            <tr>
+                            <tr class="{% if certidao.arquivo %}table-success{% elif forloop.counter0 < 3 %}table-warning{% endif %}">
                                 <td>{{ certidao.id }}</td>
-                                <td>{{ certidao.nome }}</td>
+                                <td>
+                                    {{ certidao.nome }}
+                                    {% if forloop.counter0 < 3 %}
+                                        <i class="fas fa-asterisk text-warning ml-1" data-toggle="tooltip" title="Documento obrigatório para liberar o PDDE"></i>
+                                    {% endif %}
+                                    {% if certidao.arquivo %}
+                                        <i class="fas fa-check-circle text-success ml-1" title="Arquivo enviado"></i>
+                                    {% endif %}
+                                </td>
                                 <td>{{ certidao.descricao }}</td>
-                                <td>{{ certidao.data_emissao|date:"d/m/Y" }}</td>
+                                <td>
+                                    {% if certidao.arquivo %}
+                                        {{ certidao.data_emissao|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">Não enviado</span>
+                                    {% endif %}
+                                </td>
                                 <td class="text-center">
-                                    <button class="btn btn-primary btn-sm shadow-sm" onclick="emitirCertidao('{{ certidao.nome }}')">
-                                        <i class="fas fa-print"></i> Emitir
+                                    <button class="btn btn-success btn-sm shadow-sm" onclick="enviarArquivo('{{ certidao.id }}', '{{ certidao.nome }}')">
+                                        <i class="fas fa-upload"></i> Enviar
                                     </button>
+
+                                    {% if certidao.arquivo %}
+                                    <a href="{{ certidao.arquivo.url }}" target="_blank" class="btn btn-secondary btn-sm shadow-sm ml-1" title="Baixar arquivo">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    {% endif %}
                                 </td>
                             </tr>
                             {% empty %}
@@ -49,24 +69,67 @@
     </div>
 </div>
 
+<style>
+    .content-wrapper {
+        margin-left: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .table-warning td {
+        background-color: #fff3cd !important;
+    }
+</style>
+
+<!-- Tooltip Bootstrap -->
 <script>
-    function emitirCertidao(nome) {
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+
+<!-- Enviar Arquivo -->
+<script>
+    function enviarArquivo(certidaoId, nomeCertidao) {
         Swal.fire({
-            icon: 'info',
-            title: 'Certidão em Emissão',
-            text: `A certidão "${nome}" está sendo emitida.`,
-            confirmButtonText: 'OK',
+            title: 'Enviar Arquivo',
+            html: `<input type="file" id="arquivo" class="swal2-file">`,
+            showCancelButton: true,
+            confirmButtonText: 'Enviar',
+            cancelButtonText: 'Cancelar',
+            preConfirm: () => {
+                const arquivo = Swal.getPopup().querySelector('#arquivo').files[0];
+                if (!arquivo) {
+                    Swal.showValidationMessage('Selecione um arquivo');
+                }
+                return arquivo;
+            }
+        }).then((result) => {
+            if (result.isConfirmed && result.value) {
+                const arquivo = result.value;
+                const formData = new FormData();
+                formData.append('arquivo', arquivo);
+                formData.append('certidao_id', certidaoId);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                fetch("{% url 'upload_arquivo_certidao' %}", {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Erro ao enviar');
+                    return response.json();
+                })
+                .then(data => {
+                    Swal.fire('Enviado!', `O arquivo para "${nomeCertidao}" foi enviado com sucesso.`, 'success')
+                        .then(() => location.reload());
+                })
+                .catch(() => {
+                    Swal.fire('Erro!', 'Não foi possível enviar o arquivo.', 'error');
+                });
+            }
         });
     }
 </script>
 {% endblock %}
-
-<style>
-    .content-wrapper {
-        margin-left: 0; /* Garante que não há margem entre o conteúdo e o sidebar */
-        padding: 0; /* Remove o padding interno */
-        display: flex;
-        flex-direction: column;
-        height: 100%; /* Garante que o conteúdo ocupe todo o espaço disponível */
-    }
-</style>

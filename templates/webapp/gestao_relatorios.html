@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
     <h2 class="text-center fw-bold text-primary">📊 Gestão de Relatórios</h2>
     <p class="text-center text-muted">Resultados detalhados das avaliações dos alunos.</p>
 
@@ -129,13 +131,126 @@
 
 
 
+<h5 class="mt-4 fw-bold text-primary">📥 Exportar Relatórios</h5>
 
-    <div class="col-md-2 align-self-end">
-        <a href="{% url 'gerar_pdf_relatorio' %}?nome_escola={{ filtros.nome_escola }}&turma={{ filtros.turma }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
-           class="btn btn-danger w-100">
-           Exportar PDF
-        </a>
+<div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-3 mt-2">
+
+    <div class="col">
+        <div class="card border-danger h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_pdf_relatorio' %}?nome_escola={{ filtros.nome_escola }}&turma={{ filtros.turma }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-danger w-100" target="_blank">
+                   📄 PDF Relatório Geral
+                </a>
+            </div>
+        </div>
     </div>
+
+    <div class="col">
+        <div class="card border-info h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_pdf_mapeamento' %}?nome_escola={{ filtros.nome_escola }}&turma={{ filtros.turma }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-info w-100" target="_blank">
+                   🗺️ PDF Mapeamento de Aplicação
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card border-secondary h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_pdf_relatorio_geral' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-secondary w-100" target="_blank">
+                   📋 PDF Relatório Consolidado
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card border-success h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_pdf_saida_rede' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-success w-100" target="_blank">
+                   🏫 PDF Rede Geral
+                </a>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div class="col">
+        <div class="card border-dark h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_pdf_habilidades_especificas' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-dark w-100" target="_blank">
+                   🧠 PDF Habilidades Específicas
+                </a>
+            </div>
+        </div>
+    </div>
+    
+
+    
+
+    <div class="col">
+        <div class="card border-primary h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_graficos_pdf' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-primary w-100" target="_blank">
+                   📊 PDF Relatório Gráfico Geral
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card border-primary h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'gerar_graficos_q11_q13' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-primary w-100" target="_blank">
+                   📊 PDF Gráficos Q11 & Q13 por Escola
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card border-danger h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'relatorio_saida_matematica' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-danger w-100" target="_blank">
+                   📘 PDF Relatório Saída Matemática
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    
+
+    <div class="col">
+        <div class="card border-warning h-100 shadow-sm">
+            <div class="card-body text-center">
+                <a href="{% url 'exportar_pptx_saida_rede' %}?nome_escola={{ filtros.nome_escola }}&ano={{ filtros.ano }}&modalidade={{ filtros.modalidade }}" 
+                   class="btn btn-warning w-100" target="_blank">
+                   🎞️ Exportar PowerPoint
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
     
     
     <!-- 🔍 Filtros -->
@@ -217,6 +332,8 @@
         </table>
     </div>
 </div>
+</div>
+
 {% endblock %}
 
 

@@ -30,15 +30,18 @@ class UserModulePermissionForm(forms.ModelForm):
         fields = ['user', 'module']
 # *******************************************************************************************************************
 
+from .models import LivroCaixa
+
 class LivroCaixaForm(forms.ModelForm):
     class Meta:
         model = LivroCaixa
-        fields = ['descricao', 'tipo', 'valor']
-        widgets = {
-            'descricao': forms.TextInput(attrs={'class': 'form-control'}),
-            'tipo': forms.Select(attrs={'class': 'form-control'}),
-            'valor': forms.NumberInput(attrs={'class': 'form-control'}),
-        }
+        fields = [
+            'ano_base', 'conselho_escolar', 'cnpj',
+            'rendimentos_aplicacao', 'saldo_anterior',
+            'receita_total', 'despesas_manutencao',
+            'despesa_total', 'superavit_deficit'
+        ]
+
 # *******************************************************************************************************************
 
 class EscrituraFiscalForm(forms.ModelForm):
@@ -365,8 +368,6 @@ ExperienciaFormSet = inlineformset_factory(Diretor, ExperienciaProfissional, for
 FormacaoFormSet = inlineformset_factory(Diretor, FormacaoAcademica, form=FormacaoAcademicaForm, extra=1)
 CertificadoFormSet = inlineformset_factory(Diretor, Certificado, form=CertificadoForm, extra=1)
 
-
-
 from django import forms
 from django.contrib.auth.models import User
 
@@ -390,13 +391,11 @@ class FormDeAtualizacao(forms.ModelForm):
         fields = ['nome_completo', 'email', 'cpf']  # Ajuste os campos conforme necessário
 # *******************************************************************************************************************
 
-
 from django import forms
 
 class UploadCSVForm(forms.Form):
     file = forms.FileField(label="Selecione um arquivo CSV")
 # *******************************************************************************************************************
-
 
 from django import forms
 from .models import Resposta
@@ -452,7 +451,6 @@ class ConceitoForm(forms.Form):
         required=True
     )
 # *******************************************************************************************************************
-
 
 # forms.py
 from django import forms
@@ -794,15 +792,14 @@ class ProponenteForm(forms.ModelForm):
             "tipo_proponente": forms.Select(),
             "estado": forms.Select(),
         }
-
+# *******************************************************************************************************************
 
 class PropostaForm(forms.ModelForm):
     class Meta:
         model = Proposta
         fields = '__all__'
 
-
-
+# *******************************************************************************************************************
 
 from django import forms
 from .models import Documento
@@ -818,7 +815,7 @@ class DocumentoForm(forms.ModelForm):
             'data_emissao': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'arquivo': forms.FileInput(attrs={'class': 'form-control'}),
         }
-
+# *******************************************************************************************************************
 
 from .models import BemAdquirido
 
@@ -832,7 +829,7 @@ class BemAdquiridoForm(forms.ModelForm):
             'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
             'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
-
+# *******************************************************************************************************************
 
 from .models import RepresentanteLegal
 
@@ -847,9 +844,7 @@ class RepresentanteLegalForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'telefone': forms.TextInput(attrs={'class': 'form-control'}),
         }
-
-
-
+# *******************************************************************************************************************
 
 from .models import Bem
 
@@ -865,10 +860,7 @@ class BemForm(forms.ModelForm):
             'quantidade': forms.NumberInput(attrs={'class': 'form-control'}),
             'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
-
-
-
-
+# *******************************************************************************************************************
 
 # forms.py
 from .models import TermoDoacao, BemDoado
@@ -887,10 +879,7 @@ class TermoDoacaoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TermoDoacaoForm, self).__init__(*args, **kwargs)
         self.fields['bem'].queryset = BemDoado.objects.all().order_by('descricao')
-
-
-
-
+# *******************************************************************************************************************
 
 from .models import BemDoado
 
@@ -907,9 +896,7 @@ class BemDoadoForm(forms.ModelForm):
             'data_nota': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
             'valor_unitario': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
         }
-
-
-
+# *******************************************************************************************************************
 
 from django import forms
 from .models import PlanoGestaoEscolar
@@ -925,3 +912,4 @@ class PlanoGestaoEscolarForm(forms.ModelForm):
             'telefone': forms.TextInput(attrs={'class': 'form-control'}),
             'arquivo': forms.FileInput(attrs={'class': 'form-control'}),
         }
+# *******************************************************************************************************************

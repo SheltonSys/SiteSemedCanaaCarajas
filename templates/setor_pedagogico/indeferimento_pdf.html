@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Indeferimento do Plano</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #dc3545; text-align: center; }
+        .info { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Notificação de Indeferimento</h1>
+    <p><strong>Unidade:</strong> {{ plano.unidade_ensino }}</p>
+    <p><strong>Servidor:</strong> {{ plano.servidor }}</p>
+    <p><strong>Motivo do Indeferimento:</strong> {{ plano.motivo_indeferimento }}</p>
+    <p><strong>Novo Prazo para Reenvio:</strong> {{ plano.prazo_reeenvio|date:"d/m/Y" }}</p>
+</body>
+</html>

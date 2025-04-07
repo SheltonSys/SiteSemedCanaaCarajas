@@ -241,73 +241,95 @@
 
 
        <!-- BLOCO 3 – PAGAMENTOS EFETUADOS -->
-        <!-- BLOCO 3 – PAGAMENTOS EFETUADOS -->
-        <div class="card shadow-lg border-0 mt-4">
-            <div class="card-header bg-gradient-primary text-white">
-                <h2 class="h5 mb-0"><i class="fas fa-money-check-alt"></i> Pagamentos Efetuados</h2>
-            </div>
-            <div class="card-body bg-light">
-                <div class="table-responsive">
-                    <table class="table table-bordered text-center align-middle">
-                        <thead class="bg-primary text-white">
-                            <tr>
-                                <th>#</th>
-                                <th>Nome do Favorecido</th>
-                                <th>CNPJ/CPF</th>
-                                <th>Tipo de Bens e Materiais/Serviços</th>
-                                <th>Origem</th>
-                                <th>Nat. Despesa</th>
-                                <th>Tipo Documento</th>
-                                <th>Data Pagamento</th>
-                                <th>Valor (R$)</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-pagamentos">
-                            {% for pagamento in pagamentos %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td class="text-start">{{ pagamento.nome_favorecido }}</td>
-                                <td>{{ pagamento.cnpj_cpf }}</td>
-                                <td class="text-start">{{ pagamento.tipo_bem_servico }}</td>
-                                <td>{% if pagamento.origem %}{{ pagamento.origem }}{% else %}FNDE{% endif %}</td>
-                                <td>{{ pagamento.tipo_pagamento }}</td>
-                                <td>{{ pagamento.tipo_documento }}</td>
-                                <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
-                                <td class="valor-pagamento {% if pagamento.tipo_pagamento == 'Custeio' %}custeio{% else %}capital{% endif %}">
-                                    R$ {{ pagamento.valor|floatformat:2|stringformat:".2f"|default:"0,00" }}
-                                </td>
-                                <td>
-                                    <a href="{% url 'editar_pagamento' pagamento.id %}" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-edit"></i> Editar
-                                    </a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="10" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
+       <div class="card shadow-lg border-0 mt-4">
+        <div class="card-header bg-gradient-primary text-white">
+            <h2 class="h5 mb-0"><i class="fas fa-money-check-alt"></i> Pagamentos Efetuados</h2>
+        </div>
+        <div class="card-body bg-light">
+            <div class="table-responsive">
+                <table class="table table-bordered text-center align-middle">
+                    <thead class="bg-primary text-white">
+                        <tr>
+                            <th>#</th>
+                            <th>Nome do Favorecido</th>
+                            <th>CNPJ/CPF</th>
+                            <th>Tipo de Bens e Materiais/Serviços</th>
+                            <th>Origem</th>
+                            <th>Nat. Despesa</th>
+                            <th>25 – Documento<br><small>Tipo</small></th>
+                            <th>25 – Documento<br><small>Nº</small></th>
+                            <th>25 – Documento<br><small>Data</small></th>
+                            <th>26 – Pagamento<br><small>Nº Ch/OB</small></th>
+                            <th>26 – Pagamento<br><small>Data</small></th>
+                            <th>Valor (R$)</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+    
+                    <tbody id="tabela-pagamentos">
+                        {% for pagamento in pagamentos %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="text-start">{{ pagamento.nome_favorecido }}</td>
+                            <td>{{ pagamento.cnpj_cpf }}</td>
+                            <td class="text-start">{{ pagamento.tipo_bem_servico }}</td>
+                            <td>{% if pagamento.origem %}{{ pagamento.origem }}{% else %}FNDE{% endif %}</td>
+                            <td>{{ pagamento.tipo_pagamento }}</td>
+                            <td>{{ pagamento.tipo_documento }}</td>
+                            <td>{{ pagamento.numero_documento }}</td>
+                            <td>{{ pagamento.data_documento|date:"d/m/Y" }}</td>
+                            <td>{{ pagamento.numero_pagamento }}</td>
+                            <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
+                            <td class="valor-pagamento {% if pagamento.tipo_pagamento == 'Custeio' %}custeio{% else %}capital{% endif %}">
+                                R$ {{ pagamento.valor|floatformat:2|stringformat:".2f"|default:"0,00" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'editar_pagamento' pagamento.id %}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="13" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+    
+                    <!-- Rodapé com totais -->
+                    <tfoot class="border-top">
+                        <tr class="bg-light fw-bold">
+                            <td colspan="10" class="text-end pe-3 py-2">
+                                <i class="fas fa-coins text-primary me-2"></i> Total Custeio:
+                            </td>
+                            <td id="total-custeio" class="text-primary fw-bold py-2" colspan="2">R$ 0,00</td>
+                            <td></td>
+                        </tr>
+                        <tr class="bg-light fw-bold">
+                            <td colspan="10" class="text-end pe-3 py-2">
+                                <i class="fas fa-piggy-bank text-success me-2"></i> Total Capital:
+                            </td>
+                            <td id="total-capital" class="text-success fw-bold py-2" colspan="2">R$ 0,00</td>
+                            <td></td>
+                        </tr>
+                        <tr class="bg-gradient-secondary text-white fw-bold">
+                            <td colspan="10" class="text-end pe-3 py-2">
+                                <i class="fas fa-hand-holding-usd text-warning me-2"></i> Total Pagamentos:
+                            </td>
+                            <td id="total-geral" colspan="2" class="text-warning fw-bold py-2">R$ 0,00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                    
 
-                        <!-- ✅ LINHA DE SOMATÓRIO COM OS 3 TOTAIS NA MESMA LINHA -->
-                        <tfoot>
-                            <tr class="bg-light fw-bold">
-                                <td colspan="6"></td> <!-- Mantém alinhamento -->
-                                <td class="text-end pe-3">Total Custeio:</td>
-                                <td id="total-custeio" class="text-primary fw-bold">R$ 0,00</td>
-                                <td class="text-end pe-3">Total Capital:</td>
-                                <td id="total-capital" class="text-success fw-bold">R$ 0,00</td>
-                            </tr>
-                            <tr class="bg-secondary text-white fw-bold">
-                                <td colspan="8" class="text-end pe-3">Total Pagamentos:</td>
-                                <td id="total-geral" colspan="2" class="text-warning fw-bold">R$ 0,00</td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
+
+                </table>
             </div>
         </div>
+    </div>
+    
+
+
 
         <!-- BLOCO 4 – AUTENTICAÇÃO -->
         <div class="card shadow-lg border-0 mt-4">
@@ -434,57 +456,45 @@
         });
 
         function carregarPagamentos(escolaId) {
-            if (!escolaId) {
-                console.warn("⚠️ Nenhuma escola selecionada.");
-                return;
+    if (!escolaId) {
+        console.warn("⚠️ Nenhuma escola selecionada.");
+        return;
+    }
+
+    fetch(`/get-pagamentos/${escolaId}/`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Erro na resposta do servidor: ${response.status}`);
             }
+            return response.json();
+        })
+        .then(data => {
+            tabelaPagamentos.innerHTML = "";
+            let totalCusteioVal = 0;
+            let totalCapitalVal = 0;
 
-            fetch(`/get-pagamentos/${escolaId}/`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Erro na resposta do servidor: ${response.status}`);
+            if (data.pagamentos && data.pagamentos.length > 0) {
+                data.pagamentos.forEach((pagamento, index) => {
+                    let valor = parseFloat(pagamento.valor) || 0;
+                    if (pagamento.tipo_pagamento === "Custeio") {
+                        totalCusteioVal += valor;
+                    } else {
+                        totalCapitalVal += valor;
                     }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("🔹 Pagamentos carregados:", data); // Depuração
 
-                    // Verifica se a chave 'pagamentos' existe na resposta
-                    if (!data || !data.pagamentos) {
-                        console.error("❌ Resposta inesperada da API:", data);
-                        return;
-                    }
-
-                    tabelaPagamentos.innerHTML = ""; // Limpa a tabela antes de preencher os dados
-                    let totalCusteioVal = 0;
-                    let totalCapitalVal = 0;
-
-                    if (data.pagamentos.length > 0) {
-                        data.pagamentos.forEach((pagamento, index) => {
-                            let valor = parseFloat(pagamento.valor) || 0;
-
-                            // Somar valores aos totais
-                            if (pagamento.tipo_pagamento === "Custeio") {
-                                totalCusteioVal += valor;
-                            } else {
-                                totalCapitalVal += valor;
-                            }
-
-                            // Formatando a data corretamente
-                            let dataFormatada = pagamento.data_pagamento
-                                ? pagamento.data_pagamento
-                                : "Não informada";
-
-                            let row = `
+                    let row = `
                         <tr>
                             <td>${index + 1}</td>
                             <td class="text-start">${pagamento.nome_favorecido || "Não informado"}</td>
                             <td>${pagamento.cnpj_cpf || "N/A"}</td>
                             <td class="text-start">${pagamento.tipo_bem_servico || "N/A"}</td>
-                            <td>${pagamento.origem ? pagamento.origem : "FNDE"}</td>
+                            <td>${pagamento.origem || "FNDE"}</td>
                             <td>${pagamento.tipo_pagamento || "N/A"}</td>
-                            <td>${pagamento.tipo_documento || "N/A"}</td>
-                            <td>${dataFormatada}</td>
+                            <td>${pagamento.tipo_documento || ""}</td>
+                            <td>${pagamento.numero_documento || ""}</td>
+                            <td>${pagamento.data_documento || ""}</td>
+                            <td>${pagamento.numero_pagamento || ""}</td>
+                            <td>${pagamento.data_pagamento || ""}</td>
                             <td class="valor-pagamento ${pagamento.tipo_pagamento === 'Custeio' ? 'custeio' : 'capital'}">
                                 R$ ${formatarValor(valor)}
                             </td>
@@ -495,22 +505,23 @@
                             </td>
                         </tr>
                     `;
-                            tabelaPagamentos.innerHTML += row;
-                        });
-                    } else {
-                        tabelaPagamentos.innerHTML = `
+                    tabelaPagamentos.innerHTML += row;
+                });
+            } else {
+                tabelaPagamentos.innerHTML = `
                     <tr>
-                        <td colspan="10" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
+                        <td colspan="13" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
                     </tr>
                 `;
-                    }
+            }
 
-                    atualizarTotais(totalCusteioVal, totalCapitalVal);
-                })
-                .catch(error => {
-                    console.error("❌ Erro ao carregar pagamentos:", error);
-                });
-        }
+            atualizarTotais(totalCusteioVal, totalCapitalVal);
+        })
+        .catch(error => {
+            console.error("❌ Erro ao carregar pagamentos:", error);
+        });
+}
+
 
 
         // 🔹 Atualiza os totais na tabela

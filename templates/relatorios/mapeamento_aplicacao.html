@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Mapeamento de Aplicação</title>
+    <style>
+        body {
+            font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
+            background-color: #fff;
+            margin: 40px;
+            color: #222;
+        }
+
+        .titulo {
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            background-color: #FFE082;
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 15px;
+            box-shadow: 4px 4px 0px #000;
+            margin: 0 auto 40px;
+        }
+
+        .linha {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .coluna {
+            flex: 1;
+            min-width: 220px;
+            background-color: #f0f0f0;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 3px 3px 0px #000;
+            text-align: center;
+        }
+
+        .cabecalho {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            padding: 10px;
+            border-radius: 12px;
+            color: #000;
+        }
+
+        .roxo { background-color: #E1CFE8; }
+        .azul { background-color: #D2E4F7; }
+        .verde { background-color: #D0EDD2; }
+        .rosa { background-color: #FAD0D3; }
+
+        .subbox {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 2px 2px 0px #000;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 60px;
+            text-align: center;
+            font-size: 13px;
+            color: gray;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="titulo">MAPEAMENTO DE APLICAÇÃO</div>
+
+    <div class="linha">
+        <!-- Escolas Atendidas -->
+        <div class="coluna">
+            <div class="cabecalho roxo">ESCOLAS ATENDIDAS</div>
+            <div class="subbox">
+                {{ total_escolas }}
+            </div>
+        </div>
+
+        <!-- Total de Alunos -->
+        <div class="coluna">
+            <div class="cabecalho azul">TOTAL DE ALUNOS</div>
+            <div class="subbox">
+                Matriculados: {{ total_alunos }}<br>
+                Pretendidos: {{ total_alunos }}
+            </div>
+            <div class="subbox">
+                Formulários preenchidos:<br>
+                1º Caderno: {{ formulario_1 }}<br>
+                2º Caderno: {{ formulario_2 }}
+            </div>
+        </div>
+
+        <!-- Educadores -->
+        <div class="coluna">
+            <div class="cabecalho verde">EDUCADORES</div>
+            <div class="subbox">
+                {{ total_educadores }}
+            </div>
+        </div>
+
+        <!-- Cadernos -->
+        <div class="coluna">
+            <div class="cabecalho rosa">CADERNOS</div>
+            <div class="subbox">1º Linguagem</div>
+            <div class="subbox">2º Matemática</div>
+        </div>
+    </div>
+
+    <div class="footer">
+        Sistema SIEDGE - SEMED Canaã dos Carajás
+    </div>
+
+</body>
+</html>

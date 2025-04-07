@@ -128,6 +128,14 @@ from .views import get_escola_dados
 from .views import enviar_plano_gestao
 from .views import listar_pge_planos
 from .views import plano_gestao_escolar_admin
+from .views import gerar_cotacao
+from semedapp.views import relatorio_saida_rede
+from .views import gerar_pdf_saida_rede
+from .views import exportar_pptx_saida_rede
+from .views import gerar_pdf_relatorio_geral
+from .views import relatorio_saida_matematica_view
+
+
 
 
 
@@ -264,14 +272,30 @@ urlpatterns = [
     path('acompanhamento-individual/', views.acompanhamento_individual, name='acompanhamento_individual'),
     path('registrar-acompanhamento/', views.registrar_acompanhamento, name='registrar_acompanhamento'),
 
+    path('cadastro_diretoria/', views.cadastro_diretoria, name='cadastro_diretoria'),
+    path('conselho/diretoria/editar/<int:id>/', views.editar_diretoria, name='editar_diretoria'),
+    path('conselho/diretoria/excluir/<int:id>/', views.excluir_diretoria, name='excluir_diretoria'),
+
     path('contabilidade/pdde/', views.pdde_view, name='contabilidade_pdde'),
     path('conselho/diretoria/', views.conselho_diretoria, name='conselho_diretoria'),
     path('conselho/membros/', views.conselho_membros, name='conselho_membros'),
     path('conselho/membros/cadastrar/', views.cadastrar_membro, name='cadastrar_membro'),
     path('conselho/membros/', views.listar_membros, name='listar_membros'),
-    path('conselho/caixa/', views.listar_livro_caixa, name='listar_livro_caixa'),
-    path('conselho/caixa/adicionar/', views.adicionar_livro_caixa, name='adicionar_livro_caixa'),
+    path('conselho/membros/editar/<int:id>/', views.editar_membro, name='editar_membro'),
+    path('conselho/membros/excluir/<int:id>/', views.excluir_membro, name='excluir_membro'),
+
+    #livro caixa
     path('download/<str:file_name>/', views.download_manual, name='download_manual'),
+
+    path('livro-caixa/', views.listar_livro_caixa, name='listar_livro_caixa'),
+    path('livro-caixa/cadastrar/', views.adicionar_livro_caixa, name='adicionar_livro_caixa'),
+    path('livro-caixa/editar/<int:id>/', views.editar_livro_caixa, name='editar_livro_caixa'),
+    path('livro-caixa/excluir/<int:id>/', views.excluir_livro_caixa, name='excluir_livro_caixa'),
+    path('livro-caixa/escola-info/<int:escola_id>/', views.escola_info, name='get_escola_info'),
+
+
+
+
 
     path('pdde/', views.pdde, name='contabilidade_pdde'),
     path('pdde/', views.pdde_view, name='pdde'),
@@ -283,7 +307,8 @@ urlpatterns = [
     path('contabilidade/caixa/adicionar/', views.adicionar_escritura_fiscal, name='adicionar_escritura_fiscal'),
     path('contabilidade/caixa/adicionar/', views.adicionar_escritura_fiscal, name='adicionar_escrituracao'),
 
-    path('contabilidade/caixa/adicionar/', views.adicionar_livro_caixa, name='adicionar_livro_caixa'),
+    
+
     path('caixa/adicionar/', views.adicionar_escrituracao, name='adicionar_escrituracao'),
     path('gestao_escolar/', views.gestao_escolar, name='gestao_escolar'),
     path('downloads/', views.download_page, name='download_page'),
@@ -938,8 +963,80 @@ urlpatterns = [
 
     path('planos-gestao/enviar/', views.enviar_plano_gestao, name='enviar_plano'),
 
-    
 
+    path('certidoes/', views.emissao_certidoes, name='emissao_certidoes'),
+    path('upload-certidao/', views.upload_arquivo_certidao, name='upload_arquivo_certidao'),
+
+    path('pdde/gerar-cotacao/', views.gerar_cotacao, name='gerar_cotacao'),
+
+    path('gerar-cotacao/', gerar_cotacao, name='gerar_cotacao'),
+
+
+
+    
+    path('livro-diario/', views.livro_diario, name='livro_diario'),
+    path('livro-diario/adicionar/', views.adicionar_lancamento_diario, name='adicionar_lancamento_diario'),
+    path('livro-diario/excluir/<int:id>/', views.excluir_lancamento_diario, name='excluir_lancamento_diario'),
+    path('livro-diario/export/pdf/', views.exportar_livro_diario_pdf, name='exportar_livro_diario_pdf'),
+    path('livro-diario/export/csv/', views.exportar_livro_diario_csv, name='exportar_livro_diario_csv'),
+    path('livro-diario/export/excel/', views.exportar_livro_diario_excel, name='exportar_livro_diario_excel'),
+
+    
+    path('livro-caixa/info-completa/<int:escola_id>/', views.get_info_completa_escola, name='info_completa_escola'),
+
+    path('livro-caixa/info-basica/<int:escola_id>/', views.get_info_receita_despesa, name='info_basica'),
+    path('livro-caixa/info-detalhada/<int:escola_id>/', views.get_receita_info, name='info_detalhada'),
+
+
+
+    path('contas/consolidado/', views.get_consolidado_contas, name='consolidado_contas'),
+
+    path('contas/consolidado-receita/', views.get_consolidado_receita, name='consolidado_receita'),
+
+    path('contas/sintese-receita/', views.get_sintese_receita, name='sintese_receita'),
+
+    path('pdde/sintese/', views.sintese_pdde_view, name='sintese_pdde'),
+
+    path('pdde/cadastrar-info/', views.cadastrar_info_pdde, name='cadastrar_info_pdde'),
+
+
+    path('contas/sintese-pdf/', views.gerar_pdf_sintese, name='sintese_pdf'),
+
+
+    path('manuais/', views.lista_manuais, name='manuais'),
+    path('manuais/download/<str:arquivo>/', views.download_manual, name='download_manual'),
+
+    path('planos-gestao/<int:plano_id>/indeferimento/pdf/', views.gerar_pdf_indeferimento, name='gerar_pdf_indeferimento'),
+
+    path('planos-gestao/salvar-motivo/', views.salvar_motivo_indeferimento, name='salvar_motivo_indeferimento'),
+
+    path('planos-gestao/enviar-email/', views.enviar_email_indeferimento, name='enviar_email_indeferimento'),
+
+
+    path('relatorio/gerar-mapeamento/', views.gerar_pdf_mapeamento, name='gerar_pdf_mapeamento'),
+    path('relatorio/gerar-detalhado/', views.gerar_pdf_detalhado, name='gerar_pdf_detalhado'),
+
+    path('relatorio/saida-rede/', relatorio_saida_rede, name='relatorio_saida_rede'),
+
+    path('relatorio/saida-rede/', views.relatorio_saida_rede, name='relatorio_saida_rede'),
+
+    path('relatorio/gerar-saida-rede/', gerar_pdf_saida_rede, name='gerar_pdf_saida_rede'),
+
+    path('relatorio/exportar-pptx/', exportar_pptx_saida_rede, name='exportar_pptx_saida_rede'),
+
+    path('relatorio/geral/', gerar_pdf_relatorio_geral, name='gerar_pdf_relatorio_geral'),
+
+    path('gerar-pdf-habilidades-especificas/', views.gerar_pdf_habilidades_especificas, name='gerar_pdf_habilidades_especificas'),
+
+    path('gerar-graficos-pdf/', views.gerar_graficos_pdf, name='gerar_graficos_pdf'),
+
+    path('gerar-graficos-q11-q13/', views.gerar_graficos_q11_q13, name='gerar_graficos_q11_q13'),
+
+    path('relatorio/matematica-saida/', relatorio_saida_matematica_view, name='relatorio_saida_matematica'),
+
+    path('relatorio/saida-matematica/', relatorio_saida_matematica_view, name='relatorio_saida_matematica'),
+
+    path("relatorio/matematica-saida/", relatorio_saida_matematica_view, name="relatorio_saida_matematica"),
 
 
     

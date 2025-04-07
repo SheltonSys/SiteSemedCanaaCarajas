@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+    {% endfor %}
+{% endif %}
+
+
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 text-primary">
+                        <i class="fas fa-book-open"></i> Adicionar Lançamento Diário
+                    </h1>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a href="{% url 'livro_diario' %}" class="btn btn-secondary btn-sm mt-2">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+            <div class="card shadow-lg border-0">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="card-body">
+                        <h6 class="text-secondary mb-3">Informações do Lançamento</h6>
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="data">Data</label>
+                                <input type="date" id="data" name="data" class="form-control" value="{{ today }}" required>
+                            </div>
+                            <div class="form-group col-md-9">
+                                <label for="historico">Histórico</label>
+                                <input type="text" id="historico" name="historico" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group col-md-3">
+                                <label for="recebimento">Recebimento</label>
+                                <input type="number" step="0.01" id="recebimento" name="recebimento" class="form-control" placeholder="Informe apenas se houver entrada">
+                                <small class="form-text text-muted">Preencha apenas um dos campos: Recebimento ou Pagamento</small>
+                            </div>
+                            <div class="form-group col-md-3">
+                                <label for="pagamento">Pagamento</label>
+                                <input type="number" step="0.01" id="pagamento" name="pagamento" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-footer d-flex justify-content-end">
+                        <button type="submit" class="btn btn-success btn-lg mr-2">
+                            <i class="fas fa-save"></i> Salvar
+                        </button>
+                        <a href="{% url 'livro_diario' %}" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+
+<script>
+    document.getElementById('recebimento').addEventListener('input', function() {
+    document.getElementById('pagamento').disabled = this.value !== "";
+});
+
+document.getElementById('pagamento').addEventListener('input', function() {
+    document.getElementById('recebimento').disabled = this.value !== "";
+});
+
+</script>
+{% endblock %}

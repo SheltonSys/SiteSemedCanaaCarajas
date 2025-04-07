@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Gerar Cotação de Preços</h1>
+            <p class="text-muted">Selecione os produtos e preencha os valores para gerar a proposta de cotação.</p>
+        </div>
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h5 mb-0"><i class="fas fa-box"></i> Produtos Disponíveis</h2>
+            </div>
+            <div class="card-body bg-light">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead class="thead-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Produto</th>
+                                    <th>Unidade</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário</th>
+                                    <th>Selecionar</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in itens %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ item.nome }}</td>
+                                    <td>{{ item.unidade }}</td>
+                                    <td><input type="number" name="quantidade_{{ item.id }}" class="form-control" value="1" min="1"></td>
+                                    <td><input type="text" name="valor_{{ item.id }}" class="form-control" placeholder="0,00"></td>
+                                    <td><input type="checkbox" name="selecionados" value="{{ item.id }}"></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="text-end mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-alt"></i> Gerar Documento
+                        </button>
+                        <a href="{% url 'pdde' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Tooltip Bootstrap -->
+<script>
+    $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+{% endblock %}

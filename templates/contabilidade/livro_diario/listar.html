@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% load filters %}
+{% block content %}
+<div class="content-wrapper" style="padding: 0; margin: 0;">
+    <div class="content-header bg-light border-bottom">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <h1 class="m-0 text-primary">
+                        <i class="fas fa-book-open"></i> Livro Diário
+                    </h1>
+                </div>
+                <div class="col-md-6 text-right">
+                    <a href="{% url 'adicionar_lancamento_diario' %}" class="btn btn-primary btn-sm mt-2">
+                        <i class="fas fa-plus"></i> Novo Lançamento
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="content" style="padding: 20px;">
+        <div class="container-fluid">
+
+            <!-- SALDO ATUAL + SEMESTRAL + ANUAL -->
+            <div class="row mb-3">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <strong>SALDO NO CAIXA HOJE:</strong>
+                        </div>
+                        <div class="card-body text-center">
+                            <h3 class="text-danger">{{ saldo_hoje|default:"0,00" }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card border-0 shadow">
+                        <div class="card-header bg-secondary text-white text-center">
+                            <strong>RESULTADOS GERAIS</strong>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <strong>1º SEMESTRE</strong><br>
+                                    {{ resultado_semestre1|default:"0,00" }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>2º SEMESTRE</strong><br>
+                                    {{ resultado_semestre2|default:"0,00" }}
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>RESULTADO ANO</strong><br>
+                                    {{ resultado_ano|default:"0,00" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DEMONSTRATIVO MÊS A MÊS -->
+            <div class="card border-0 shadow mb-3">
+                <div class="card-header bg-secondary text-white">
+                    <strong>DEMONSTRATIVO MÊS A MÊS ↓</strong>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center mb-2">
+                        {% if resultados_mensais %}
+                            {% for mes, total in resultados_mensais.items %}
+                            <div class="col-md-2 mb-2">
+                                <strong>RESULTADO {{ mes|traduzir_mes|upper }}</strong><br>
+                                {{ total|default:"0,00" }}
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="col-12 text-center">
+                                <small>Nenhum resultado mensal encontrado.</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- TABELA DE LANÇAMENTOS -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body">
+                    <table class="table table-bordered table-striped">
+                        <thead class="bg-secondary text-white">
+                            <tr>
+                                <th>Data</th>
+                                <th>Histórico</th>
+                                <th>Recebimento</th>
+                                <th>Pagamento</th>
+                                <th>Saldo</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lanc in lancamentos %}
+                            <tr>
+                                <td>{{ lanc.data|date:"d/m/Y" }}</td>
+                                <td>{{ lanc.historico }}</td>
+                                <td class="text-success">{{ lanc.recebimento|default:"-" }}</td>
+                                <td class="text-danger">{{ lanc.pagamento|default:"-" }}</td>
+                                <td>{{ lanc.saldo }}</td>
+                                <td>
+                                    <form action="{% url 'excluir_lancamento_diario' lanc.id %}" method="post" style="display: inline;">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center">Nenhum lançamento registrado.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</div>
+{% endblock %}

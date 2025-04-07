@@ -105,8 +105,13 @@
                                 <a class="dropdown-item" href="{% url 'cadastrar_item' %}">
                                     <i class="fas fa-box"></i> Cadastrar Item
                                 </a>
+
                                 <a class="dropdown-item" href="{% url 'listar_item' %}">
                                     <i class="fas fa-box"></i> Itens cadastrados
+                                </a>
+
+                                <a class="dropdown-item" href="{% url 'gerar_cotacao' %}">
+                                    <i class="fas fa-box"></i> Gerar Cotação
                                 </a>
                                 
                                 <a class="dropdown-item" href="{% url 'cadastrar_proponente' %}">
@@ -261,6 +266,34 @@
         </div>
     </section>
 </div>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Força o dropdown a funcionar mesmo se o Bootstrap JS não tiver inicializado automaticamente
+        const dropdowns = document.querySelectorAll('.dropdown-toggle');
+
+        dropdowns.forEach(function (dropdown) {
+            dropdown.addEventListener('click', function (e) {
+                const menu = this.nextElementSibling;
+                if (menu.classList.contains('show')) {
+                    menu.classList.remove('show');
+                } else {
+                    document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+                    menu.classList.add('show');
+                }
+            });
+        });
+
+        // Fecha dropdown ao clicar fora
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu.show').forEach(m => m.classList.remove('show'));
+            }
+        });
+    });
+</script>
+
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

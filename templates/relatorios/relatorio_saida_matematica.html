@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ titulo }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
+        h2 { text-align: center; font-size: 16px; margin-top: 30px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+        th, td { border: 1px solid #000; padding: 4px; text-align: center; }
+        th { background-color: #f0f0f0; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">{{ titulo }}</h1>
+
+    {% for escola, questoes in resultado_matematica.items %}
+        <h2>{{ escola }}</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Q</th>
+                    <th>CERTO</th>
+                    <th>ERRADO</th>
+                    <th>PARCIAL</th>
+                    <th>BRANCO</th>
+                    <th>LAUDO</th>
+                    <th>FALTOU</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for num, dados in questoes.items %}
+                    <tr>
+                        <td>{{ num }}</td>
+                        <td>{{ dados.CERTO }}</td>
+                        <td>{{ dados.ERRADO }}</td>
+                        <td>{{ dados.PARCIAL }}</td>
+                        <td>{{ dados.BRANCO }}</td>
+                        <td>{{ dados.LAUDO }}</td>
+                        <td>{{ dados.FALTOU }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+</body>
+</html>

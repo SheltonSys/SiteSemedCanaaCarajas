@@ -2,7 +2,6 @@
 
 {% block content %}
 <div class="content-wrapper" style="padding: 0; margin: 0;">
-    <!-- Header -->
     <div class="content-header bg-light border-bottom">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -22,10 +21,8 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <section class="content" style="padding: 20px;">
         <div class="container-fluid">
-            <!-- Diretoria Table -->
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title font-weight-bold">
@@ -43,6 +40,9 @@
                                     <th>#</th>
                                     <th>Nome</th>
                                     <th>Cargo</th>
+                                    <th>Telefone</th>
+                                    <th>Email</th>
+                                    <th>Bairro</th>
                                     <th class="text-center">Ações</th>
                                 </tr>
                             </thead>
@@ -52,32 +52,76 @@
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ membro.nome }}</td>
                                     <td>{{ membro.cargo }}</td>
+                                    <td>{{ membro.telefone }}</td>
+                                    <td>{{ membro.email }}</td>
+                                    <td>{{ membro.bairro }}</td>
                                     <td class="text-center">
                                         <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#diretoriaModal{{ forloop.counter }}">
-                                            <i class="fas fa-eye"></i> Ver Detalhes
+                                            <i class="fas fa-eye"></i>
                                         </button>
+                                        <a href="{% url 'editar_diretoria' membro.id %}" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{% url 'excluir_diretoria' membro.id %}" method="post" class="form-excluir" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
-                                <!-- Modal para Detalhes -->
+
+                                <!-- Modal Detalhes -->
                                 <div class="modal fade" id="diretoriaModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="diretoriaModalLabel{{ forloop.counter }}" aria-hidden="true">
                                     <div class="modal-dialog modal-lg">
-                                        <div class="modal-content">
+                                        <div class="modal-content shadow-lg border-0">
                                             <div class="modal-header bg-primary text-white">
-                                                <h5 class="modal-title" id="diretoriaModalLabel{{ forloop.counter }}">Detalhes da Diretoria</h5>
+                                                <h5 class="modal-title" id="diretoriaModalLabel{{ forloop.counter }}">
+                                                    <i class="fas fa-user-circle"></i> Detalhes do Membro
+                                                </h5>
                                                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
-                                            <div class="modal-body">
-                                                <p><strong>Data do Vencimento:</strong> {{ membro.vencimento }}</p>
-                                                <p><strong>Nome:</strong> {{ membro.nome }}</p>
-                                                <p><strong>Cargo:</strong> {{ membro.cargo }}</p>
-                                                <p><strong>Endereço:</strong> {{ membro.endereco }}</p>
-                                                <p><strong>Bairro:</strong> {{ membro.bairro }}</p>
-                                                <p><strong>Telefone:</strong> {{ membro.telefone }}</p>
-                                                <p><strong>E-mail:</strong> {{ membro.email }}</p>
-                                                <p><strong>CEP:</strong> {{ membro.cep }}</p>
-                                                <p><strong>CPF:</strong> {{ membro.cpf }}</p>
+                                            <div class="modal-body p-4">
+                                                <ul class="list-group list-group-flush">
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-school text-primary"></i> <strong>Escola:</strong> {{ membro.escola.nome }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-users text-primary"></i> <strong>Conselho:</strong> {{ membro.conselho.nome }}
+                                                    </li>
+                                                    
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-calendar-alt text-primary"></i> <strong>Vencimento:</strong> {{ membro.vencimento }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-user text-primary"></i> <strong>Nome:</strong> {{ membro.nome }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-briefcase text-primary"></i> <strong>Cargo:</strong> {{ membro.cargo }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-map-marker-alt text-primary"></i> <strong>Endereço:</strong> {{ membro.endereco }}, {{ membro.bairro }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-phone-alt text-primary"></i> <strong>Telefone:</strong> {{ membro.telefone }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-envelope text-primary"></i> <strong>E-mail:</strong> {{ membro.email }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-map-pin text-primary"></i> <strong>CEP:</strong> {{ membro.cep }}
+                                                    </li>
+                                                    <li class="list-group-item">
+                                                        <i class="fas fa-id-card text-primary"></i> <strong>CPF:</strong> {{ membro.cpf }}
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                                                    <i class="fas fa-times"></i> Fechar
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -92,24 +136,41 @@
     </section>
 </div>
 
-<!-- Modal para Cadastro -->
+<!-- Modal Cadastro -->
 <div class="modal fade" id="cadastroModal" tabindex="-1" aria-labelledby="cadastroModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-success text-white" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="modal-header bg-success text-white d-flex justify-content-between align-items-center">
                 <h5 class="modal-title" id="cadastroModalLabel">Cadastrar Novo Membro da Diretoria</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            
-            
-            
-            
-            
-            <form method="post" action="{% url 'cadastro_diretoria' %}">
+            <form method="post" action="{% url 'conselho_diretoria' %}">
+
                 {% csrf_token %}
+            
                 <div class="modal-body">
+
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="escola">Escola:</label>
+                            <select class="form-control" id="escola" name="escola" required>
+                                <option value="">Selecione...</option>
+                                {% for escola in escolas %}
+                                    <option value="{{ escola.id }}" data-conselho="{{ escola.nome_conselho }}">{{ escola.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label for="conselho">Conselho:</label>
+                            <input type="text" class="form-control" id="conselho" name="conselho" readonly required>
+
+                        </div>
+                    </div>
+                    
+
+                    
                     <div class="form-row">
                         <div class="form-group col-md-6">
                             <label for="nome">Nome:</label>
@@ -118,6 +179,7 @@
                         <div class="form-group col-md-6">
                             <label for="cargo">Cargo:</label>
                             <select class="form-control" id="cargo" name="cargo" required>
+                                <option value="">Selecione...</option>
                                 <option value="Presidente">Presidente</option>
                                 <option value="Vice-Presidente">Vice-Presidente</option>
                                 <option value="Secretário">Secretário</option>
@@ -155,6 +217,12 @@
                             <input type="text" class="form-control" id="cpf" name="cpf" required>
                         </div>
                     </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label for="vencimento">Data de Vencimento:</label>
+                            <input type="date" class="form-control" id="vencimento" name="vencimento" required>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Salvar</button>
@@ -164,26 +232,65 @@
         </div>
     </div>
 </div>
-{% endblock %}
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const escolaSelect = document.getElementById("escola");
+        const conselhoInput = document.getElementById("conselho");
+
+        escolaSelect.addEventListener("change", function () {
+            const selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
+            const conselhoNome = selectedOption.getAttribute("data-conselho");
+
+            conselhoInput.value = conselhoNome || "";
+        });
+    });
+</script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const deleteForms = document.querySelectorAll(".form-excluir");
+        deleteForms.forEach(form => {
+            form.addEventListener("submit", function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Tem certeza?',
+                    text: "Essa ação não poderá ser desfeita!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sim, excluir!',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
 
 <style>
     @media (max-width: 768px) {
-    .modal-header {
-        justify-content: space-between !important;
+        .modal-header {
+            justify-content: space-between !important;
+        }
     }
-}
-
     .modal-header {
         display: flex !important;
         justify-content: space-between !important;
         align-items: center !important;
     }
-    
     .modal-header .close {
         margin-left: auto !important;
         position: relative;
         right: 0;
     }
-    </style>
-    
+</style>
+
+{% endblock %}

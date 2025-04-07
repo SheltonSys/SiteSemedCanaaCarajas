@@ -25,13 +25,20 @@
                         <!-- Escolha da Escola -->
                         <div class="col-md-6">
                             <label for="escola">Escola:</label>
-                            <select id="escola" name="escola" class="form-control" required onchange="atualizarConselho()">
+                            <select id="escola" name="escola" class="form-control" required onchange="atualizarConselhoEProgramas()">
                                 <option value="" selected disabled>Selecione uma escola</option>
                                 {% for escola in escolas %}
-                                    <option value="{{ escola.id }}" data-conselho="{{ escola.nome_conselho }}">{{ escola.nome }} ({{ escola.ano }})</option>
+                                    <option value="{{ escola.id }}"
+                                        data-conselho="{{ escola.nome_conselho }}"
+                                        data-programas="{% for p in escola.semedappescolapddeprogramas_set.all %}{{ p.programa.id }}::{{ p.programa.nome }}{% if not forloop.last %}|{% endif %}{% endfor %}">
+                                        {{ escola.nome }} ({{ escola.ano }})
+                                    </option>
                                 {% endfor %}
                             </select>
+                            
+                            
                         </div>
+                        
 
                         <!-- Conselho Vinculado -->
                         <div class="col-md-6">
@@ -39,15 +46,22 @@
                             <input type="text" id="conselho" name="conselho" class="form-control" readonly>
                         </div>
 
-                        <script>
-                            function atualizarConselho() {
-                                var escolaSelect = document.getElementById("escola");
-                                var conselhoInput = document.getElementById("conselho");
-                                var conselho = escolaSelect.options[escolaSelect.selectedIndex].getAttribute("data-conselho");
-                                conselhoInput.value = conselho || "Nenhum conselho vinculado";
-                            }
-                        </script>
+                        <!-- Programa para vincular à conta (selecionável) -->
+                        <div class="col-md-6">
+                            <label for="programa_select">Programa Responsável pela Conta:</label>
+                            <select id="programa_select" name="programa" class="form-control" required>
+                                <option value="" selected disabled>Selecione um programa</option>
+                            </select>
+                        </div>
 
+                        <!-- Programas vinculados (somente leitura) -->
+                        <div class="col-md-6" style="display: none;">
+                            <label for="programas_list">Programas Vinculados:</label>
+                            <textarea id="programas_list" class="form-control" readonly style="height: auto;" rows="3"></textarea>
+                        </div>
+                        
+
+                        
 
 
                         <!-- Banco -->
@@ -126,6 +140,47 @@
 <br>
 
 <!-- SCRIPT PARA PREENCHER AUTOMATICAMENTE OS DADOS DA ESCOLA -->
+<script>
+    function atualizarConselhoEProgramas() {
+        const escolaSelect = document.getElementById("escola");
+        const selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
+    
+        // Atualiza o conselho
+        const conselho = selectedOption.getAttribute("data-conselho");
+        document.getElementById("conselho").value = conselho || "Nenhum conselho vinculado";
+    
+        // Atualiza os programas vinculados (visual)
+        const programasAttr = selectedOption.getAttribute("data-programas");
+        const programasTextarea = document.getElementById("programas_list");
+        const programaSelect = document.getElementById("programa_select");
+    
+        programasTextarea.value = "";
+        programaSelect.innerHTML = '<option value="" disabled selected>Selecione um programa</option>';
+    
+        if (programasAttr) {
+            const programas = programasAttr.split("|");
+            const nomes = [];
+    
+            programas.forEach(p => {
+                const [id, nome] = p.split("::");
+                nomes.push(nome);
+    
+                const option = document.createElement("option");
+                option.value = id;
+                option.textContent = nome;
+                programaSelect.appendChild(option);
+            });
+    
+            programasTextarea.value = nomes.join("\n");
+        }
+    }
+    </script>
+    
+
+
+
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("escola").addEventListener("change", function () {

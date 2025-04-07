@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-5 text-primary">Cadastrar Informação - PDDE</h1>
+            <p class="text-muted">Adicione documentos, imagens ou vídeos informativos sobre o programa.</p>
+        </div>
+
+        <!-- Formulário -->
+        <div class="card shadow-lg border-0 mb-4">
+            <div class="card-body bg-light">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="titulo" class="form-label">Título:</label>
+                        <input type="text" class="form-control" id="titulo" name="titulo" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="link_informativo" class="form-label">Link Informativo (opcional):</label>
+                        <input type="url" class="form-control" id="link_informativo" name="link_informativo" placeholder="https://exemplo.com/instrucao">
+                        <small class="form-text text-muted">Você pode adicionar um link de vídeo, instrução ou arquivo online.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="arquivo" class="form-label">Anexar Arquivo (Imagem, PDF, Vídeo):</label>
+                        <input type="file" class="form-control" id="arquivo" name="arquivo">
+                    </div>
+                    <div class="text-end">
+                        <button type="submit" class="btn btn-success shadow-sm">
+                            <i class="fas fa-save me-1"></i> Salvar Informação
+                        </button>
+                        <a href="{% url 'sintese_pdde' %}" class="btn btn-secondary shadow-sm">
+                            <i class="fas fa-arrow-left me-1"></i> Voltar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabela de Documentos -->
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-gradient-primary text-white">
+                <h2 class="h6 mb-0">
+                    <i class="fas fa-folder-open me-2"></i> Documentos Cadastrados
+                </h2>
+            </div>
+            <div class="card-body bg-light">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle text-center">
+                        <thead class="bg-primary text-white">
+                            <tr>
+                                <th>#</th>
+                                <th>Título</th>
+                                <th>Descrição</th>
+                                <th>Arquivo</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in documentos %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="text-start">{{ doc.titulo }}</td>
+                                <td class="text-start">{{ doc.descricao|truncatechars:60 }}</td>
+                                <td>
+                                    {% if doc.arquivo %}
+                                        <a href="{{ doc.arquivo.url }}" target="_blank" class="btn btn-sm btn-outline-info">Visualizar</a>
+                                    {% else %}
+                                        <span class="text-muted">Não anexado</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ doc.created_at|date:"d/m/Y" }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-muted text-center">Nenhuma informação cadastrada ainda.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

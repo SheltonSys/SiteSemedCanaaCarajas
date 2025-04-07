@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Mapeamento de Aplicação</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { text-align: center; color: #2c3e50; }
+        .section { margin-top: 30px; }
+        .section-title { background-color: #f1c40f; padding: 10px; font-weight: bold; }
+        .info { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>📄 Mapeamento de Aplicação</h1>
+
+    <div class="section">
+        <div class="section-title">Escolas Atendidas</div>
+        <p class="info">Total: {{ total_escolas }}</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Total de Alunos</div>
+        <p class="info">Matriculados: {{ total_alunos }}</p>
+        <p class="info">Pretendidos: {{ pretendidos }}</p>
+        <p class="info">Formulários Preenchidos:</p>
+        <ul>
+            <li>1º Caderno: {{ formularios_caderno1 }}</li>
+            <li>2º Caderno: {{ formularios_caderno2 }}</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Educadores</div>
+        <p class="info">Total: {{ total_educadores }}</p>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Cadernos Aplicados</div>
+        <ul>
+            {% for caderno in cadernos %}
+            <li>{{ caderno }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
