@@ -728,37 +728,39 @@ def add_user(request):
     return redirect('gerenciar_permissoes')
 # *********************************************************************************************************************
 
+from django.utils.timezone import now
+
 @login_required
 def edit_permissions(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == "POST":
-        # Atualizar permissões do usuário
         permissions = request.POST.getlist('permissions')
         user.user_permissions.set(Permission.objects.filter(id__in=permissions))
 
-        # Atualizar grupos do usuário
         groups = request.POST.getlist('groups')
         user.groups.set(Group.objects.filter(id__in=groups))
 
-        # Atualizar permissões dos grupos
         group_permissions = request.POST.getlist('group_permissions')
         group_permission_map = {}
         for group_permission in group_permissions:
             group_id, permission_id = group_permission.split('-')
-            if group_id not in group_permission_map:
-                group_permission_map[group_id] = []
-            group_permission_map[group_id].append(permission_id)
+            group_permission_map.setdefault(group_id, []).append(permission_id)
 
         for group_id, permission_ids in group_permission_map.items():
             group = Group.objects.get(id=group_id)
             group.permissions.set(Permission.objects.filter(id__in=permission_ids))
+
+        # ✅ Correção do erro
+        if not user.date_joined:
+            user.date_joined = now()
 
         user.save()
         messages.success(request, "Permissões e grupos atualizados com sucesso.")
         return redirect('gerenciar_permissoes')
 
     return redirect('gerenciar_permissoes')
+
 # *********************************************************************************************************************
 
 @login_required
@@ -5358,6 +5360,8 @@ from django.core.paginator import Paginator
 from .models import CadastroEI, Escolas
 from django.contrib.auth.decorators import login_required
 
+from django.contrib.auth.models import Group
+
 @login_required
 def cadastro_escola(request):
     nome_escola = request.GET.get('nome_escola', '')
@@ -5365,21 +5369,22 @@ def cadastro_escola(request):
     modalidade = request.GET.get('modalidade', '')
     turma = request.GET.get('turma', '')
 
-    # Se for superuser, vê todas as escolas e registros
-    if request.user.is_superuser:
+    # Lista de usernames que têm acesso total, além do superuser
+    usernames_com_acesso_total = [
+        "Valder", "Tatiane", "Edna", "Simone"
+    ]
+
+    if request.user.is_superuser or request.user.username in usernames_com_acesso_total:
         escolas = CadastroEI.objects.all()
     else:
-        # Verificar se o usuário é coordenador (está vinculado a uma escola)
         escolas_vinculadas = Escolas.objects.filter(coordenador=request.user)
-        
-        # Se for coordenador, trazer todas as turmas da escola que ele coordena
+
         if escolas_vinculadas.exists():
             escolas = CadastroEI.objects.filter(unidade_ensino__in=escolas_vinculadas.values_list('nome', flat=True))
         else:
-            # Caso contrário, traz apenas as turmas do professor logado
             escolas = CadastroEI.objects.filter(professor=request.user)
 
-    # Aplicar os filtros
+    # Filtros
     if nome_escola:
         escolas = escolas.filter(unidade_ensino__icontains=nome_escola)
     if ano:
@@ -5389,34 +5394,23 @@ def cadastro_escola(request):
     if turma:
         escolas = escolas.filter(turma__nome__icontains=turma)
 
-    # 🔹 **Trazer o nome da turma e não o ID**
-    escolas = escolas.select_related("turma")  # Se `turma` for um relacionamento ForeignKey, use select_related
-
-    # 🔹 **Contagem correta das turmas**
+    escolas = escolas.select_related("turma")
     total_turmas = escolas.values("unidade_ensino", "turma__nome").distinct().count()
-
-    # Contagem de alunos e escolas
     total_alunos = escolas.count()
     total_escolas = escolas.values("unidade_ensino").distinct().count()
     total_avaliados = escolas.filter(avaliado="SIM").count()
 
-    # Paginação para alunos não avaliados
-    escolas_nao_avaliadas = escolas.exclude(avaliado="SIM")
-    paginator = Paginator(escolas_nao_avaliadas, 50)
+    paginator = Paginator(escolas.exclude(avaliado="SIM"), 50)
     page_number = request.GET.get('page')
     escolas_paginadas = paginator.get_page(page_number)
 
-    # Listar nomes de escolas e turmas
     escolas_nomes = escolas.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
-    turmas = escolas.values_list("turma__nome", flat=True).distinct()  # Pegando o nome da turma em vez do ID
+    turmas = escolas.values_list("turma__nome", flat=True).distinct()
 
-    # Criar query string para manter filtros na paginação
     query_params = request.GET.copy()
-    if 'page' in query_params:
-        del query_params['page']
+    query_params.pop('page', None)
     query_string = query_params.urlencode()
 
-    # Adicionar a verificação do coordenador no contexto
     is_coordenador = Escolas.objects.filter(coordenador=request.user).exists()
 
     context = {
@@ -5431,22 +5425,16 @@ def cadastro_escola(request):
             'turma': turma,
         },
         'total_alunos': total_alunos,
-        'total_turmas': total_turmas,  # ✅ Agora está correto
+        'total_turmas': total_turmas,
         'total_escolas': total_escolas,
         'total_avaliados': total_avaliados,
         'query_string': query_string,
         'range_matematica': range(1, 11),
         'range_linguagem': range(11, 21),
-        'is_coordenador': is_coordenador  # Adicionamos esta variável ao contexto
+        'is_coordenador': is_coordenador
     }
 
     return render(request, 'webapp/cadastro_escola.html', context)
-
-
-
-
-
-
 
 
 ###***********************************************************************************************************************
@@ -5925,20 +5913,20 @@ def gestao_alunos(request):
     modalidade = request.GET.get('modalidade', '')
     turma = request.GET.get('turma', '')
 
-    # Verificar permissões do usuário
-    if usuario_logado.is_superuser:
+    usernames_com_acesso_total = [
+        "Valder", "Tatiane", "Edna", "Simone"
+    ]
+
+    if usuario_logado.is_superuser or usuario_logado.username in usernames_com_acesso_total:
         registros = CadastroEI.objects.all()
     else:
-        # Se for coordenador, vê todas as turmas da escola
         escolas_vinculadas = Escolas.objects.filter(coordenador=usuario_logado)
-
         if escolas_vinculadas.exists():
             registros = CadastroEI.objects.filter(unidade_ensino__in=escolas_vinculadas.values_list('nome', flat=True))
         else:
-            # Se for professor, vê apenas suas turmas
             registros = CadastroEI.objects.filter(professor=usuario_logado)
 
-    # Aplicação dos filtros
+    # Filtros
     if nome_escola:
         registros = registros.filter(unidade_ensino__icontains=nome_escola)
     if ano:
@@ -5946,20 +5934,12 @@ def gestao_alunos(request):
     if modalidade:
         registros = registros.filter(modalidade__icontains=modalidade)
     if turma:
-        registros = registros.filter(turma__nome__icontains=turma)  # Certifique-se de usar 'turma__nome' se for ForeignKey
+        registros = registros.filter(turma__nome__icontains=turma)
 
-    # 🔹 **Trazer apenas o nome da turma corretamente**
-    registros = registros.select_related("turma")  # Se `turma` for uma ForeignKey, otimiza o banco
-
-    # 🔹 **Listar turmas apenas pelo nome**
+    registros = registros.select_related("turma")
     turmas = registros.order_by("turma__nome").values_list("turma__nome", flat=True).distinct()
-
-    # 🔹 **Contagem correta das turmas**
     total_turmas = registros.values("unidade_ensino", "turma__nome").distinct().count()
-
-    # Listar escolas disponíveis
     escolas_nomes = registros.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
-
     total_alunos = registros.count()
     total_escolas = registros.values("unidade_ensino").distinct().count()
 
@@ -5967,32 +5947,26 @@ def gestao_alunos(request):
     for registro in registros:
         questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
         questoes_linguagem = [getattr(registro, f"questao_linguagem_{i}", "BRANCO") for i in range(11, 21)]
-
-        # Separar as questões que devem ser excluídas da pontuação
         questoes_excluidas = {11, 13}
 
-        # Cálculo de pontuação
-        pontuacao_matematica = sum(2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0 for resposta in questoes_matematica)
+        pontuacao_matematica = sum(2 if r == "CERTO" else 1 if r == "PARCIAL" else 0 for r in questoes_matematica)
         pontuacao_linguagem = sum(
-            2 if resposta == "CERTO" else 1 if resposta == "PARCIAL" else 0 
-            for i, resposta in enumerate(questoes_linguagem, start=11) if i not in questoes_excluidas
+            2 if r == "CERTO" else 1 if r == "PARCIAL" else 0
+            for i, r in enumerate(questoes_linguagem, start=11) if i not in questoes_excluidas
         )
 
-        max_pontuacao_matematica = 20
-        max_pontuacao_linguagem = 16  
+        desempenho_matematica = (pontuacao_matematica / 20) * 100
+        desempenho_linguagem = (pontuacao_linguagem / 16) * 100
 
-        desempenho_matematica = (pontuacao_matematica / max_pontuacao_matematica) * 100 if max_pontuacao_matematica > 0 else 0
-        desempenho_linguagem = (pontuacao_linguagem / max_pontuacao_linguagem) * 100 if max_pontuacao_linguagem > 0 else 0
-
-        avaliacao_matematica = "Excelente" if desempenho_matematica == 100 else "Bom" if desempenho_matematica >= 70 else "Regular" if desempenho_matematica >= 50 else "INSUFICIENTE"
-        avaliacao_linguagem = "Excelente" if desempenho_linguagem == 100 else "Bom" if desempenho_linguagem >= 70 else "Regular" if desempenho_linguagem >= 50 else "INSUFICIENTE"
+        def avaliar(d):
+            return "Excelente" if d == 100 else "Bom" if d >= 70 else "Regular" if d >= 50 else "INSUFICIENTE"
 
         registros_com_questoes.append({
             "registro": registro,
             "questoes_matematica": questoes_matematica,
             "questoes_linguagem": questoes_linguagem,
-            "avaliacao_matematica": avaliacao_matematica,
-            "avaliacao_linguagem": avaliacao_linguagem,
+            "avaliacao_matematica": avaliar(desempenho_matematica),
+            "avaliacao_linguagem": avaliar(desempenho_linguagem),
             "desempenho_matematica": f"{desempenho_matematica:.2f}%",
             "desempenho_linguagem": f"{desempenho_linguagem:.2f}%"
         })
@@ -6000,7 +5974,7 @@ def gestao_alunos(request):
     context = {
         'registros_com_questoes': registros_com_questoes,
         'escolas_nomes': escolas_nomes,
-        'turmas': turmas,  # Lista de nomes das turmas sem IDs
+        'turmas': turmas,
         'total_alunos': total_alunos,
         'total_turmas': total_turmas,
         'total_escolas': total_escolas,
@@ -6018,6 +5992,7 @@ def gestao_alunos(request):
 
 
 
+
 ###***********************************************************************************************************************
 
 from django.shortcuts import render
@@ -6028,25 +6003,26 @@ from .models import CadastroEI, Escolas
 def gestao_relatorios(request):
     usuario_logado = request.user
 
-    # Obtendo filtros da URL
+    # Lista de usernames com acesso total à rede
+    usernames_com_acesso_total = [
+        "Valder", "Tatiane", "Edna", "Simone"
+    ]
+
     nome_escola = request.GET.get('nome_escola', '')
     turma = request.GET.get('turma', '')
     ano = request.GET.get('ano', '')
     modalidade = request.GET.get('modalidade', '')
 
-    # Definir quais registros o usuário pode acessar
-    if usuario_logado.is_superuser:
+    # Verifica acesso total
+    if usuario_logado.is_superuser or usuario_logado.username in usernames_com_acesso_total:
         registros = CadastroEI.objects.all()
     else:
-        # Se for coordenador, trazer todas as turmas da escola que ele coordena
         escolas_vinculadas = Escolas.objects.filter(coordenador=usuario_logado)
         if escolas_vinculadas.exists():
             registros = CadastroEI.objects.filter(unidade_ensino__in=escolas_vinculadas.values_list('nome', flat=True))
         else:
-            # Caso contrário, trazer apenas as turmas do professor logado
             registros = CadastroEI.objects.filter(professor=usuario_logado)
 
-    # Aplicação dos filtros
     if nome_escola:
         registros = registros.filter(unidade_ensino__icontains=nome_escola)
     if ano:
@@ -6056,43 +6032,32 @@ def gestao_relatorios(request):
     if turma:
         registros = registros.filter(turma__nome__icontains=turma)
 
-    # Listando escolas e turmas únicas
     escolas = registros.order_by("unidade_ensino").values_list("unidade_ensino", flat=True).distinct()
     turmas = registros.order_by("turma__nome").values_list("turma__nome", flat=True).distinct()
 
-
-    # Inicializando variáveis estatísticas
     total_alunos_avaliados = registros.count()
     total_pontos_geral = 0
 
-    # Dicionário de pontuação
     pontuacao = {'CERTO': 2, 'PARCIAL': 1, 'ERRADO': 0, 'BRANCO': 0, 'CRIANÇA COM LAUDO': 1.5}
-
-    # Contadores de avaliações
     total_excelente = total_bom = total_regular = total_necessita_melhorar = total_insuficiente = 0
 
-    # Cálculo das estatísticas por aluno
     relatorios = []
     for registro in registros:
         questoes_matematica = [getattr(registro, f"questao_matematica_{i}", "BRANCO") for i in range(1, 11)]
         questoes_linguagem = [getattr(registro, f"questao_linguagem_{i}", "BRANCO") for i in range(11, 21)]
-        questoes_excluidas = {11, 13}  # Exclui questões 1 e 3 de Linguagem
+        questoes_excluidas = {11, 13}
 
-        pontuacao_matematica = sum(pontuacao.get(resposta, 0) for resposta in questoes_matematica)
-        pontuacao_linguagem = sum(
-            pontuacao.get(resposta, 0)
-            for i, resposta in enumerate(questoes_linguagem, start=11) if i not in questoes_excluidas
-        )
+        pontuacao_matematica = sum(pontuacao.get(r, 0) for r in questoes_matematica)
+        pontuacao_linguagem = sum(pontuacao.get(r, 0) for i, r in enumerate(questoes_linguagem, start=11) if i not in questoes_excluidas)
 
         max_pontuacao_matematica = 20
-        max_pontuacao_linguagem = 16  
+        max_pontuacao_linguagem = 16
         max_pontos = max_pontuacao_matematica + max_pontuacao_linguagem
 
         total_pontos = pontuacao_matematica + pontuacao_linguagem
         total_pontos_geral += total_pontos
         desempenho_geral = (total_pontos / max_pontos) * 100 if max_pontos > 0 else 0
 
-        # Classificação de desempenho
         if desempenho_geral == 100:
             avaliacao_geral = "Excelente"
             total_excelente += 1
@@ -6115,24 +6080,17 @@ def gestao_relatorios(request):
             'questoes_linguagem': questoes_linguagem,
         })
 
-    # Cálculo de médias
-    media_desempenho = (total_pontos_geral / (total_alunos_avaliados * max_pontos) * 100) if total_alunos_avaliados > 0 else 0
-    media_matematica = (sum(pontuacao.get(q, 0) for registro in registros for q in questoes_matematica) / (total_alunos_avaliados * max_pontuacao_matematica) * 100) if total_alunos_avaliados > 0 else 0
-    media_linguagem = (sum(pontuacao.get(q, 0) for registro in registros for i, q in enumerate(questoes_linguagem, start=11) if i not in questoes_excluidas) / (total_alunos_avaliados * max_pontuacao_linguagem) * 100) if total_alunos_avaliados > 0 else 0
+    media_desempenho = (total_pontos_geral / (total_alunos_avaliados * max_pontos) * 100) if total_alunos_avaliados else 0
+    media_matematica = (sum(pontuacao.get(q, 0) for registro in registros for q in questoes_matematica) / (total_alunos_avaliados * max_pontuacao_matematica) * 100) if total_alunos_avaliados else 0
+    media_linguagem = (sum(pontuacao.get(q, 0) for registro in registros for i, q in enumerate(questoes_linguagem, start=11) if i not in questoes_excluidas) / (total_alunos_avaliados * max_pontuacao_linguagem) * 100) if total_alunos_avaliados else 0
 
     total_turmas = registros.values("turma").distinct().count()
     maior_desempenho_qtd = sum(1 for r in relatorios if float(r['desempenho'].replace('%', '')) == 100)
     menor_desempenho_qtd = sum(1 for r in relatorios if float(r['desempenho'].replace('%', '')) < 50)
 
-    total_faltantes_matematica = registros.filter(
-        **{f"questao_matematica_{i}": "FALTOU" for i in range(1, 11)}
-    ).count()
+    total_faltantes_matematica = registros.filter(**{f"questao_matematica_{i}": "FALTOU" for i in range(1, 11)}).count()
+    total_faltantes_linguagem = registros.filter(**{f"questao_linguagem_{i}": "FALTOU" for i in range(11, 21)}).count()
 
-    total_faltantes_linguagem = registros.filter(
-        **{f"questao_linguagem_{i}": "FALTOU" for i in range(11, 21)}
-    ).count()
-
-    # Preparando contexto para o template
     context = {
         'maior_desempenho_qtd': maior_desempenho_qtd,
         'menor_desempenho_qtd': menor_desempenho_qtd,
@@ -6143,7 +6101,6 @@ def gestao_relatorios(request):
         'escolas': escolas,
         'turmas': turmas,
         'total_alunos_avaliados': total_alunos_avaliados,
-        'total_turmas': total_turmas,
         'media_desempenho': f"{media_desempenho:.2f}%",
         'media_matematica': f"{media_matematica:.2f}%",
         'media_linguagem': f"{media_linguagem:.2f}%",
@@ -6161,6 +6118,7 @@ def gestao_relatorios(request):
     }
 
     return render(request, 'webapp/gestao_relatorios.html', context)
+
 
 
 
@@ -6989,36 +6947,38 @@ from .models import CadastroEI, Escolas
 @login_required
 def modulo_pedagogico(request):
     usuario_logado = request.user
-    turma_nome = request.GET.get('turma', '')  # Captura o nome da turma nos filtros
+    turma_nome = request.GET.get('turma', '')
 
-    # Se for superuser, mostrar todos os alunos
-    if usuario_logado.is_superuser:
+    # Lista de usernames com acesso total à rede
+    usernames_com_acesso_total = [
+        "Valder", "Tatiane", "Edna", "Simone"
+    ]
+
+    # Permissão total se for superuser ou nome na lista
+    if usuario_logado.is_superuser or usuario_logado.username in usernames_com_acesso_total:
         alunos = CadastroEI.objects.all()
     else:
-        # Verifica se é coordenador (está vinculado a uma escola)
         escolas_vinculadas = Escolas.objects.filter(coordenador=usuario_logado)
-        
         if escolas_vinculadas.exists():
-            # Se for coordenador, traz todas as turmas da(s) escola(s) vinculadas
             alunos = CadastroEI.objects.filter(unidade_ensino__in=escolas_vinculadas.values_list('nome', flat=True))
         else:
-            # Se for professor, traz apenas os alunos de suas turmas
             alunos = CadastroEI.objects.filter(professor=usuario_logado)
 
-    # Aplicar filtro de turma, se especificado
+    # Aplicar filtro de turma (se for texto simples, use icontains)
     if turma_nome:
         alunos = alunos.filter(turma__icontains=turma_nome)
 
-    # Listar nomes das turmas disponíveis
+    # Listar turmas únicas (ordenadas)
     turmas_disponiveis = alunos.order_by("turma").values_list("turma", flat=True).distinct()
 
     context = {
         'alunos': alunos,
-        'turma_nome': turma_nome,  # Para mostrar o filtro aplicado
-        'turmas_disponiveis': turmas_disponiveis,  # Listagem de turmas únicas
+        'turma_nome': turma_nome,
+        'turmas_disponiveis': turmas_disponiveis,
     }
 
     return render(request, 'webapp/modulo_pedagogico.html', context)
+
 
 ###***********************************************************************************************************************
 
@@ -10970,6 +10930,7 @@ def get_sintese_receita(request):
         rendimentos_aplicacao = (dados['rendimento_aplicacao_custeio'] or 0) + (dados['rendimento_aplicacao_capital'] or 0)
         devolucoes_fnde = (dados['devolucao_fnde_custeio'] or 0) + (dados['devolucao_fnde_capital'] or 0)
         escolas_atendidas = dados['escolas_atendidas'] or 0
+        
 
         response = {
             "sintese": {
@@ -11029,9 +10990,103 @@ def get_sintese_receita(request):
         return JsonResponse({"error": f"Erro ao buscar síntese: {str(e)}"}, status=500)
 ###***********************************************************************************************************************
 
-# Views da Página
-def sintese_pdde_view(request):
-    return render(request, 'pdde/sintese_pdde.html')
+from django.shortcuts import render
+from django.db.models import Sum
+from django.http import JsonResponse
+from .models import Receita, EscolaPdde, ConselhoMembro, Certidao
+
+
+def sintese_pdde(request):
+    # Filtros recebidos por GET
+    filtro_escola = request.GET.get("escola")
+    filtro_ano = request.GET.get("ano")
+    filtro_programa = request.GET.get("programa")
+
+    receitas = Receita.objects.all()
+
+    if filtro_escola:
+        receitas = receitas.filter(escola_id=filtro_escola)
+    if filtro_ano:
+        receitas = receitas.filter(data_inicio__year=filtro_ano)
+    if filtro_programa:
+        receitas = receitas.filter(programa=filtro_programa)
+
+    # Dados agregados
+    receita_total = receitas.aggregate(
+        custeio=Sum('valor_total_receita_custeio') or 0,
+        capital=Sum('valor_total_receita_capital') or 0
+    )
+    despesa_total = receitas.aggregate(
+        custeio=Sum('valor_despesa_realizada_custeio') or 0,
+        capital=Sum('valor_despesa_realizada_capital') or 0
+    )
+    saldo_reprogramado = receitas.aggregate(
+        custeio=Sum('saldo_reprogramar_custeio') or 0,
+        capital=Sum('saldo_reprogramar_capital') or 0
+    )
+    recursos_proprios = receitas.aggregate(
+        custeio=Sum('recursos_proprios_custeio') or 0,
+        capital=Sum('recursos_proprios_capital') or 0
+    )
+    rendimentos_aplicacao = receitas.aggregate(
+        custeio=Sum('rendimento_aplicacao_custeio') or 0,
+        capital=Sum('rendimento_aplicacao_capital') or 0
+    )
+    devolucoes_fnde = receitas.aggregate(
+        custeio=Sum('devolucao_fnde_custeio') or 0,
+        capital=Sum('devolucao_fnde_capital') or 0
+    )
+    escolas_atendidas = receitas.values('escola').distinct().count()
+
+    total_receita = receita_total["custeio"] + receita_total["capital"]
+    total_despesa = despesa_total["custeio"] + despesa_total["capital"]
+    total_saldo_reprogramado = saldo_reprogramado["custeio"] + saldo_reprogramado["capital"]
+
+    percentual_execucao = (total_despesa / total_receita * 100) if total_receita > 0 else 0
+
+    resumo_cards = {
+        "receita_total": float(total_receita),
+        "despesa_total": float(total_despesa),
+        "saldo_reprogramado": float(total_saldo_reprogramado),
+        "percentual_execucao": round(percentual_execucao, 2),
+        "recursos_proprios": float(recursos_proprios["custeio"] + recursos_proprios["capital"]),
+        "rendimentos_aplicacao": float(rendimentos_aplicacao["custeio"] + rendimentos_aplicacao["capital"]),
+        "devolucoes_fnde": float(devolucoes_fnde["custeio"] + devolucoes_fnde["capital"]),
+        "escolas_atendidas": escolas_atendidas,
+        "total_escolas": EscolaPdde.objects.count(),
+        "total_membros": ConselhoMembro.objects.count(),
+        "total_certidoes": Certidao.objects.count(),
+    }
+
+    # Se for uma requisição via fetch(), retorna JSON
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({
+            "sintese": {
+                "resumo_cards": resumo_cards
+            }
+        })
+
+    # Se for acesso normal via navegador, renderiza a página
+    context = {
+        "escolas": EscolaPdde.objects.all(),
+        "anos": Receita.objects.dates("data_inicio", "year", order="DESC").distinct(),
+        "programas": Receita.objects.values_list("programa", flat=True).distinct(),
+
+        "total_escolas": resumo_cards["total_escolas"],
+        "total_membros": resumo_cards["total_membros"],
+        "total_certidoes": resumo_cards["total_certidoes"],
+
+        "dados": resumo_cards,
+        "filtros_aplicados": {
+            "escola": filtro_escola,
+            "ano": filtro_ano,
+            "programa": filtro_programa,
+        }
+    }
+
+    return render(request, "pdde/sintese_pdde.html", context)
+
+
 ###***********************************************************************************************************************
 
 def cadastrar_info_pdde(request):
@@ -11194,13 +11249,18 @@ def enviar_email_indeferimento(request):
         return JsonResponse({'success': True})
     return JsonResponse({'error': 'Requisição inválida'})
 ###***********************************************************************************************************************
+###***********************************************************************************************************************
+###***********************************************************************************************************************
+###**********************************RELATORIOS SAMACC********************************************************************
+###***********************************************************************************************************************
+###***********************************************************************************************************************
 
-from django.template.loader import render_to_string
 from django.http import HttpResponse
-from weasyprint import HTML
-from .models import CadastroEI
-import tempfile
+from django.template.loader import get_template
+from django.templatetags.static import static
+from xhtml2pdf import pisa
 import os
+from .models import CadastroEI
 
 def gerar_pdf_mapeamento(request):
     nome_escola = request.GET.get('nome_escola')
@@ -11218,60 +11278,71 @@ def gerar_pdf_mapeamento(request):
     if modalidade:
         alunos = alunos.filter(modalidade__icontains=modalidade)
 
-    # Contagens com base no filtro
     total_escolas = alunos.values('unidade_ensino').distinct().count()
     total_alunos = alunos.count()
     total_educadores = alunos.values('professor').distinct().exclude(professor=None).count()
-    
-    formulario_1 = alunos.exclude(questao_linguagem_11=None).exclude(questao_linguagem_11='').count()
-    formulario_2 = alunos.exclude(questao_matematica_1=None).exclude(questao_matematica_1='').count()
 
-    contexto = {
+    # --- Formulário 1: Linguagem (Q11 a Q20)
+    campos_linguagem = [f"questao_linguagem_{i}" for i in range(11, 21)]
+    formulario_1 = 0
+    for aluno in alunos:
+        respostas = [getattr(aluno, campo) for campo in campos_linguagem]
+        if any(resp not in [None, '', 'FALTOU'] for resp in respostas):
+            formulario_1 += 1
+
+    # --- Formulário 2: Matemática (Q1 a Q10)
+    campos_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
+    formulario_2 = 0
+    for aluno in alunos:
+        respostas = [getattr(aluno, campo) for campo in campos_matematica]
+        if any(resp not in [None, '', 'FALTOU'] for resp in respostas):
+            formulario_2 += 1
+
+    context = {
         'total_escolas': total_escolas,
         'total_alunos': total_alunos,
         'total_educadores': total_educadores,
         'formulario_1': formulario_1,
         'formulario_2': formulario_2,
+        'cabecalho_path': request.build_absolute_uri(static('assets/dist/img/logocabecalho.png')),
+        'rodape_path': request.build_absolute_uri(static('assets/dist/img/logorodape.png')),
     }
 
-    html_string = render_to_string('relatorios/mapeamento_aplicacao.html', contexto)
+    template = get_template('relatorios/mapeamento_aplicacao.html')
+    html = template.render(context)
 
-    # Criação do PDF
-    fd, path = tempfile.mkstemp(suffix='.pdf')
-    os.close(fd)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="mapeamento_aplicacao.pdf"'
+    pisa_status = pisa.CreatePDF(html, dest=response)
 
-    try:
-        HTML(string=html_string).write_pdf(path)
-        with open(path, 'rb') as pdf:
-            response = HttpResponse(pdf.read(), content_type='application/pdf')
-            response['Content-Disposition'] = 'inline; filename="mapeamento_aplicacao.pdf"'
-        return response
-    finally:
-        os.remove(path)
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF <pre>' + html + '</pre>')
+
+    return response
+
+
+
+
+
+
+
 ###***********************************************************************************************************************
 
 from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
+import tempfile, os
 from semedapp.models import CadastroEI, Turma
 from django.db.models import Q
-import tempfile, os
 
 def gerar_pdf_detalhado(request):
-    # Contar todas as crianças com LAUDO na REDE inteira
-    campos_gerais_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
-    campos_gerais_linguagem = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
-    filtro_total_laudo = Q()
-    for campo in campos_gerais_matematica + campos_gerais_linguagem:
-        filtro_total_laudo |= Q(**{campo: 'CRIANÇA COM LAUDO'})
-    total_laudo_rede = CadastroEI.objects.filter(avaliado='SIM').filter(filtro_total_laudo).values('id_matricula').distinct().count()
-
-    # Filtros de busca
+    # Filtros da URL
     nome_escola = request.GET.get('nome_escola', '')
     turma = request.GET.get('turma', '')
     ano = request.GET.get('ano', '')
     modalidade = request.GET.get('modalidade', '')
 
+    # Alunos avaliados
     alunos = CadastroEI.objects.filter(avaliado='SIM')
     if nome_escola:
         alunos = alunos.filter(unidade_ensino__icontains=nome_escola)
@@ -11285,107 +11356,74 @@ def gerar_pdf_detalhado(request):
     total_alunos = alunos.count()
     total_turmas = Turma.objects.count()
 
-    total_excelente = 0
-    total_regular = 0
-    total_necessita_melhorar = 0
-    menor_desempenho_qtd = 0
+    # Campos das questões
+    campos_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
+    campos_linguagem = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
+    campos_total = campos_matematica + campos_linguagem
+
+    # Identificar alunos com laudo
+    filtro_laudo = Q()
+    for campo in campos_total:
+        filtro_laudo |= Q(**{campo: 'CRIANÇA COM LAUDO'})
+
+    ids_com_laudo = alunos.filter(filtro_laudo).values_list('id_matricula', flat=True).distinct()
+    total_laudo_rede = ids_com_laudo.count()
+
+    # Alunos que devem de fato participar (sem laudo)
+    alunos_validos = alunos.exclude(id_matricula__in=ids_com_laudo)
+
+    # Contadores de faltantes por caderno
     faltantes_matematica = 0
     faltantes_linguagem = 0
+    total_faltantes_geral = 0
 
-    dados_linguagem = {}
-    dados_matematica = {}
-
-    total_respostas = {
-        'CERTO': 0, 'ERRADO': 0, 'PARCIAL': 0,
-        'BRANCO': 0, 'FALTOU': 0, 'CRIANÇA COM LAUDO': total_laudo_rede
-    }
-
-    # Linguagem (exceto Q11 e Q13)
-    linguagem_validas = [i for i in range(12, 21) if i != 13]
-    for i in linguagem_validas:
-        campo = f"questao_linguagem_{i}"
-        dados_linguagem[str(i)] = {
-            'CERTO': alunos.filter(**{campo: 'CERTO'}).count(),
-            'ERRADO': alunos.filter(**{campo: 'ERRADO'}).count(),
-            'PARCIAL': alunos.filter(**{campo: 'PARCIAL'}).count(),
-            'BRANCO': alunos.filter(Q(**{campo: ''}) | Q(**{campo: 'BRANCO'})).count(),
-            'FALTOU': alunos.filter(Q(**{campo: None}) | Q(**{campo: 'FALTOU'})).count(),
-            'LAUDO': alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
-        }
-        for tipo in ['CERTO', 'ERRADO', 'PARCIAL']:
-            total_respostas[tipo] += dados_linguagem[str(i)][tipo]
-        total_respostas['BRANCO'] += dados_linguagem[str(i)]['BRANCO']
-        total_respostas['FALTOU'] += dados_linguagem[str(i)]['FALTOU']
-
-    # Matemática
-    for i in range(1, 11):
-        campo = f"questao_matematica_{i}"
-        dados_matematica[str(i)] = {
-            'CERTO': alunos.filter(**{campo: 'CERTO'}).count(),
-            'ERRADO': alunos.filter(**{campo: 'ERRADO'}).count(),
-            'PARCIAL': alunos.filter(**{campo: 'PARCIAL'}).count(),
-            'BRANCO': alunos.filter(Q(**{campo: ''}) | Q(**{campo: 'BRANCO'})).count(),
-            'FALTOU': alunos.filter(Q(**{campo: None}) | Q(**{campo: 'FALTOU'})).count(),
-            'LAUDO': alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
-        }
-        for tipo in ['CERTO', 'ERRADO', 'PARCIAL']:
-            total_respostas[tipo] += dados_matematica[str(i)][tipo]
-        total_respostas['BRANCO'] += dados_matematica[str(i)]['BRANCO']
-        total_respostas['FALTOU'] += dados_matematica[str(i)]['FALTOU']
-
-    # Classificação por desempenho
-    for aluno in alunos:
-        q_mat = [getattr(aluno, f"questao_matematica_{i}") for i in range(1, 11)]
-        q_lin = [getattr(aluno, f"questao_linguagem_{i}") for i in linguagem_validas]
-        acertos = q_mat.count('CERTO') + q_lin.count('CERTO')
-        media = (acertos / 18) * 100 if acertos else 0
-
-        if media >= 90:
-            total_excelente += 1
-        elif media >= 50:
-            total_regular += 1
-        else:
-            total_necessita_melhorar += 1
-            menor_desempenho_qtd += 1
+    for aluno in alunos_validos:
+        q_mat = [getattr(aluno, campo) for campo in campos_matematica]
+        q_lin = [getattr(aluno, campo) for campo in campos_linguagem]
 
         if all(q in [None, '', 'FALTOU'] for q in q_mat):
             faltantes_matematica += 1
         if all(q in [None, '', 'FALTOU'] for q in q_lin):
             faltantes_linguagem += 1
+        if all(q in [None, '', 'FALTOU'] for q in q_mat + q_lin):
+            total_faltantes_geral += 1
+
+    total_validos = alunos_validos.count()
+
+    # Cálculo da participação correto
+    def calcular_participacao(validos, faltantes):
+        if validos <= 0:
+            return "0%"
+        participacao = ((validos - min(faltantes, validos)) / validos) * 100
+        return f"{round(participacao)}%"
 
 
-    participacao_linguagem = f"{round(((total_alunos - faltantes_linguagem) / total_alunos) * 100)}%" if total_alunos else "0%"
-    participacao_matematica = f"{round(((total_alunos - faltantes_matematica) / total_alunos) * 100)}%" if total_alunos else "0%"
 
-    # Modalidades por questão 11 e 13 (sem duplicações)
-    modalidades = ['CC', 'SC', 'PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']
-    modalidade_counts = {}
-    for mod in modalidades:
-        alunos_com_modalidade = alunos.filter(
-            Q(questao_linguagem_11=mod) | Q(questao_linguagem_13=mod)
-        ).values('id_matricula').distinct()
-        modalidade_counts[mod] = alunos_com_modalidade.count()
+    participacao_matematica = calcular_participacao(total_validos, faltantes_matematica)
+    participacao_linguagem = calcular_participacao(total_validos, faltantes_linguagem)
 
-    contexto = {
-        'total_alunos_avaliados': total_alunos,
+    # Dados finais para template
+    resultado_por_unidade = [{
+        'unidade': nome_escola or 'Todas',
+        'total_nei': total_alunos,
         'total_turmas': total_turmas,
-        'total_excelente': total_excelente,
-        'total_regular': total_regular,
-        'total_necessita_melhorar': total_necessita_melhorar,
-        'menor_desempenho_qtd': menor_desempenho_qtd,
+        'participacao_matematica': participacao_matematica,
+        'participacao_linguagem': participacao_linguagem,
         'total_faltantes_matematica': faltantes_matematica,
         'total_faltantes_linguagem': faltantes_linguagem,
-        'participacao_linguagem': participacao_linguagem,
-        'participacao_matematica': participacao_matematica,
-        'dados_linguagem': dados_linguagem,
-        'dados_matematica': dados_matematica,
+        'total_faltantes_geral': total_faltantes_geral,
         'total_laudo': total_laudo_rede,
-        'total_modalidade': modalidade_counts,
-        'total_respostas': total_respostas,
-        'escola': nome_escola or 'Todas',
-    }
+        'modalidades_q11': {'CC': 0, 'SC': 0},
+        'modalidades_q13': {'PSI': 0, 'PSII': 0, 'SSVS': 0, 'SCVS': 0, 'SA': 0, 'ALF': 0},
+        'dados_matematica': {},  # pode preencher se desejar mostrar por questão
+        'dados_linguagem': {},   # idem
+    }]
 
-    html_string = render_to_string('relatorios/relatorio_detalhado.html', contexto)
+    html_string = render_to_string('relatorios/relatorio_detalhado.html', {
+        'resultado_por_unidade': resultado_por_unidade
+    })
+
+    # Geração do PDF
     fd, path = tempfile.mkstemp(suffix='.pdf')
     os.close(fd)
     try:
@@ -11396,6 +11434,7 @@ def gerar_pdf_detalhado(request):
         return response
     finally:
         os.remove(path)
+
 ###***********************************************************************************************************************
 
 from django.shortcuts import render
@@ -11426,23 +11465,21 @@ def relatorio_saida_rede(request):
         dados_linguagem = {}
         faltantes_matematica = 0
         faltantes_linguagem = 0
+        total_faltantes_geral = 0
 
         # Modalidades
-        modalidades_q11 = {}
-        modalidades_q13 = {}
-        modalidades_q11_labels = ['CC', 'SC']
-        modalidades_q13_labels = ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']
+        modalidades_q11 = {label: alunos_nei.filter(questao_linguagem_11=label).values('id_matricula').distinct().count()
+                           for label in ['CC', 'SC']}
+        modalidades_q13 = {label: alunos_nei.filter(questao_linguagem_13=label).values('id_matricula').distinct().count()
+                           for label in ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']}
 
-        for label in modalidades_q11_labels:
-            modalidades_q11[label] = alunos_nei.filter(questao_linguagem_11=label).values('id_matricula').distinct().count()
+        # Campos das questões
+        campos_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
+        campos_linguagem = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
 
-        for label in modalidades_q13_labels:
-            modalidades_q13[label] = alunos_nei.filter(questao_linguagem_13=label).values('id_matricula').distinct().count()
-
-        # Matemática
-        for i in range(1, 11):
-            campo = f"questao_matematica_{i}"
-            dados_matematica[i] = {
+        # --- Matemática
+        for campo in campos_matematica:
+            dados_matematica[int(campo.split('_')[-1])] = {
                 'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
                 'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
                 'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
@@ -11450,12 +11487,11 @@ def relatorio_saida_rede(request):
                 'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
                 'FALTOU': alunos_nei.filter(**{f"{campo}__isnull": True}).count(),
             }
-            faltantes_matematica += dados_matematica[i]['FALTOU']
+            faltantes_matematica += dados_matematica[int(campo.split('_')[-1])]['FALTOU']
 
-        # Linguagem (excluindo Q13)
-        for i in [i for i in range(12, 21) if i != 13]:
-            campo = f"questao_linguagem_{i}"
-            dados_linguagem[i] = {
+        # --- Linguagem
+        for campo in campos_linguagem:
+            dados_linguagem[int(campo.split('_')[-1])] = {
                 'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
                 'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
                 'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
@@ -11463,10 +11499,34 @@ def relatorio_saida_rede(request):
                 'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
                 'FALTOU': alunos_nei.filter(**{f"{campo}__isnull": True}).count(),
             }
-            faltantes_linguagem += dados_linguagem[i]['FALTOU']
 
-        participacao_matematica = round(((total_nei - faltantes_matematica) / total_nei) * 100) if total_nei else 0
-        participacao_linguagem = round(((total_nei - faltantes_linguagem) / total_nei) * 100) if total_nei else 0
+        # --- Identificar alunos com LAUDO em linguagem
+        filtro_laudo_linguagem = Q()
+        for campo in campos_linguagem:
+            filtro_laudo_linguagem |= Q(**{campo: 'CRIANÇA COM LAUDO'})
+
+        ids_com_laudo = alunos_nei.filter(filtro_laudo_linguagem).values_list('id_matricula', flat=True).distinct()
+        alunos_validos_linguagem = alunos_nei.exclude(id_matricula__in=ids_com_laudo)
+
+        # --- Contar faltantes gerais e de linguagem
+        for aluno in alunos_validos_linguagem:
+            respostas_ling = [getattr(aluno, campo) for campo in campos_linguagem]
+            respostas_mat = [getattr(aluno, campo) for campo in campos_matematica]
+
+            if all(r in [None, '', 'FALTOU'] for r in respostas_ling):
+                faltantes_linguagem += 1
+
+            if all(r in [None, '', 'FALTOU'] for r in respostas_mat + respostas_ling):
+                total_faltantes_geral += 1
+
+        # --- Participações
+        def calcular_participacao(total, faltantes):
+            if total == 0:
+                return "0%"
+            return f"{round(((total - faltantes) / total) * 100)}%"
+
+        participacao_matematica = calcular_participacao(total_nei, faltantes_matematica)
+        participacao_linguagem = calcular_participacao(alunos_validos_linguagem.count(), faltantes_linguagem)
 
         resultado_por_unidade.append({
             'unidade': unidade,
@@ -11475,6 +11535,7 @@ def relatorio_saida_rede(request):
             'dados_linguagem': dados_linguagem,
             'participacao_matematica': participacao_matematica,
             'participacao_linguagem': participacao_linguagem,
+            'total_faltantes_geral': total_faltantes_geral,
             'modalidades_q11': modalidades_q11,
             'modalidades_q13': modalidades_q13,
         })
@@ -11489,7 +11550,14 @@ def relatorio_saida_rede(request):
     }
 
     return render(request, 'relatorios/relatorio_saida_rede.html', contexto)
+
 ###***********************************************************************************************************************
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from django.templatetags.static import static
+from xhtml2pdf import pisa
+from semedapp.models import CadastroEI
 
 def gerar_pdf_saida_rede(request):
     nome_escola = request.GET.get('nome_escola', '')
@@ -11511,94 +11579,77 @@ def gerar_pdf_saida_rede(request):
         alunos_nei = alunos.filter(unidade_ensino=unidade)
         total_nei = alunos_nei.count()
 
-        dados_matematica = {}
-        dados_linguagem = {}
+        campos_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
+        campos_linguagem = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
 
-        faltantes_matematica = 0
-        faltantes_linguagem = 0
-
-        # Questões de Matemática
-        for i in range(1, 11):
-            campo = f"questao_matematica_{i}"
-            dados_matematica[i] = {
+        dados_matematica = {
+            i: {
                 'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
                 'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
                 'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
-                'BRANCO': alunos_nei.filter(**{campo: 'BRANCO'}).count(),  # ✅ corrigido
+                'BRANCO': alunos_nei.filter(**{campo: 'BRANCO'}).count(),
                 'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
-                'FALTOU': alunos_nei.filter(**{campo: 'FALTOU'}).count(),  # ✅ corrigido
-            }
-            faltantes_matematica += dados_matematica[i]['FALTOU']
-
-
-        # Questões de Linguagem (exceto Q13)
-        for i in [i for i in range(12, 21) if i != 13]:
-            campo = f"questao_linguagem_{i}"
-            dados_linguagem[i] = {
-                'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
-                'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
-                'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
-                'BRANCO': alunos_nei.filter(**{campo: 'BRANCO'}).count(),  # ✅ corrigido
-                'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
-                'FALTOU': alunos_nei.filter(**{campo: 'FALTOU'}).count(),  # ✅ corrigido
-            }
-            faltantes_linguagem += dados_linguagem[i]['FALTOU']
-
-
-        # ✅ Modalidades Q13 (tem que estar dentro do loop)
-        # Modalidades da questão 13 (Q13)
-        # Modalidades Q13
-        # Modalidades da questão 13 (Q13)
-        modalidades_q13 = {}
-        for modalidade in ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']:
-            modalidades_q13[modalidade] = alunos_nei.filter(questao_linguagem_13=modalidade).count()
-
-        # Modalidades da questão 11 (Q11)
-        modalidades_q11 = {}
-        for modalidade in ['CC', 'SC']:
-            modalidades_q11[modalidade] = alunos_nei.filter(questao_linguagem_11=modalidade).count()
-
-
-
-        # Participação
-        participacao_matematica = round(((total_nei - faltantes_matematica) / total_nei) * 100) if total_nei else 0
-        participacao_linguagem = round(((total_nei - faltantes_linguagem) / total_nei) * 100) if total_nei else 0
-
-        # Resultado final por unidade
-        resultado_por_unidade.append({
-        'unidade': unidade,
-        'total_nei': total_nei,
-        'dados_matematica': dados_matematica,
-        'dados_linguagem': dados_linguagem,
-        'participacao_matematica': participacao_matematica,
-        'participacao_linguagem': participacao_linguagem,
-        'modalidades_q11': modalidades_q11,
-        'modalidades_q13': modalidades_q13,
-    })
-
-        
-    contexto = {
-        'resultado_por_unidade': resultado_por_unidade,
-        'filtros': {
-            'nome_escola': nome_escola,
-            'ano': ano,
-            'modalidade': modalidade,
+                'FALTOU': alunos_nei.filter(**{campo: 'FALTOU'}).count(),
+            } for i, campo in enumerate(campos_matematica, 1)
         }
+
+        dados_linguagem = {
+            i: {
+                'CERTO': alunos_nei.filter(**{campo: 'CERTO'}).count(),
+                'ERRADO': alunos_nei.filter(**{campo: 'ERRADO'}).count(),
+                'PARCIAL': alunos_nei.filter(**{campo: 'PARCIAL'}).count(),
+                'BRANCO': alunos_nei.filter(**{campo: 'BRANCO'}).count(),
+                'LAUDO': alunos_nei.filter(**{campo: 'CRIANÇA COM LAUDO'}).count(),
+                'FALTOU': alunos_nei.filter(**{campo: 'FALTOU'}).count(),
+            } for i, campo in enumerate(campos_linguagem, 12)
+        }
+
+        modalidades_q11 = {m: alunos_nei.filter(questao_linguagem_11=m).count() for m in ['CC', 'SC']}
+        modalidades_q13 = {m: alunos_nei.filter(questao_linguagem_13=m).count() for m in ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']}
+
+        faltantes_matematica = sum(
+            1 for a in alunos_nei if all(getattr(a, campo) in [None, '', 'FALTOU'] for campo in campos_matematica)
+        )
+        faltantes_linguagem = sum(
+            1 for a in alunos_nei if all(getattr(a, campo) in [None, '', 'FALTOU'] for campo in campos_linguagem)
+        )
+        total_faltantes_geral = sum(
+            1 for a in alunos_nei if all(getattr(a, campo) in [None, '', 'FALTOU'] for campo in campos_matematica + campos_linguagem)
+        )
+
+        def calc_part(total, falt):
+            return f"{round(((total - min(falt, total)) / total) * 100)}%" if total else "0%"
+
+        resultado_por_unidade.append({
+            'unidade': unidade,
+            'total_nei': total_nei,
+            'dados_matematica': dados_matematica,
+            'dados_linguagem': dados_linguagem,
+            'participacao_matematica': calc_part(total_nei, faltantes_matematica),
+            'participacao_linguagem': calc_part(total_nei, faltantes_linguagem),
+            'modalidades_q11': modalidades_q11,
+            'modalidades_q13': modalidades_q13,
+            'total_faltantes_geral': total_faltantes_geral,
+        })
+
+    context = {
+        'resultado_por_unidade': resultado_por_unidade,
+        'cabecalho_superior': request.build_absolute_uri(static('assets/dist/img/logocabecalho.png')),
+        'cabecalho_inferior': request.build_absolute_uri(static('assets/dist/img/logorodape.png')),
     }
 
-    # renderiza PDF com weasyprint
-    html_string = render_to_string('relatorios/relatorio_saida_rede.html', contexto)
-    fd, path = tempfile.mkstemp(suffix='.pdf')
-    os.close(fd)
+    template = get_template('relatorios/relatorio_saida_rede.html')
+    html = template.render(context)
 
-    try:
-        HTML(string=html_string).write_pdf(path)
-        with open(path, 'rb') as pdf:
-            response = HttpResponse(pdf.read(), content_type='application/pdf')
-            response['Content-Disposition'] = 'inline; filename="relatorio_saida_rede.pdf"'
-        return response
-    finally:
-        os.remove(path)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="relatorio_saida_rede.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse("Erro ao gerar PDF")
+    return response
+
+
 ###***********************************************************************************************************************
 
 from pptx import Presentation
@@ -11784,22 +11835,39 @@ def exportar_pptx_saida_rede(request):
 
     total_c1_pret = total_c1_efet = total_c2_pret = total_c2_efet = 0
     for i, escola in enumerate(escolas, start=1):
-        c1_pret = alunos.filter(unidade_ensino=escola).count()
-        c1_efet = alunos.filter(unidade_ensino=escola).exclude(questao_linguagem_11__in=[None, '']).count()
-        c2_efet = alunos.filter(unidade_ensino=escola).exclude(questao_matematica_1__in=[None, '']).count()
+        registros = alunos.filter(unidade_ensino=escola)
+        # Caderno 1 = Matemática (Q1 a Q10)
+        campos_caderno1 = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
+        # Caderno 2 = Linguagem (Q12 a Q20, exceto Q13)
+        campos_caderno2 = [f"questao_matematica_{i}" for i in range(1, 11)]
+
+        # Pretendidos = total de alunos avaliados
+        c1_pret = c2_pret = registros.count()
+
+        # Efetivados = pelo menos 1 questão respondida (com ou sem laudo)
+        def respondeu_em(campo_list, aluno):
+            return any(getattr(aluno, campo) not in [None, '', 'FALTOU'] for campo in campo_list)
+
+        c1_efet = c2_efet = 0
+        for aluno in registros:
+            if respondeu_em(campos_caderno1, aluno):
+                c1_efet += 1
+            if respondeu_em(campos_caderno2, aluno):
+                c2_efet += 1
+
 
         total_c1_pret += c1_pret
         total_c1_efet += c1_efet
         total_c2_pret += c1_pret
         total_c2_efet += c2_efet
 
-        valores = [escola, c1_pret, c1_efet, c1_pret, c2_efet]
+        valores = [escola, c2_pret, c2_efet, c1_pret, c1_efet]
         for j, valor in enumerate(valores):
             cell = table_final.cell(i, j)
             cell.text = str(valor)
             cell.text_frame.paragraphs[0].font.size = Pt(9)
 
-    totais = ["TOTAL", total_c1_pret, total_c1_efet, total_c2_pret, total_c2_efet]
+    totais = ["TOTAL", total_c2_pret, total_c2_efet, total_c1_pret, total_c1_efet]
     for j, valor in enumerate(totais):
         cell = table_final.cell(num_escolas + 1, j)
         cell.text = str(valor)
@@ -11812,26 +11880,61 @@ def exportar_pptx_saida_rede(request):
     slide_aval.shapes.title.text = "Avaliação das Habilidades - Linguagem"
 
     habilidades_config = {
-        'EI05LGH1': 'questao_linguagem_11',
-        'EI05LGH10': 'questao_linguagem_13',
+        'EI05LGH1: GRAFAR O NOME PRÓPRIO COMPLETO COM AUXÍLIO DO CRACHÁ': 'questao_linguagem_11',
+        'EI05LGH2: IDENTIFICAR AS LETRAS DO NOME NO ALFABETO': 'questao_linguagem_12',
+        'EI05LGH3: ESCREVER PALAVRAS FAZENDO AJUSTE DO FALADO COM O ESCRITO': 'questao_linguagem_14',
+        'EI05LGH4: DIFERENCIAR LETRAS DE OUTROS SINAIS GRÁFICOS COMO NÚMEROS, DESENHOS E SINAIS': 'questao_linguagem_15',
+        'EI05LGH5: IDENTIFICAR E ESCREVER NA TABELA AS LETRAS DO ALFABETO QUE ESTÃO FALTANDO': 'questao_linguagem_16',
+        'EI05LGH6: RECONHECER, A PARTIR DA PALAVRA OUVIDA E DA IMAGEM, O VALOR SONORO DE UMA LETRA': 'questao_linguagem_17',
+        'EI05LGH7: RECONHECER, A PARTIR DA PALAVRA OUVIDA E DA IMAGEM, O VALOR SONORO DE UMA LETRA': 'questao_linguagem_18',
+        'EI05LGH8: RELACIONAR O SIGNIFICANTE AO SIGNIFICADO COM A LETRA INICIAL VARIADA': 'questao_linguagem_19',
+        'EI05LGH9: IDENTIFICAR O NÚMERO DE LETRAS DE UMA PALAVRA, TENDO EM VISTA A ESCRITA PARA CONTAGEM': 'questao_linguagem_20',
+        'EI05LGH10: PERSONAGENS E SUAS AÇÕES EM CONTO CONSIDERANDO CONHECIDO': 'questao_linguagem_13',
     }
 
     headers_avaliacao = ['Habilidade', 'CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
-    table_aval = slide_aval.shapes.add_table(len(habilidades_config)+1, len(headers_avaliacao), Inches(0.5), Inches(1.9), Inches(8.5), Inches(4.5)).table
+    num_rows = len(habilidades_config) + 1
+    num_cols = len(headers_avaliacao)
 
+    # Criação da tabela
+    table_aval = slide_aval.shapes.add_table(
+        num_rows, num_cols,
+        Inches(0.3), Inches(1.9), Inches(9), Inches(4.5)
+    ).table
+
+    # Ajuste de largura das colunas
+    table_aval.columns[0].width = Inches(4.0)  # Descrição maior
+    for col_idx in range(1, num_cols):
+        table_aval.columns[col_idx].width = Inches((9 - 4.0) / (num_cols - 1))  # Divide o restante igualmente
+
+    # Cabeçalhos
     for j, header in enumerate(headers_avaliacao):
         cell = table_aval.cell(0, j)
         cell.text = header
-        cell.text_frame.paragraphs[0].font.bold = True
-        cell.text_frame.paragraphs[0].font.size = Pt(10)
+        paragraph = cell.text_frame.paragraphs[0]
+        paragraph.font.bold = True
+        paragraph.font.size = Pt(10)
 
+    # Dados
     for i, (habilidade, campo) in enumerate(habilidades_config.items(), start=1):
-        table_aval.cell(i, 0).text = habilidade
-        table_aval.cell(i, 1).text = str(alunos.filter(**{campo: 'CERTO'}).count())
-        table_aval.cell(i, 2).text = str(alunos.filter(**{campo: 'ERRADO'}).count())
-        table_aval.cell(i, 3).text = str(alunos.filter(**{campo: 'PARCIAL'}).count())
-        table_aval.cell(i, 4).text = str(alunos.filter(**{campo: 'BRANCO'}).count())
-        table_aval.cell(i, 5).text = str(alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count())
+        # Coluna 0: Habilidade
+        cell_desc = table_aval.cell(i, 0)
+        cell_desc.text = habilidade
+        cell_desc.text_frame.paragraphs[0].font.size = Pt(8)
+
+        # Demais colunas
+        valores = [
+            alunos.filter(**{campo: 'CERTO'}).count(),
+            alunos.filter(**{campo: 'ERRADO'}).count(),
+            alunos.filter(**{campo: 'PARCIAL'}).count(),
+            alunos.filter(**{campo: 'BRANCO'}).count(),
+            alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count()
+        ]
+        for j, valor in enumerate(valores, start=1):
+            table_aval.cell(i, j).text = str(valor)
+            table_aval.cell(i, j).text_frame.paragraphs[0].font.size = Pt(9)
+
+
 
 
     # ✅ SLIDE FINAL 3: HABILIDADES POR MODALIDADE (CC, SC, PSI...)
@@ -11839,24 +11942,44 @@ def exportar_pptx_saida_rede(request):
     slide_modal.shapes.title.text = "Habilidades Específicas por Modalidade"
 
     modalidades = ['CC', 'SC', 'PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF']
-    table_mod = slide_modal.shapes.add_table(len(habilidades_config)+1, len(modalidades)+1, Inches(0.5), Inches(1.9), Inches(8.5), Inches(4.5)).table
+    num_rows = len(habilidades_config) + 1
+    num_cols = len(modalidades) + 1  # +1 para coluna "Hab."
 
+    # Tabela
+    table_mod = slide_modal.shapes.add_table(
+        num_rows, num_cols,
+        Inches(0.5), Inches(1.9), Inches(8.5), Inches(4.5)
+    ).table
+
+    # Ajuste de largura de colunas
+    table_mod.columns[0].width = Inches(4.0)  # Coluna de descrição
+    for j in range(1, num_cols):
+        table_mod.columns[j].width = Inches((8.5 - 4.0) / (num_cols - 1))  # Restante dividido igualmente
+
+    # Cabeçalho
     table_mod.cell(0, 0).text = "Hab."
     table_mod.cell(0, 0).text_frame.paragraphs[0].font.bold = True
+    table_mod.cell(0, 0).text_frame.paragraphs[0].font.size = Pt(10)
+
     for j, mod in enumerate(modalidades, start=1):
         cell = table_mod.cell(0, j)
         cell.text = mod
         cell.text_frame.paragraphs[0].font.bold = True
         cell.text_frame.paragraphs[0].font.size = Pt(9)
 
-    for i, (cod, campo) in enumerate(habilidades_config.items(), start=1):
-        table_mod.cell(i, 0).text = cod
-        table_mod.cell(i, 0).text_frame.paragraphs[0].font.size = Pt(9)
+    # Preenchimento dos dados
+    for i, (descricao, campo) in enumerate(habilidades_config.items(), start=1):
+        # Coluna 0: descrição da habilidade
+        cell_desc = table_mod.cell(i, 0)
+        cell_desc.text = descricao
+        cell_desc.text_frame.paragraphs[0].font.size = Pt(8)
+
         for j, mod in enumerate(modalidades, start=1):
             count = alunos.filter(**{campo: mod}).count()
             cell = table_mod.cell(i, j)
             cell.text = str(count)
             cell.text_frame.paragraphs[0].font.size = Pt(9)
+
 
 
         # ✅ Geração dos gráficos (fora do loop)
@@ -11886,33 +12009,49 @@ def exportar_pptx_saida_rede(request):
 
 
         # ✅ SLIDE FINAL 4: AVALIAÇÃO DAS HABILIDADES - MATEMÁTICA
+    
+
     slide_aval_mat = prs.slides.add_slide(prs.slide_layouts[5])
     slide_aval_mat.shapes.title.text = "Avaliação das Habilidades - Matemática"
 
     habilidades_matematica = {
-        'EI05CMH1': 'questao_matematica_1',
-        'EI05CMH2': 'questao_matematica_2',
-        'EI05CMH3': 'questao_matematica_3',
-        'EI05CMH4': 'questao_matematica_4',
-        'EI05CMH5': 'questao_matematica_5',
-        'EI05CMH6': 'questao_matematica_6',
-        'EI05CMH7': 'questao_matematica_7',
-        'EI05CMH8': 'questao_matematica_8',
-        'EI05CMH9': 'questao_matematica_9',
-        'EI05CMH10': 'questao_matematica_10',
+        'EI05CMH1: IDENTIFICAR OS NUMERAIS E GRAFAR ATÉ 10': 'questao_matematica_1',
+        'EI05CMH2: ASSOCIAR UMA QUANTIDADE DE OBJETOS A UM NÚMERO NATURAL': 'questao_matematica_2',
+        'EI05CMH3: ESTABELECER NOÇÕES DE ADIÇÃO': 'questao_matematica_3',
+        'EI05CMH4: AGRUPAR ELEMENTOS PELAS SUAS CARACTERÍSTICAS SIMILARES': 'questao_matematica_4',
+        'EI05CMH5: NOÇÕES DE MEDIDAS DE TEMPO (DIA E NOITE)': 'questao_matematica_5',
+        'EI05CMH6: CONSTRUIR CONCEITOS MATEMÁTICOS DE COMPRIMENTO: ALTO, BAIXO': 'questao_matematica_6',
+        'EI05CMH7: CONSTRUIR CONCEITOS MATEMÁTICOS DE GRANDEZA: (MAIOR, MENOR, FINO, GROSSO)': 'questao_matematica_7',
+        'EI05CMH8: NOÇÕES DE POSIÇÃO (FRENTE, ATRÁS, DIREITA, ESQUERDA, PRIMEIRO, ÚLTIMO)': 'questao_matematica_8',
+        'EI05CMH9: CLASSIFICAÇÃO DAS FORMAS GEOMÉTRICAS PLANAS (CÍRCULO, QUADRADO, RETÂNGULO E TRIÂNGULO)': 'questao_matematica_9',
+        'EI05CMH10: NOÇÕES DE ESTATÍSTICA: LEITURA DE GRÁFICOS SIMPLES': 'questao_matematica_10',
     }
 
     headers_mat = ['Habilidade', 'CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
-    table_mat = slide_aval_mat.shapes.add_table(len(habilidades_matematica)+1, len(headers_mat), Inches(0.3), Inches(1.9), Inches(9), Inches(4.5)).table
+    table_mat = slide_aval_mat.shapes.add_table(
+        len(habilidades_matematica)+1, len(headers_mat),
+        Inches(0.3), Inches(1.9), Inches(9), Inches(4.5)
+    ).table
 
+    # ✅ Ajustar larguras das colunas
+    table_mat.columns[0].width = Inches(4.0)  # Habilidade
+    for j in range(1, len(headers_mat)):
+        table_mat.columns[j].width = Inches(1.0)  # CERTO a CCL (5 colunas restantes)
+
+    # Cabeçalhos
     for j, header in enumerate(headers_mat):
         cell = table_mat.cell(0, j)
         cell.text = header
         cell.text_frame.paragraphs[0].font.bold = True
         cell.text_frame.paragraphs[0].font.size = Pt(10)
 
+    # Linhas de dados
     for i, (habilidade, campo) in enumerate(habilidades_matematica.items(), start=1):
-        table_mat.cell(i, 0).text = habilidade
+        cell_hab = table_mat.cell(i, 0)
+        cell_hab.text = habilidade
+        cell_hab.text_frame.paragraphs[0].font.size = Pt(8)  # Fonte menor para habilidade longa
+
+        # Colunas de resposta
         table_mat.cell(i, 1).text = str(alunos.filter(**{campo: 'CERTO'}).count())
         table_mat.cell(i, 2).text = str(alunos.filter(**{campo: 'ERRADO'}).count())
         table_mat.cell(i, 3).text = str(alunos.filter(**{campo: 'PARCIAL'}).count())
@@ -11920,9 +12059,11 @@ def exportar_pptx_saida_rede(request):
         table_mat.cell(i, 5).text = str(alunos.filter(**{campo: 'CRIANÇA COM LAUDO'}).count())
 
 
+
+
         # ✅ GRÁFICO DE MATEMÁTICA - POR HABILIDADE
         # ✅ GRÁFICO DE MATEMÁTICA - POR HABILIDADE COM RÓTULOS
-    habilidades_codigos = list(habilidades_matematica.keys())
+    habilidades_codigos = [key.split(':')[0].strip() for key in habilidades_matematica.keys()]
     categorias = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CRIANÇA COM LAUDO']
     dados = {categoria: [] for categoria in categorias}
 
@@ -11937,15 +12078,11 @@ def exportar_pptx_saida_rede(request):
     for cat in categorias:
         valores = dados[cat]
         bars = ax.bar(x, valores, bottom=bottom, label=cat)
-        for idx, bar in enumerate(bars):
-            height = bar.get_height()
-            if height > 0:
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_y() + height + 1,
-                        str(valores[idx]), ha='center', fontsize=8)
+        ax.bar_label(bars, labels=[str(v) for v in valores], fontsize=8, padding=2)
         bottom = [i + j for i, j in zip(bottom, valores)]
 
     ax.set_xticks(x)
-    ax.set_xticklabels(habilidades_codigos, rotation=45)
+    ax.set_xticklabels(habilidades_codigos, rotation=45, fontsize=9)
     ax.set_title("📊 Respostas por Habilidade - Matemática")
     ax.set_ylabel("Total")
     ax.legend()
@@ -11957,8 +12094,6 @@ def exportar_pptx_saida_rede(request):
     img_base64 = base64.b64encode(buffer.getvalue()).decode()
 
     adicionar_slide_com_imagem(prs, "📊 Gráfico Geral - Habilidades de Matemática", img_base64)
-
-
 
 
 
@@ -11976,12 +12111,11 @@ def exportar_pptx_saida_rede(request):
 
 ###***********************************************************************************************************************
 
-from django.template.loader import render_to_string
 from django.http import HttpResponse
-from weasyprint import HTML
+from django.template.loader import get_template
+from django.templatetags.static import static
+from xhtml2pdf import pisa
 from .models import CadastroEI
-import tempfile
-import os
 
 def gerar_pdf_relatorio_geral(request):
     nome_escola = request.GET.get('nome_escola')
@@ -11997,47 +12131,56 @@ def gerar_pdf_relatorio_geral(request):
         alunos = alunos.filter(modalidade__icontains=modalidade)
 
     unidades = alunos.values_list('unidade_ensino', flat=True).distinct()
+    campos_linguagem = [f"questao_linguagem_{i}" for i in range(12, 21) if i != 13]
+    campos_matematica = [f"questao_matematica_{i}" for i in range(1, 11)]
 
     tabela_dados = []
     for unidade in unidades:
         registros = alunos.filter(unidade_ensino=unidade)
 
+        registros_matematica_validos = [
+            aluno for aluno in registros
+            if not all(getattr(aluno, campo) in [None, '', 'FALTOU'] for campo in campos_matematica)
+        ]
+        registros_linguagem_validos = [
+            aluno for aluno in registros
+            if not all(getattr(aluno, campo) in [None, '', 'FALTOU'] for campo in campos_linguagem)
+        ]
+
+        total_pretendidos = registros.count()
         tabela_dados.append({
             'nome': unidade,
-            'pretendidos_1': registros.exclude(questao_linguagem_11=None).count(),
-            'efetivados_1': registros.exclude(questao_linguagem_11__in=[None, '']).count(),
-            'pretendidos_2': registros.exclude(questao_matematica_1=None).count(),
-            'efetivados_2': registros.exclude(questao_matematica_1__in=[None, '']).count()
+            'pretendidos_1': total_pretendidos,
+            'efetivados_1': len(registros_matematica_validos),
+            'pretendidos_2': total_pretendidos,
+            'efetivados_2': len(registros_linguagem_validos),
         })
 
-    contexto = {
-        'data_aplicacao': '26 e 27/11',
+    context = {
         'tabela_dados': tabela_dados,
-        'filtros': {
-            'nome_escola': nome_escola,
-            'ano': ano,
-            'modalidade': modalidade,
-        }
+        'cabecalho_superior': request.build_absolute_uri(static('assets/dist/img/logocabecalho.png')),
+        'cabecalho_inferior': request.build_absolute_uri(static('assets/dist/img/logorodape.png')),
     }
 
-    html_string = render_to_string('relatorios/relatorio_geral.html', contexto)
-    fd, path = tempfile.mkstemp(suffix='.pdf')
-    os.close(fd)
+    template = get_template('relatorios/relatorio_geral.html')
+    html = template.render(context)
 
-    try:
-        HTML(string=html_string).write_pdf(path)
-        with open(path, 'rb') as pdf:
-            response = HttpResponse(pdf.read(), content_type='application/pdf')
-            response['Content-Disposition'] = 'inline; filename="relatorio_geral.pdf"'
-        return response
-    finally:
-        os.remove(path)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="relatorio_geral.pdf"'
+
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse(f'Erro ao gerar PDF: <pre>{html}</pre>')
+
+    return response
+
+
 ###***********************************************************************************************************************
 
 from django.http import HttpResponse
-from django.template.loader import render_to_string
-from weasyprint import HTML
-import tempfile, os
+from django.template.loader import get_template
+from django.templatetags.static import static
+from xhtml2pdf import pisa
 from .models import CadastroEI
 
 def gerar_pdf_habilidades_especificas(request):
@@ -12054,29 +12197,23 @@ def gerar_pdf_habilidades_especificas(request):
         'EI05LGH10': {'descricao': 'Identificar personagens e suas ações em conto conhecido.', 'campo': 'questao_linguagem_13'},
     }
 
-    # Nomes para exibição
     modalidades = ['CC', 'SC', 'PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF', 'BRANCO', 'CCL']
     avaliacoes = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
-
-    # Mapeamento interno (banco de dados)
-    mapeamento_valores = {
-        'CCL': 'CRIANÇA COM LAUDO'
-    }
+    mapeamento_valores = {'CCL': 'CRIANÇA COM LAUDO'}
 
     dados = {}
-
     for cod, info in habilidades.items():
         campo = info['campo']
 
-        totais_modalidade = {}
-        for modalidade in modalidades:
-            valor_real = mapeamento_valores.get(modalidade, modalidade)
-            totais_modalidade[modalidade] = CadastroEI.objects.filter(**{campo: valor_real}).count()
+        totais_modalidade = {
+            modalidade: CadastroEI.objects.filter(**{campo: mapeamento_valores.get(modalidade, modalidade)}).count()
+            for modalidade in modalidades
+        }
 
-        totais_avaliacao = {}
-        for avaliacao in avaliacoes:
-            valor_real = mapeamento_valores.get(avaliacao, avaliacao)
-            totais_avaliacao[avaliacao] = CadastroEI.objects.filter(**{campo: valor_real}).count()
+        totais_avaliacao = {
+            avaliacao: CadastroEI.objects.filter(**{campo: mapeamento_valores.get(avaliacao, avaliacao)}).count()
+            for avaliacao in avaliacoes
+        }
 
         if any(totais_modalidade.values()) or any(totais_avaliacao.values()):
             dados[cod] = {
@@ -12085,21 +12222,29 @@ def gerar_pdf_habilidades_especificas(request):
                 'totais_avaliacao': totais_avaliacao,
             }
 
-    contexto = {
+    # Caminhos públicos usando static
+    cabecalho_superior = request.build_absolute_uri(static('assets/dist/img/cabecalho_superior.png'))
+    cabecalho_inferior = request.build_absolute_uri(static('assets/dist/img/cabecalho_inferior.png'))
+
+    context = {
         'dados': dados,
         'modalidades': modalidades,
         'avaliacoes': avaliacoes,
+        'cabecalho_superior': cabecalho_superior,
+        'cabecalho_inferior': cabecalho_inferior,
     }
 
-    html_string = render_to_string('relatorios/relatorio_habilidades_especificas.html', contexto)
+    template_path = 'relatorios/relatorio_habilidades_especificas.html'
+    template = get_template(template_path)
+    html = template.render(context)
 
-    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as output:
-        HTML(string=html_string).write_pdf(target=output.name)
-        output.seek(0)
-        response = HttpResponse(output.read(), content_type='application/pdf')
-        response['Content-Disposition'] = 'inline; filename="relatorio_habilidades_especificas.pdf"'
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="relatorio_habilidades_especificas.pdf"'
 
-    os.remove(output.name)
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse(f'Erro ao gerar PDF: <pre>{html}</pre>')
+
     return response
 
 ###***********************************************************************************************************************
@@ -12159,6 +12304,36 @@ def gerar_grafico_habilidade_resposta():
 
     return temp_img.name  # retorna o caminho da imagem
 
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from weasyprint import HTML
+import tempfile, os
+
+def gerar_pdf_grafico_habilidade_resposta(request):
+    from .views import gerar_grafico_habilidade_resposta
+
+    imagem_grafico = gerar_grafico_habilidade_resposta()
+
+    contexto = {
+        'imagem_grafico': f"file://{imagem_grafico}",
+        'cabecalho_path': 'file:///C:/Users/sysco/Desktop/SIEDGE/semedweb/static/assets/dist/img/logocabecalho.png',
+        'rodape_path': 'file:///C:/Users/sysco/Desktop/SIEDGE/semedweb/static/assets/dist/img/logorodape.png',
+
+    }
+
+    html_string = render_to_string('relatorios/relatorio_grafico_habilidades.html', contexto)
+
+    with tempfile.NamedTemporaryFile(suffix='.pdf', delete=False) as output:
+        HTML(string=html_string, base_url="file:///C:/Users/sysco/Desktop/SIEDGE/semedweb/").write_pdf(target=output.name)
+        output.seek(0)
+        response = HttpResponse(output.read(), content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="grafico_habilidades.pdf"'
+
+    os.remove(imagem_grafico)
+    os.remove(output.name)
+    return response
+
 ###***********************************************************************************************************************
 
 def gerar_pdf_grafico_habilidades(request):
@@ -12185,14 +12360,13 @@ def gerar_pdf_grafico_habilidades(request):
 
 from io import BytesIO
 from django.http import HttpResponse
-from django.template.loader import render_to_string
-from weasyprint import HTML
+from django.template.loader import get_template
+from django.templatetags.static import static
+from xhtml2pdf import pisa
 import matplotlib.pyplot as plt
-import tempfile
-import os
 import base64
+import tempfile
 from .models import CadastroEI
-
 
 def gerar_graficos_pdf(request):
     nome_escola = request.GET.get('nome_escola', '')
@@ -12208,115 +12382,116 @@ def gerar_graficos_pdf(request):
         alunos = alunos.filter(modalidade__icontains=modalidade)
 
     escolas = alunos.values_list('unidade_ensino', flat=True).distinct()
+    respostas = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
+    mapeamento = {'CCL': 'CRIANÇA COM LAUDO'}
 
-    # ✅ Mapeamento para exibição
-    tipos_resposta_display = ['CERTO', 'ERRADO', 'PARCIAL', 'BRANCO', 'CCL']
-    tipo_mapeamento = {
-        'CCL': 'CRIANÇA COM LAUDO'
-    }
-
-    grafico_base64 = []
+    graficos = []
 
     for escola in escolas:
-        contagens = {}
-        for tipo_display in tipos_resposta_display:
-            tipo_banco = tipo_mapeamento.get(tipo_display, tipo_display)
-            contagens[tipo_display] = alunos.filter(
-                unidade_ensino=escola, questao_linguagem_11=tipo_banco
-            ).count()
-
-        labels = list(contagens.keys())
-        valores = list(contagens.values())
+        dados = {}
+        for r in respostas:
+            valor_db = mapeamento.get(r, r)
+            dados[r] = alunos.filter(unidade_ensino=escola, questao_linguagem_11=valor_db).count()
 
         fig, ax = plt.subplots()
-        ax.bar(labels, valores, color='skyblue')
+        ax.bar(dados.keys(), dados.values(), color='skyblue')
         ax.set_title(f'{escola} - Linguagem Q11')
-        ax.set_ylabel('Quantidade')
-        ax.set_ylim(0, max(valores + [1]) + 10)
-
-        for i, v in enumerate(valores):
+        ax.set_ylim(0, max(dados.values()) + 5)
+        for i, v in enumerate(dados.values()):
             ax.text(i, v + 0.5, str(v), ha='center', fontsize=8)
 
         buffer = BytesIO()
         plt.tight_layout()
         fig.savefig(buffer, format='png')
-        buffer.seek(0)
-        image_base64 = base64.b64encode(buffer.read()).decode('utf-8')
-        grafico_base64.append({'escola': escola, 'grafico': image_base64})
         plt.close(fig)
 
-    contexto = {
-        'graficos': grafico_base64,
+        imagem_base64 = base64.b64encode(buffer.getvalue()).decode()
+        graficos.append({'escola': escola, 'grafico': imagem_base64})
+
+    # Usa caminho absoluto para imagens como no exemplo
+    cabecalho_superior = request.build_absolute_uri(static('assets/dist/img/logocabecalho.png'))
+    cabecalho_inferior = request.build_absolute_uri(static('assets/dist/img/logorodape.png'))
+
+    context = {
+        'graficos': graficos,
+        'cabecalho_superior': cabecalho_superior,
+        'cabecalho_inferior': cabecalho_inferior,
     }
 
-    html_string = render_to_string('relatorios/relatorio_graficos.html', contexto)
-    fd, path = tempfile.mkstemp(suffix='.pdf')
-    os.close(fd)
+    template = get_template('relatorios/relatorio_graficos_pisa.html')
+    html_string = template.render(context)
 
-    try:
-        HTML(string=html_string).write_pdf(path)
-        with open(path, 'rb') as pdf:
-            response = HttpResponse(pdf.read(), content_type='application/pdf')
-            response['Content-Disposition'] = 'inline; filename="graficos_relatorio.pdf"'
-            return response
-    finally:
-        os.remove(path)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="graficos_linguagem_q11.pdf"'
+
+    pisa_status = pisa.CreatePDF(html_string, dest=response)
+    if pisa_status.err:
+        return HttpResponse('Erro ao gerar PDF <pre>' + html_string + '</pre>')
+
+    return response
 
 ###***********************************************************************************************************************
 
-import matplotlib.pyplot as plt
-import tempfile, os, base64
-from io import BytesIO
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.template.loader import render_to_string
 from django.http import HttpResponse
 from weasyprint import HTML
-from django.template.loader import render_to_string
 from .models import CadastroEI
-
+import matplotlib.pyplot as plt
+import base64
+from io import BytesIO
+import tempfile, os
 
 def gerar_graficos_q11_q13(request):
-    escolas = CadastroEI.objects.filter(avaliado='SIM').values_list('unidade_ensino', flat=True).distinct()
+    nome_escola = request.GET.get('nome_escola', '')
+    ano = request.GET.get('ano', '')
+    modalidade = request.GET.get('modalidade', '')
 
-    # ✅ Mapeamento dos rótulos
+    alunos_base = CadastroEI.objects.filter(avaliado='SIM')
+    if nome_escola:
+        alunos_base = alunos_base.filter(unidade_ensino__icontains=nome_escola)
+    if ano:
+        alunos_base = alunos_base.filter(ano=ano)
+    if modalidade:
+        alunos_base = alunos_base.filter(modalidade__icontains=modalidade)
+
+    escolas = alunos_base.values_list('unidade_ensino', flat=True).distinct()
+
     respostas_q11_display = ['CC', 'SC', 'BRANCO', 'CCL', 'FALTOU']
     respostas_q13_display = ['PSI', 'PSII', 'SSVS', 'SCVS', 'SA', 'ALF', 'BRANCO', 'CCL', 'FALTOU']
-
-    mapeamento_valores = {
-        'CCL': 'CRIANÇA COM LAUDO'
-    }
+    mapeamento_valores = {'CCL': 'CRIANÇA COM LAUDO'}
 
     graficos = []
 
     for escola in escolas:
-        alunos = CadastroEI.objects.filter(unidade_ensino=escola, avaliado='SIM')
+        alunos = alunos_base.filter(unidade_ensino=escola)
 
-        # Questão 11
-        dados_q11 = [
-            alunos.filter(questao_linguagem_11=mapeamento_valores.get(r, r)).count()
-            for r in respostas_q11_display
-        ]
-        fig1, ax1 = plt.subplots()
+        # Gráfico Q11
+        dados_q11 = [alunos.filter(questao_linguagem_11=mapeamento_valores.get(r, r)).count()
+                     for r in respostas_q11_display]
+        fig1, ax1 = plt.subplots(figsize=(10, 4.5))
         ax1.bar(respostas_q11_display, dados_q11, color='skyblue')
-        ax1.set_title(f'{escola} - Questão 11 (Com/sem crachá)')
-        ax1.set_ylabel('Quantidade')
+        ax1.set_title(f'{escola} - Q1 (Com/sem crachá)', fontsize=12)
+        ax1.set_ylim(0, max(dados_q11 + [1]) + 5)
+        ax1.tick_params(axis='x', labelrotation=30, labelsize=9)
         for i, v in enumerate(dados_q11):
-            ax1.text(i, v + 0.5, str(v), ha='center', fontsize=8)
+            ax1.text(i, v + 0.5, str(v), ha='center', fontsize=9)
         buffer1 = BytesIO()
         plt.tight_layout()
         fig1.savefig(buffer1, format='png')
         plt.close(fig1)
         imagem_q11 = base64.b64encode(buffer1.getvalue()).decode()
 
-        # Questão 13
-        dados_q13 = [
-            alunos.filter(questao_linguagem_13=mapeamento_valores.get(r, r)).count()
-            for r in respostas_q13_display
-        ]
-        fig2, ax2 = plt.subplots()
-        ax2.bar(respostas_q13_display, dados_q13, color='lightcoral')
-        ax2.set_title(f'{escola} - Questão 13 (Níveis de Escrita)')
-        ax2.set_ylabel('Quantidade')
+        # Gráfico Q13
+        dados_q13 = [alunos.filter(questao_linguagem_13=mapeamento_valores.get(r, r)).count()
+                     for r in respostas_q13_display]
+        fig2, ax2 = plt.subplots(figsize=(10, 4.5))
+        ax2.bar(respostas_q13_display, dados_q13, color='salmon')
+        ax2.set_title(f'{escola} - Q3 (Níveis de Escrita)', fontsize=12)
+        ax2.set_ylim(0, max(dados_q13 + [1]) + 5)
+        ax2.tick_params(axis='x', labelrotation=30, labelsize=9)
         for i, v in enumerate(dados_q13):
-            ax2.text(i, v + 0.5, str(v), ha='center', fontsize=8)
+            ax2.text(i, v + 0.5, str(v), ha='center', fontsize=9)
         buffer2 = BytesIO()
         plt.tight_layout()
         fig2.savefig(buffer2, format='png')
@@ -12329,20 +12504,21 @@ def gerar_graficos_q11_q13(request):
             'grafico_q13': imagem_q13,
         })
 
-    contexto = {
-        'graficos': graficos
+    context = {
+        'graficos': graficos,
+        'cabecalho_path': staticfiles_storage.url('assets/dist/img/logocabecalho.png'),
+        'rodape_path': staticfiles_storage.url('assets/dist/img/logorodape.png'),
     }
 
-    html_string = render_to_string('relatorios/relatorio_graficos_q11_q13.html', contexto)
+    html_string = render_to_string('relatorios/relatorio_graficos_q11_q13.html', context)
+
     fd, path = tempfile.mkstemp(suffix='.pdf')
     os.close(fd)
 
     try:
-        HTML(string=html_string).write_pdf(path)
+        HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf(path)
         with open(path, 'rb') as pdf:
-            response = HttpResponse(pdf.read(), content_type='application/pdf')
-            response['Content-Disposition'] = 'inline; filename="graficos_q11_q13.pdf"'
-            return response
+            return HttpResponse(pdf.read(), content_type='application/pdf')
     finally:
         os.remove(path)
 
@@ -12350,11 +12526,11 @@ def gerar_graficos_q11_q13(request):
 
 from django.http import HttpResponse
 from django.template.loader import render_to_string
-from django.conf import settings
-from django.db.models import Count
-from weasyprint import HTML, CSS
-import os
+from django.templatetags.static import static
+from weasyprint import HTML
 from .models import CadastroEI
+from django.db.models import Count
+import tempfile, os
 
 def relatorio_saida_matematica_view(request):
     nome_escola = request.GET.get('nome_escola', '')
@@ -12388,16 +12564,56 @@ def relatorio_saida_matematica_view(request):
             }
         resultado_matematica[escola] = questoes
 
+    # Gera URLs públicas a partir do domínio da aplicação
+    cabecalho_url = request.build_absolute_uri(static('assets/dist/img/logocabecalho.png'))
+    rodape_url = request.build_absolute_uri(static('assets/dist/img/logorodape.png'))
+
     context = {
         'titulo': "Relatório de Saída - SAMACC 2025 - Matemática",
         'resultado_matematica': resultado_matematica,
+        'cabecalho_path': cabecalho_url,
+        'rodape_path': rodape_url,
     }
 
-    html_string = render_to_string("relatorios/relatorio_saida_matematica.html", context)
-    html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
-    css_path = os.path.join(settings.STATIC_ROOT, "css", "relatorio_pdf.css")
-    pdf_file = html.write_pdf(stylesheets=[CSS(css_path)])
+    html_string = render_to_string('relatorios/relatorio_saida_matematica.html', context)
 
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename=relatorio_saida_matematica.pdf'
-    return response
+    fd, path = tempfile.mkstemp(suffix='.pdf')
+    os.close(fd)
+
+    try:
+        HTML(string=html_string, base_url=request.build_absolute_uri('/')).write_pdf(path)
+        with open(path, 'rb') as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="relatorio_saida_matematica.pdf"'
+            return response
+    finally:
+        os.remove(path)
+
+from django.http import JsonResponse
+
+def get_sintese_dinamica(request):
+    # mesmo filtro da view acima
+    receitas = Receita.objects.all()
+    if request.GET.get("escola"):
+        receitas = receitas.filter(escola_id=request.GET.get("escola"))
+    if request.GET.get("ano"):
+        receitas = receitas.filter(data_inicio__year=request.GET.get("ano"))
+    if request.GET.get("programa"):
+        receitas = receitas.filter(programa=request.GET.get("programa"))
+
+    dados = receitas.aggregate(
+        receita_total=Sum('valor_total_receita_custeio') + Sum('valor_total_receita_capital'),
+        despesa_total=Sum('valor_despesa_realizada_custeio') + Sum('valor_despesa_realizada_capital'),
+        saldo_reprogramado=Sum('saldo_reprogramar_custeio') + Sum('saldo_reprogramar_capital'),
+        recursos_proprios=Sum('recursos_proprios_custeio') + Sum('recursos_proprios_capital'),
+        rendimentos_aplicacao=Sum('rendimento_aplicacao_custeio') + Sum('rendimento_aplicacao_capital'),
+        devolucoes_fnde=Sum('devolucao_fnde_custeio') + Sum('devolucao_fnde_capital'),
+        escolas_atendidas=receitas.values('escola').distinct().count(),
+    )
+
+    return JsonResponse(dados)
+
+
+
+def sintese_pdde_view(request):
+    return render(request, 'pdde/sintese_pdde.html')

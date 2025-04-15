@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gráficos por Escola – Q1 e Q3</title>
+    <style>
+        @page {
+            margin: 170px 30px 100px 30px;
+            @top-center { content: element(header); }
+            @bottom-center { content: element(footer); }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+        }
+
+        header {
+            position: running(header);
+        }
+
+        footer {
+            position: running(footer);
+            font-size: 10px;
+            text-align: center;
+        }
+
+        .grafico {
+            margin-bottom: 50px;
+            page-break-inside: avoid;
+        }
+
+        .grafico img {
+            display: block;
+            margin: 10px auto;
+            width: 90%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+
+        .escola {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <img src="{{ cabecalho_base64 }}" alt="Cabeçalho" style="width: 100%;">
+</header>
+
+<footer>
+    <img src="{{ rodape_base64 }}" alt="Rodapé" style="width: 100%;">
+</footer>
+
+<h1 style="text-align:center;">Gráficos por Escola – Questões 1 e 3</h1>
+
+{% for item in graficos %}
+    <div class="grafico">
+        <div class="escola">{{ item.escola }}</div>
+        <img src="data:image/png;base64,{{ item.grafico_q11 }}" alt="Q11 - {{ item.escola }}">
+        <img src="data:image/png;base64,{{ item.grafico_q13 }}" alt="Q13 - {{ item.escola }}">
+    </div>
+{% endfor %}
+
+</body>
+</html>

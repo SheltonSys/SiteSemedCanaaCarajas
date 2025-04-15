@@ -33,13 +33,13 @@
 
                     <!-- Menu completo com todos os módulos -->
 
-
-                    <a href="{% url 'educacao_infantil' %}" class="nav-link" data-id="dashboard">
+                    {% if user.is_superuser or user.username == "Raphael" %}
+                    <a href="{% url 'dashboardadmin' %}" class="nav-link" data-id="dashboard">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
                         <p>Dashboard</p>
                     </a>
                 </li>
-
+                {% endif %}
                 
                 
                 <!-- Se for superusuário, exibe tudo -->
@@ -91,10 +91,10 @@
 
 
 
-                {% if user.is_superuser %}
+                {% if user.is_superuser or user.username == "Raphael" %}
                 <!-- Cadastro de Demandas -->
                 <li class="nav-item">
-                    {% if user.is_superuser %}
+                    {% if user.username == "Raphael" or user.is_superuser %}
                     <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'config-demandas')" data-id="demandas">
                         <i class="nav-icon fas fa-cogs"></i>
                         <p>
@@ -144,23 +144,17 @@
                             </a>
                         </li>
 
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a href="{% url 'cadastro_demandas' %}" class="nav-link" data-id="cadastroDemandas">
                                 <i class="fas fa-link nav-icon"></i>
                                 <p>Cadastro Demandas</p>
                             </a>
-                        </li>
-
-                        
+                        </li> -->
 
                         {% endwith %}
 
                     </ul>
                 </li>
-
-
-
-
 
                 {% if user.is_superuser %}
                 <!-- Indicadores -->
@@ -205,11 +199,12 @@
             </a>
         </li> -->
 
-        {% if user.is_superuser %}
         <!-- Menu Pedagógico para Professores -->
+        {% if user.is_superuser or user.username == "Tatiane" or user.username == "Valder" %}
         <li class="nav-item">
             <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'pedagogico-submenu')" data-id="pedagogico">
                 <i class="nav-icon fas fa-book-open"></i>
+                
                 <p>
                     Pedagógico
                     <i class="right fas fa-angle-left"></i>
@@ -243,9 +238,6 @@
                                 <p>Gestão Escolar PGE</p>
                             </a>
                         </li>
-                        
-                        
-
 
                         <li class="nav-item">
                             <a href="{% url 'adm_site_pedagogico' %}" class="nav-link" data-id="adm-pedagogico">
@@ -273,6 +265,7 @@
                         </li>
                     </ul>
                 </li>
+              
 
                 <!-- Diagnosis -->
                 <li class="nav-item">
@@ -337,7 +330,7 @@
 
 
         <!-- Orientação Educacional -->
-        {% if user.tipo_usuario == "coordenador" or user.is_superuser %}
+        {% if user.username == "Valder" or user.username == "Tatiane" or user.is_superuser %}
         <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
                 <i class="fas fa-chalkboard-teacher nav-icon"></i>
@@ -379,25 +372,21 @@
                 </li>
             </ul>
         </li>
-        {% endif %}
-
         
-                {% if user.is_superuser %}
-                <!-- Legislação -->
-                <li class="nav-item">
-                    <a href="{% url 'legislacao' %}" class="nav-link" data-id="legislacao">
-                        <i class="fas fa-gavel nav-icon"></i>
-                        <p>Legislação</p>
-                    </a>
-                </li>
-                {% endif %}
+        <!-- Legislação -->
+        <li class="nav-item">
+            <a href="{% url 'legislacao' %}" class="nav-link" data-id="legislacao">
+                <i class="fas fa-gavel nav-icon"></i>
+                <p>Legislação</p>
+            </a>
+        </li>
+        {% endif %}
+                
 
-
-
-                {% if user.is_superuser or user.username == "jailma" or user.username == "iranina" or user.username == "ilza" or user.username == "coordenador71" or user.username == "Divani" or user.username == "Marilene" or user.username == "Diyny" or user.username == "edimayra" or user.username == "elizete24" or user.username == "janete23" or user.username == "debora22" or user.username == "maria45" or user.username == "rosebel" or user.username == "kesia30" or user.username == "davila" or user.username == "kelly47" or user.username == "suellen" or user.username == "marina" or user.username == "nelma" or user.username == "zuleide" or user.username == "caroline" or user.username == "mariana" or user.username == "talwane" or user.username == "janilma" or user.username == "cristina" or user.username == "verline" or user.username == "cristiane" or user.username == "itapoa" or user.username == "lindalva" or user.username == "davila20" or user.username == "hellem21" or user.username == "gessika25" or user.username == "Danúbia26" or user.username == "debora27" or user.username == "Herivane28" or user.username == "Verlane29" or user.username == "Dorineza30" or user.username == "Ednéia31" or user.username == "Silvinha32" or user.username == "eline33" or user.username == "Edilene34" or user.username == "maria35" or user.username == "claudia36" or user.username == "patricia37" or user.username == "Brena38" or user.username == "Kesia39" or user.username == "patricia40" or user.username == "nelma41" or user.username == "maria42" or user.username == "Samara43" or user.username == "Selma44" or user.username == "Lucilene46" or user.username == "Jaqueline48" or user.username == "Patricia49" or user.username == "Eva50" or user.username == "eduarda51" or user.username == "kelly52" or user.username == "Keila53" or user.username == "Raquell54" or user.username == "fabiana55" or user.username == "Zenaide56" or user.username == "Ivone57" or user.username == "Franciele58" or user.username == "Iris59" or user.username == "Laís60" or user.username == "Gilmara61" or user.username == "Sueli62" or user.username == "Fabíola63" or user.username == "Janaina64" or user.username == "Maria65" or user.username == "Luiza66" or user.username == "Tais67" or user.username == "Liliany68" or user.username == "Arlinda69" or user.username == "Aline70" or user.username == "Sabrina" or user.username == "Maria77" or user.username == "Rosiléia" or user.username == "Moraes" or user.username == "Thania" or user.username == "Cristiane" or user.username == "Cleonice" or user.username == "Audinete" or user.username == "SimoneRodrigues" or user.username == "Edimayra" %}
+                {% if user.is_superuser or user.username == "jailma" or user.username == "iranina" or user.username == "ilza" or user.username == "coordenador71" or user.username == "Divani" or user.username == "Marilene" or user.username == "Diyny" or user.username == "edimayra" or user.username == "elizete24" or user.username == "janete23" or user.username == "debora22" or user.username == "maria45" or user.username == "rosebel" or user.username == "kesia30" or user.username == "davila" or user.username == "kelly47" or user.username == "suellen" or user.username == "marina" or user.username == "nelma" or user.username == "zuleide" or user.username == "caroline" or user.username == "mariana" or user.username == "talwane" or user.username == "janilma" or user.username == "cristina" or user.username == "verline" or user.username == "cristiane" or user.username == "itapoa" or user.username == "lindalva" or user.username == "davila20" or user.username == "hellem21" or user.username == "gessika25" or user.username == "Danúbia26" or user.username == "debora27" or user.username == "Herivane28" or user.username == "Verlane29" or user.username == "Dorineza30" or user.username == "Ednéia31" or user.username == "Silvinha32" or user.username == "eline33" or user.username == "Edilene34" or user.username == "maria35" or user.username == "claudia36" or user.username == "patricia37" or user.username == "Brena38" or user.username == "Kesia39" or user.username == "patricia40" or user.username == "nelma41" or user.username == "maria42" or user.username == "Samara43" or user.username == "Selma44" or user.username == "Lucilene46" or user.username == "Jaqueline48" or user.username == "Patricia49" or user.username == "Eva50" or user.username == "eduarda51" or user.username == "kelly52" or user.username == "Keila53" or user.username == "Raquell54" or user.username == "fabiana55" or user.username == "Zenaide56" or user.username == "Ivone57" or user.username == "Franciele58" or user.username == "Iris59" or user.username == "Laís60" or user.username == "Gilmara61" or user.username == "Sueli62" or user.username == "Fabíola63" or user.username == "Janaina64" or user.username == "Maria65" or user.username == "Luiza66" or user.username == "Tais67" or user.username == "Liliany68" or user.username == "Arlinda69" or user.username == "Aline70" or user.username == "Sabrina" or user.username == "Maria77" or user.username == "Rosiléia" or user.username == "Moraes" or user.username == "Thania" or user.username == "Cristiane" or user.username == "Cleonice" or user.username == "Audinete" or user.username == "Simone" or user.username == "Edimayra" or user.username == "Tatiane" or user.username == "Valder" or user.username == "Edna" %}
                 <!-- Educação Infantil -->
                 <li class="nav-item has-treeview">
-                    {% if user.is_superuser or user.username == "jailma" or user.username == "iranina" or user.username == "ilza" or user.username == "coordenador71" or user.username == "Divani" or user.username == "Marilene" or user.username == "Diyny" or user.username == "edimayra" or user.username == "elizete24" or user.username == "janete23" or user.username == "debora22" or user.username == "maria45" or user.username == "rosebel" or user.username == "kesia30" or user.username == "davila" or user.username == "kelly47" or user.username == "suellen" or user.username == "marina" or user.username == "nelma" or user.username == "zuleide" or user.username == "caroline" or user.username == "mariana" or user.username == "talwane" or user.username == "janilma" or user.username == "cristina" or user.username == "verline" or user.username == "cristiane" or user.username == "itapoa" or user.username == "lindalva" or user.username == "davila20" or user.username == "hellem21" or user.username == "gessika25" or user.username == "Danúbia26" or user.username == "debora27" or user.username == "Herivane28" or user.username == "Verlane29" or user.username == "Dorineza30" or user.username == "Ednéia31" or user.username == "Silvinha32" or user.username == "eline33" or user.username == "Edilene34" or user.username == "maria35" or user.username == "claudia36" or user.username == "patricia37" or user.username == "Brena38" or user.username == "Kesia39" or user.username == "patricia40" or user.username == "nelma41" or user.username == "maria42" or user.username == "Samara43" or user.username == "Selma44" or user.username == "Lucilene46" or user.username == "Jaqueline48" or user.username == "Patricia49" or user.username == "Eva50" or user.username == "eduarda51" or user.username == "kelly52" or user.username == "Keila53" or user.username == "Raquell54" or user.username == "fabiana55" or user.username == "Zenaide56" or user.username == "Ivone57" or user.username == "Franciele58" or user.username == "Iris59" or user.username == "Laís60" or user.username == "Gilmara61" or user.username == "Sueli62" or user.username == "Fabíola63" or user.username == "Janaina64" or user.username == "Maria65" or user.username == "Luiza66" or user.username == "Tais67" or user.username == "Liliany68" or user.username == "Arlinda69" or user.username == "Aline70" or user.username == "Sabrina" or user.username == "Maria77" or user.username == "Rosiléia" or user.username == "Moraes" or user.username == "Thania" or user.username == "Cristiane" or user.username == "Cleonice" or user.username == "Audinete" or user.username == "SimoneRodrigues" or user.username == "Edimayra" %}
+                    {% if user.is_superuser or user.username == "jailma" or user.username == "iranina" or user.username == "ilza" or user.username == "coordenador71" or user.username == "Divani" or user.username == "Marilene" or user.username == "Diyny" or user.username == "edimayra" or user.username == "elizete24" or user.username == "janete23" or user.username == "debora22" or user.username == "maria45" or user.username == "rosebel" or user.username == "kesia30" or user.username == "davila" or user.username == "kelly47" or user.username == "suellen" or user.username == "marina" or user.username == "nelma" or user.username == "zuleide" or user.username == "caroline" or user.username == "mariana" or user.username == "talwane" or user.username == "janilma" or user.username == "cristina" or user.username == "verline" or user.username == "cristiane" or user.username == "itapoa" or user.username == "lindalva" or user.username == "davila20" or user.username == "hellem21" or user.username == "gessika25" or user.username == "Danúbia26" or user.username == "debora27" or user.username == "Herivane28" or user.username == "Verlane29" or user.username == "Dorineza30" or user.username == "Ednéia31" or user.username == "Silvinha32" or user.username == "eline33" or user.username == "Edilene34" or user.username == "maria35" or user.username == "claudia36" or user.username == "patricia37" or user.username == "Brena38" or user.username == "Kesia39" or user.username == "patricia40" or user.username == "nelma41" or user.username == "maria42" or user.username == "Samara43" or user.username == "Selma44" or user.username == "Lucilene46" or user.username == "Jaqueline48" or user.username == "Patricia49" or user.username == "Eva50" or user.username == "eduarda51" or user.username == "kelly52" or user.username == "Keila53" or user.username == "Raquell54" or user.username == "fabiana55" or user.username == "Zenaide56" or user.username == "Ivone57" or user.username == "Franciele58" or user.username == "Iris59" or user.username == "Laís60" or user.username == "Gilmara61" or user.username == "Sueli62" or user.username == "Fabíola63" or user.username == "Janaina64" or user.username == "Maria65" or user.username == "Luiza66" or user.username == "Tais67" or user.username == "Liliany68" or user.username == "Arlinda69" or user.username == "Aline70" or user.username == "Sabrina" or user.username == "Maria77" or user.username == "Rosiléia" or user.username == "Moraes" or user.username == "Thania" or user.username == "Cristiane" or user.username == "Cleonice" or user.username == "Audinete" or user.username == "Simone" or user.username == "Edimayra" or user.username == "Tatiane" or user.username == "Valder" or user.username == "Edna"%}
                     <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'educacao-infantil-menu')" data-id="educacao_infantil">
                         <i class="fas fa-child nav-icon"></i>
                         <p>
@@ -405,14 +394,8 @@
                             <i class="right fas fa-angle-left"></i>
                         </p>
                     </a>
-                    {% endif %}
+                    
                     <ul class="nav nav-treeview submenu" id="educacao-infantil-menu" style="display: none;">
-                        <!-- <li class="nav-item">
-                            <a href="{% url 'educacao_infantil' %}" class="nav-link" data-id="educacao_infantil2">
-                                <i class="fas fa-school nav-icon"></i>
-                                <p>Página Principal</p>
-                            </a>
-                        </li> -->
                         {% if user.is_superuser %}
                         <li class="nav-item">
                             <a href="{% url 'upload_cadastro_ei' %}" class="nav-link" data-id="upload_cadastro_ei">
@@ -445,25 +428,24 @@
                             </a>
                         </li>
                         
-                        {% if user.is_superuser or user.username == "coordenador71" or user.username == "Divani" or user.username == "Marilene" or user.username == "Diyny" or user.username == "Sabrina" %}
+                        {% if user.is_superuser %}
                         <li class="nav-item">
                             <a href="{% url 'cadastro_turma' %}" class="nav-link" data-id="cadastro_turma">
                                 <i class="fas fa-users nav-icon"></i>
                                 <p>Cadastro da Turma</p>
                             </a>
                         </li>
-                        {% endif %}
                         
-                        {% if user.is_superuser %}
+                        
+                       
                         <li class="nav-item">
                             <a href="{% url 'cadastro_alunos' %}" class="nav-link" data-id="cadastro_alunos">
                                 <i class="fas fa-user-graduate nav-icon"></i>
                                 <p>Cadastro dos Alunos</p>
                             </a>
                         </li>
-                        {% endif %}
-
-                        {% if user.is_superuser %}
+                        
+                        
                         <li class="nav-item">
                             <a href="{% url 'lancamento_conceitos' %}" class="nav-link" data-id="lancamento_conceitos">
                                 <i class="fas fa-book-open nav-icon"></i>
@@ -471,6 +453,7 @@
                             </a>
                         </li>
                         {% endif %}
+                     
 
                         <li class="nav-item">
                             <a href="{% url 'gestao_relatorios' %}" class="nav-link">
@@ -482,7 +465,7 @@
                     </ul>
                 </li>
                 {% endif %}
-
+                {% endif %}
                
                 <!-- Script para exibir/ocultar submenu -->
                 <script>
@@ -547,13 +530,9 @@
                                </a>
                            </div>
                            
-
                                 {% endif %}
                             </li>
                             
-                            
-                            
-
                             <li class="nav-item">
                                 <a href="{% url 'conselho_diretoria' %}" class="nav-link" data-id="pddediretoria">
                                     <i class="fas fa-users nav-icon"></i>
@@ -595,7 +574,6 @@
                                 </a>
                             </li>
                             
-
                             <li class="nav-item">
                                 <a href="{% url 'contas' %}" class="nav-link" data-id="pmatematica"
                                     data-id="pdeecontas">
@@ -615,71 +593,7 @@
             </li>
             {% endif %}
 
-
-
-
-
-
-            <!-- Banco de Currículos -->
-            <!-- <li class="nav-item">
-                <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'banco-curriculos-menu')"
-                    data-id="bcurriculo">
-                    <i class="nav-icon fas fa-briefcase"></i>
-                    <p>
-                        Banco de Currículos
-                        <i class="right fas fa-angle-left"></i>
-                    </p>
-                </a>
-                <ul class="nav nav-treeview submenu" id="banco-curriculos-menu" style="display: none;"> -->
-            <!-- Site -->
-            <!-- <li class="nav-item">
-                        <a href="{% url 'site_curriculos' %}" class="nav-link" data-id="curriculosite" target="_blank">
-                            <i class="fas fa-globe nav-icon"></i>
-                            <p>Site</p>
-                        </a>
-                    </li> -->
-
-            <!-- Cadastro de Currículo -->
-            <!-- <li class="nav-item">
-                        <a href="{% url 'cadastro_curriculo' %}" class="nav-link" data-id="cadcurriculo">
-                            <i class="fas fa-file-alt nav-icon"></i>
-                            <p>Cadastros</p>
-                        </a>
-                    </li> -->
-            <!-- Gestão de Currículo -->
-            <!-- <li class="nav-item">
-                        <a href="{% url 'gestao_curriculo' %}" class="nav-link" data-id="gcurriculo">
-                            <i class="fas fa-tasks nav-icon"></i>
-                            <p>Gestão ADM</p>
-                        </a>
-                    </li> -->
-
-            <!-- Listar Professores -->
-            <!-- <li class="nav-item">
-                        <a href="{% url 'listar_professores' %}" class="nav-link" data-id="listarProfessores">
-                            <i class="fas fa-list nav-icon"></i>
-                            <p>Gestão ADM</p>
-                        </a>
-                    </li> -->
-            <!-- Cadastrar Professor -->
-            <!-- <li class="nav-item">
-                        <a href="{% url 'cadastrar_professor' %}" class="nav-link" data-id="cadastrarProfessor">
-                            <i class="fas fa-user-plus nav-icon"></i>
-                            <p>Cadastrar Currículo</p>
-                        </a>
-                    </li>
-
-
-                </ul>
-            </li> -->
-
-
-
-
-
-
-
-            {% if user.is_superuser %}
+            {% if user.is_superuser or user.username == "Tatiane" or user.username == "Valder" %}
             <!-- Cadastro de Diretor -->
             <li class="nav-item">
                 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'diretor-menu')" data-id="bdiretor">
@@ -697,6 +611,7 @@
                             <p>Site</p>
                         </a>
                     </li>
+                    {% if user.is_superuser %}
                     <!-- Cadastro de Currículo -->
                     <li class="nav-item">
                         <a href="{% url 'cadastro_curriculo' %}" class="nav-link" data-id="cadcurriculo">
@@ -711,6 +626,7 @@
                             <p>Gestão ADM</p>
                         </a>
                     </li>
+                    {% endif %}
 
                     <!-- Listar Diretor -->
                     <li class="nav-item">
@@ -730,6 +646,7 @@
                     </li>
 
                     <!-- Cadastrar Diretor -->
+                    {% if user.is_superuser %}
                     <li class="nav-item">
                         <a href="{% url 'cadastrar_diretor' %}" class="nav-link" data-id="cadastrarDiretor"
                             target="_blank">
@@ -737,8 +654,7 @@
                             <p>Cadastrar Currículo</p>
                         </a>
                     </li>
-
-
+                    {% endif %}
 
                 </ul>
             </li>

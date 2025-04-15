@@ -3401,3 +3401,13 @@ class MotivoIndeferimento(models.Model):
 
     def __str__(self):
         return f"Indeferimento - {self.plano.unidade_ensino}"
+
+
+
+class ConselhoMembro(models.Model):
+    nome = models.CharField(max_length=255)
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE)
+    cargo = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.nome} - {self.cargo}"

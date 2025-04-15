@@ -1,24 +1,83 @@
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <title>Relatório de Saída - SAMACC</title>
     <style>
-        body { font-family: Arial; margin: 20px; }
-        h2, h3 { color: #004080; margin-top: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { border: 1px solid #999; padding: 6px; text-align: center; }
-        th { background-color: #f0f4f8; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header, .footer {
+            text-align: center;
+            width: 100%;
+        }
+
+        .header img, .footer img {
+            width: 100%;
+        }
+
+        .content {
+            margin: 130px 30px 100px 30px;
+        }
+
+        h1, h2, h3, h4 {
+            color: #004080;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 5px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f0f0f0;
+        }
+
+        .alerta {
+            color: darkred;
+            margin-top: 10px;
+        }
+
+        hr {
+            margin: 30px 0;
+        }
     </style>
 </head>
 <body>
-    <h1>📊 RELATÓRIO - SAMACC 2025</h1>
+
+<!-- Cabeçalho -->
+<div class="header">
+    <img src="{{ cabecalho_superior }}" alt="Cabeçalho">
+</div>
+
+<div class="content">
+    <h1>📊 RELATÓRIO DE SAÍDA - SAMACC 2025</h1>
 
     {% for unidade in resultado_por_unidade %}
         <h2>{{ unidade.unidade }}</h2>
+
         <p><strong>Total de Alunos:</strong> {{ unidade.total_nei }}</p>
-        <p><strong>% Participação Matemática:</strong> {{ unidade.participacao_matematica }}%</p>
-        <p><strong>% Participação Linguagem:</strong> {{ unidade.participacao_linguagem }}%</p>
+        <p><strong>% Participação Matemática:</strong> {{ unidade.participacao_matematica }}</p>
+        <p><strong>% Participação Linguagem:</strong> {{ unidade.participacao_linguagem }}</p>
+
+        {% if unidade.total_faltantes_geral %}
+            <p class="alerta">🚨 Alunos que faltaram totalmente: <strong>{{ unidade.total_faltantes_geral }}</strong></p>
+        {% endif %}
 
         <h3>🧮 Matemática</h3>
         <table>
@@ -36,7 +95,7 @@
             <tbody>
                 {% for i, dados in unidade.dados_matematica.items %}
                 <tr>
-                    <td>{{ i }}</td>
+                    <td>Q{{ i }}</td>
                     <td>{{ dados.CERTO }}</td>
                     <td>{{ dados.ERRADO }}</td>
                     <td>{{ dados.PARCIAL }}</td>
@@ -64,7 +123,7 @@
             <tbody>
                 {% for i, dados in unidade.dados_linguagem.items %}
                 <tr>
-                    <td>{{ i|add:"-11" }}</td> <!-- transforma 12 em 1, 14 em 3 etc -->
+                    <td>Q{{ i|add:"-11" }}</td>
                     <td>{{ dados.CERTO }}</td>
                     <td>{{ dados.ERRADO }}</td>
                     <td>{{ dados.PARCIAL }}</td>
@@ -77,49 +136,38 @@
         </table>
 
         <h3>📌 Modalidades Identificadas</h3>
-
-        <h4>🟢 Questão 1 de Linguagem (Q11)</h4>
+        <h4>🟢 Questão 1 (Q11)</h4>
         <table>
-            <thead>
-                <tr>
-                    <th>CC</th>
-                    <th>SC</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ unidade.modalidades_q11.CC }}</td>
-                    <td>{{ unidade.modalidades_q11.SC }}</td>
-                </tr>
-            </tbody>
+            <tr><th>CC</th><th>SC</th></tr>
+            <tr>
+                <td>{{ unidade.modalidades_q11.CC }}</td>
+                <td>{{ unidade.modalidades_q11.SC }}</td>
+            </tr>
         </table>
 
-        <h4>🔵 Questão 3 de Linguagem (Q13)</h4>
+        <h4>🔵 Questão 3 (Q13)</h4>
         <table>
-            <thead>
-                <tr>
-                    <th>PSI</th>
-                    <th>PSII</th>
-                    <th>SSVS</th>
-                    <th>SCVS</th>
-                    <th>SA</th>
-                    <th>ALF</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>{{ unidade.modalidades_q13.PSI }}</td>
-                    <td>{{ unidade.modalidades_q13.PSII }}</td>
-                    <td>{{ unidade.modalidades_q13.SSVS }}</td>
-                    <td>{{ unidade.modalidades_q13.SCVS }}</td>
-                    <td>{{ unidade.modalidades_q13.SA }}</td>
-                    <td>{{ unidade.modalidades_q13.ALF }}</td>
-                </tr>
-            </tbody>
+            <tr>
+                <th>PSI</th><th>PSII</th><th>SSVS</th><th>SCVS</th><th>SA</th><th>ALF</th>
+            </tr>
+            <tr>
+                <td>{{ unidade.modalidades_q13.PSI }}</td>
+                <td>{{ unidade.modalidades_q13.PSII }}</td>
+                <td>{{ unidade.modalidades_q13.SSVS }}</td>
+                <td>{{ unidade.modalidades_q13.SCVS }}</td>
+                <td>{{ unidade.modalidades_q13.SA }}</td>
+                <td>{{ unidade.modalidades_q13.ALF }}</td>
+            </tr>
         </table>
 
         <hr>
     {% endfor %}
+</div>
+
+<!-- Rodapé -->
+<div class="footer">
+    <img src="{{ cabecalho_inferior }}" alt="Rodapé">
+</div>
 
 </body>
 </html>

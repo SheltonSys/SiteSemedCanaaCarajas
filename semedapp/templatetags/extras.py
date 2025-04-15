@@ -8,3 +8,8 @@ def dict_get(d, key):
     if isinstance(d, dict):
         return d.get(key, '')
     return ''
+
+
+@register.filter
+def dict(d, key):
+    return d.get(key, '')

@@ -1014,7 +1014,7 @@ urlpatterns = [
 
 
     path('relatorio/gerar-mapeamento/', views.gerar_pdf_mapeamento, name='gerar_pdf_mapeamento'),
-    path('relatorio/gerar-detalhado/', views.gerar_pdf_detalhado, name='gerar_pdf_detalhado'),
+    # path('relatorio/gerar-detalhado/', views.gerar_pdf_detalhado, name='gerar_pdf_detalhado'),
 
     path('relatorio/saida-rede/', relatorio_saida_rede, name='relatorio_saida_rede'),
 

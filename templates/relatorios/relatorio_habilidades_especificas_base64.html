@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Habilidades Específicas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            margin: 100px 30px 100px 30px;
+        }
+        .header, .footer img {
+            width: 100%;
+        }
+        .descricao {
+            font-size: 13pt;
+            font-weight: bold;
+            margin-top: 30px;
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 10pt;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+        th {
+            background-color: #f0f0f0;
+        }
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Cabeçalho -->
+<div class="header">
+    <img src="{{ cabecalho_superior }}" alt="Cabeçalho">
+</div>
+
+<h1>Relatório de Habilidades Específicas</h1>
+
+{% for cod, info in dados.items %}
+    <div class="descricao">{{ cod }} – {{ info.descricao }}</div>
+
+    <table>
+        <thead>
+            <tr>
+                {% for modalidade in modalidades %}
+                    <th>{{ modalidade }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for modalidade in modalidades %}
+                    <td>{{ info.totais_modalidade|dict_get:modalidade }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+
+    <table>
+        <thead>
+            <tr>
+                {% for avaliacao in avaliacoes %}
+                    <th>{{ avaliacao }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for avaliacao in avaliacoes %}
+                    <td>{{ info.totais_avaliacao|dict_get:avaliacao }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+{% endfor %}
+
+<!-- Rodapé -->
+<div class="footer">
+    <img src="{{ cabecalho_inferior }}" alt="Rodapé">
+</div>
+
+</body>
+</html>

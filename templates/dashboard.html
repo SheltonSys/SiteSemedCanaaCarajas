@@ -55,6 +55,76 @@
             </div>
         </div>
 
+
+<!-- Área de Filtros Estilizada -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title fw-bold mb-0">
+            <i class="fas fa-filter me-2"></i> Filtros de Pesquisa - PDDE
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'sintese_pdde' %}" id="filtrosForm">
+            <div class="row g-3">
+
+                <!-- Escola -->
+                <div class="col-md-4">
+                    <label for="escola" class="form-label">Escola</label>
+                    <select name="escola" id="escola" class="form-select">
+                        <option value="">Todas</option>
+                        {% for escola in escolas %}
+                            <option value="{{ escola.id }}" {% if request.GET.escola == escola.id|stringformat:"s" %}selected{% endif %}>
+                                {{ escola.nome }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Ano -->
+                <div class="col-md-4">
+                    <label for="ano" class="form-label">Ano</label>
+                    <select name="ano" id="ano" class="form-select">
+                        <option value="">Todos</option>
+                        {% for ano in anos %}
+                            <option value="{{ ano }}" {% if request.GET.ano == ano|stringformat:"s" %}selected{% endif %}>
+                                {{ ano }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Programa -->
+                <div class="col-md-4">
+                    <label for="programa" class="form-label">Programa</label>
+                    <select name="programa" id="programa" class="form-select">
+                        <option value="">Todos</option>
+                        {% for p in programas %}
+                            <option value="{{ p }}" {% if request.GET.programa == p %}selected{% endif %}>
+                                {{ p }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                <button type="reset" class="btn btn-secondary" onclick="limparFiltros()">
+                    <i class="fas fa-undo"></i> Limpar Filtros
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+
         <!-- Gráfico Resumo -->
         <div class="card shadow-lg border-0 mb-4">
             <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
@@ -175,15 +245,10 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('graficoResumo').getContext('2d');
-
     fetch('/contas/sintese-receita/')
         .then(response => response.json())
         .then(data => {
             const s = data.sintese;
-
-
-            
-            
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -219,48 +284,54 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    fetch('/contas/sintese-receita/')
-        .then(response => response.json())
-        .then(data => {
-            const r = data.sintese.resumo_cards;
-
-            document.querySelector('.receita-total').textContent = `R$ ${formatarValor(r.receita_total)}`;
-            document.querySelector('.despesa-total').textContent = `R$ ${formatarValor(r.despesa_total)}`;
-            document.querySelector('.saldo-reprogramado').textContent = `R$ ${formatarValor(r.saldo_reprogramado)}`;
-            document.querySelector('.percentual-execucao').textContent = `${r.percentual_execucao}%`;
-            document.querySelector('.ultimo-lancamento').textContent = "--"; // ajuste depois
-
-            document.querySelector('.recursos-proprios').textContent = `R$ ${formatarValor(r.recursos_proprios)}`;
-            document.querySelector('.rendimentos-aplicacao').textContent = `R$ ${formatarValor(r.rendimentos_aplicacao)}`;
-            document.querySelector('.devolucoes-fnde').textContent = `R$ ${formatarValor(r.devolucoes_fnde)}`;
-            document.querySelector('.escolas-atendidas').textContent = r.escolas_atendidas;
-
-            const situacao = document.querySelector('.situacao-financeira');
-            situacao.classList.remove('text-success', 'text-danger', 'text-warning');
-            if (r.percentual_execucao >= 100) {
-                situacao.textContent = 'Positiva';
-                situacao.classList.add('text-success');
-            } else if (r.percentual_execucao <= 30) {
-                situacao.textContent = 'Negativa';
-                situacao.classList.add('text-danger');
-            } else {
-                situacao.textContent = 'Neutra';
-                situacao.classList.add('text-warning');
-            }
-        })
-        .catch(error => {
-            console.error('❌ Erro ao carregar dados dos cards:', error);
-        });
-
-    function formatarValor(valor) {
-        return parseFloat(valor).toLocaleString('pt-BR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-    }
-});
-
+        fetch('/contas/sintese-receita/')
+            .then(response => response.json())
+            .then(data => {
+                const r = data.sintese.resumo_cards;
+    
+                // Valores financeiros
+                document.querySelector('.receita-total').textContent = `R$ ${formatarValor(r.receita_total)}`;
+                document.querySelector('.despesa-total').textContent = `R$ ${formatarValor(r.despesa_total)}`;
+                document.querySelector('.saldo-reprogramado').textContent = `R$ ${formatarValor(r.saldo_reprogramado)}`;
+                document.querySelector('.percentual-execucao').textContent = `${r.percentual_execucao}%`;
+                document.querySelector('.ultimo-lancamento').textContent = "--"; // ajuste depois
+                document.querySelector('.recursos-proprios').textContent = `R$ ${formatarValor(r.recursos_proprios)}`;
+                document.querySelector('.rendimentos-aplicacao').textContent = `R$ ${formatarValor(r.rendimentos_aplicacao)}`;
+                document.querySelector('.devolucoes-fnde').textContent = `R$ ${formatarValor(r.devolucoes_fnde)}`;
+                document.querySelector('.escolas-atendidas').textContent = r.escolas_atendidas;
+    
+                // Situação financeira
+                const situacao = document.querySelector('.situacao-financeira');
+                situacao.classList.remove('text-success', 'text-danger', 'text-warning');
+                if (r.percentual_execucao >= 100) {
+                    situacao.textContent = 'Positiva';
+                    situacao.classList.add('text-success');
+                } else if (r.percentual_execucao <= 30) {
+                    situacao.textContent = 'Negativa';
+                    situacao.classList.add('text-danger');
+                } else {
+                    situacao.textContent = 'Neutra';
+                    situacao.classList.add('text-warning');
+                }
+    
+                // 🏫 Contagem de escolas, membros e certidões
+                document.querySelector('.total-escolas').textContent = r.total_escolas;
+                document.querySelector('.total-membros').textContent = r.total_membros;
+                document.querySelector('.total-certidoes').textContent = r.total_certidoes;
+            })
+            .catch(error => {
+                console.error('❌ Erro ao carregar dados dos cards:', error);
+            });
+    
+        function formatarValor(valor) {
+            return parseFloat(valor).toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            });
+        }
+    });
     </script>
+    
     
 
 <style>

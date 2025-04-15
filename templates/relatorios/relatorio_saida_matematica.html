@@ -1,18 +1,82 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>{{ titulo }}</title>
+    <meta charset="utf-8">
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; margin: 20px; }
-        h2 { text-align: center; font-size: 16px; margin-top: 30px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-        th, td { border: 1px solid #000; padding: 4px; text-align: center; }
-        th { background-color: #f0f0f0; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 100px 30px 30px 30px; /* espaço para cabeçalho e rodapé */
+        }
+    
+        .header img,
+        .footer img {
+            width: 100%;
+        }
+    
+        .header {
+            position: absolute;
+            top: -80px;
+            left: 0;
+            right: 0;
+        }
+    
+        .footer {
+            position: absolute;
+            bottom: -10px; /* ajustado para mais abaixo */
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+        }
+    
+        .content {
+            margin-top: 20px;
+        }
+    
+        h1 {
+            text-align: center;
+            font-size: 16pt;
+            margin-bottom: 30px;
+        }
+    
+        h2 {
+            text-align: center;
+            margin-top: 50px;
+            font-size: 13pt;
+        }
+    
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+            font-size: 10pt;
+        }
+    
+        th, td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+        }
+    
+        th {
+            background-color: #f0f0f0;
+        }
     </style>
+    
 </head>
 <body>
-    <h1 style="text-align: center;">{{ titulo }}</h1>
+
+<!-- Cabeçalho -->
+<div class="header">
+    <img src="{{ cabecalho_path }}" alt="Cabeçalho">
+</div>
+
+
+
+<!-- Conteúdo -->
+<div class="content">
+    <h1>{{ titulo }}</h1>
 
     {% for escola, questoes in resultado_matematica.items %}
         <h2>{{ escola }}</h2>
@@ -43,5 +107,14 @@
             </tbody>
         </table>
     {% endfor %}
+</div>
+
+
+<!-- Rodapé -->
+<div class="footer">
+    <img src="{{ rodape_path }}" alt="Rodapé">
+    <!-- <div>Sistema SIEDGE – Secretaria Municipal de Educação de Canaã dos Carajás</div> -->
+</div>
+
 </body>
 </html>

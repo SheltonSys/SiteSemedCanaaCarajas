@@ -7,31 +7,34 @@
     <title>Relatório de Habilidades Específicas</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
-            background-color: #fff;
-            color: #2c3e50;
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            margin: 20px 30px 20px 30px;
+        }
+
+        .header img,
+        .footer img {
+            width: 100%;
         }
 
         h1 {
             text-align: center;
-            font-size: 22pt;
-            margin-bottom: 50px;
-            text-transform: uppercase;
+            font-size: 14pt;
+            margin: 0 0 25px 0;
             color: #1a252f;
+            text-transform: uppercase;
         }
 
         .descricao {
-            font-size: 13pt;
+            font-size: 11pt;
             font-weight: bold;
-            margin-top: 35px;
-            margin-bottom: 10px;
+            margin: 15px 0 5px;
             color: #2c3e50;
         }
 
         h4 {
-            margin: 10px 0 6px;
-            font-size: 11pt;
+            font-size: 10pt;
+            margin: 5px 0;
             color: #2c3e50;
             text-transform: uppercase;
         }
@@ -39,20 +42,19 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 25px;
-            font-size: 10pt;
+            margin-bottom: 10px;
+            font-size: 9pt;
         }
 
         th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
+            border: 1px solid #999;
+            padding: 4px 6px;
             text-align: center;
         }
 
         th {
-            background-color: #ecf0f1;
-            color: #2c3e50;
-            font-weight: bold;
+            background-color: #f0f0f0;
+            color: #333;
         }
 
         tr:nth-child(even) td {
@@ -60,62 +62,63 @@
         }
 
         .footer {
-            text-align: center;
-            font-size: 10pt;
-            color: #999;
-            margin-top: 60px;
-            border-top: 1px solid #ddd;
-            padding-top: 12px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
 
-    <h1>Relatório de Habilidades Específicas</h1>
+<!-- Cabeçalho -->
+<div class="header">
+    <img src="{{ cabecalho_superior }}" alt="Cabeçalho">
+</div>
 
-    {% for cod, info in dados.items %}
-        <div class="descricao">{{ cod }} – {{ info.descricao }}</div>
+<h1>Relatório de Habilidades Específicas</h1>
 
-        <h4>Totais por Modalidade</h4>
-        <table>
-            <thead>
-                <tr>
-                    {% for modalidade in modalidades %}
-                        <th>{{ modalidade }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    {% for modalidade in modalidades %}
-                        <td>{{ info.totais_modalidade|dict_get:modalidade }}</td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
+{% for cod, info in dados.items %}
+    <div class="descricao">{{ cod }} – {{ info.descricao }}</div>
 
-        <h4>Totais por Tipo de Resposta</h4>
-        <table>
-            <thead>
-                <tr>
-                    {% for avaliacao in avaliacoes %}
-                        <th>{{ avaliacao }}</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    {% for avaliacao in avaliacoes %}
-                        <td>{{ info.totais_avaliacao|dict_get:avaliacao }}</td>
-                    {% endfor %}
-                </tr>
-            </tbody>
-        </table>
-    {% endfor %}
+    <h4>Totais por Modalidade</h4>
+    <table>
+        <thead>
+            <tr>
+                {% for modalidade in modalidades %}
+                    <th>{{ modalidade }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for modalidade in modalidades %}
+                    <td>{{ info.totais_modalidade|dict:modalidade }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
 
-    <div class="footer">
-        Sistema SIEDGE – Secretaria Municipal de Educação de Canaã dos Carajás
-    </div>
+    <h4>Totais por Tipo de Resposta</h4>
+    <table>
+        <thead>
+            <tr>
+                {% for avaliacao in avaliacoes %}
+                    <th>{{ avaliacao }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% for avaliacao in avaliacoes %}
+                    <td>{{ info.totais_avaliacao|dict:avaliacao }}</td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+{% endfor %}
+
+<!-- Rodapé -->
+<div class="footer">
+    <img src="{{ cabecalho_inferior }}" alt="Rodapé">
+</div>
 
 </body>
 </html>

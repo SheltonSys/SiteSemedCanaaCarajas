@@ -32,3 +32,8 @@ MESES_PT = {
 @register.filter
 def traduzir_mes(value):
     return MESES_PT.get(value, value)
+
+
+@register.filter
+def dict(d, key):
+    return d.get(key, '')
