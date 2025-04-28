@@ -39,6 +39,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',  # Certifique-se de que está habilitado
+    'middlewares.input_sanitization.InputSanitizationMiddleware',  # <<<<<<
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -164,5 +165,9 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000  # Aumente o valor conforme necessário
 AUTH_USER_MODEL = 'semedapp.CustomUserProf'
 
 
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = True  # se estiver usando HTTPS
+CSRF_COOKIE_SECURE = True
 
 

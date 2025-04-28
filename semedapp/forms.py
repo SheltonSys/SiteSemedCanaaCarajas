@@ -913,3 +913,9 @@ class PlanoGestaoEscolarForm(forms.ModelForm):
             'arquivo': forms.FileInput(attrs={'class': 'form-control'}),
         }
 # *******************************************************************************************************************
+from django.utils.html import strip_tags
+
+
+def clean_descricao(self):
+    data = self.cleaned_data['descricao']
+    return strip_tags(data)
