@@ -1,154 +1,226 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login</title>
-    <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
-    <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        body {
-            background: url("{% static 'assets/dist/img/imagemCanaa555.webp' %}") no-repeat center center fixed;
-            background-size: cover;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - SEMED | SIEDGE</title>
+  <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+    }
+
+    body {
+        display: flex;
+        overflow: hidden;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    .left-panel {
+        background-color: rgba(255, 255, 255, 0.95);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        padding: 40px;
+        width: 50%;
+    }
+
+    .right-panel {
+        background: url("{% static 'assets/dist/img/imagemFundoEscola.jpeg' %}") no-repeat center center;
+        background-size: cover;
+        width: 50%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .right-panel::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        background: rgba(0, 32, 91, 0.5);
+        /* camada de transparência azul */
+    }
+
+    /* Novo posicionamento da logo no canto direito */
+    .logo-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        /* >>> agora no canto direito! <<< */
+        z-index: 2;
+    }
+
+    .logo-overlay img {
+        max-width: 180px;
+        filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3));
+    }
+
+    .login-box {
+        width: 100%;
+        max-width: 400px;
+    }
+
+    .toggle-password {
+        cursor: pointer;
+    }
+
+    .branding {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .branding img {
+        max-width: 100px;
+        margin-bottom: 10px;
+    }
+
+    .branding h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .branding small {
+        display: block;
+        margin-top: 5px;
+        color: #555;
+    }
+
+    @media (max-width: 768px) {
+
+        .left-panel,
+        .right-panel {
+            width: 100%;
         }
-        .login-box {
-            padding: 5px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+
+        .right-panel {
+            display: none;
         }
-        .card {
-            background-color: rgba(255, 255, 255, 0.6);
-            border-radius: 10px;
-            padding: 5px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-        }
-        .toggle-password {
-            cursor: pointer;
-        }
-    </style>
+    }
+</style>
 </head>
-<body class="d-flex justify-content-center align-items-center vh-100">
+<body>
 
-    <div class="login-box">
+<!-- Painel da Esquerda: Login -->
+<div class="left-panel d-flex flex-column justify-content-center align-items-center bg-stone">
 
-        <div class="card card-outline card-primary">
-            
-            <div class="card-header text-center">
-                <img src="{% static 'assets/dist/img/AdminLTELogo55335.png' %}" alt="Logo SEMED" style="max-width: 150px; margin-bottom: 10px;"><br>
-                <a href="#" class="h1"><b>Semed</b>|SIEDGE</a>
-            </div>
-            
-            <div class="card-body">
-                <p class="login-box-msg"><b>Sistema Integrado de Educação e Gestão</b></p>
-                <form action="{% url 'login' %}" method="post" onsubmit="startProcessing(event)">
-                    {% csrf_token %}
-                    <div class="input-group mb-3">
-                        <input type="text" name="username" class="form-control" placeholder="Usuário" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-user"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="input-group mb-3">
-                        <input type="password" name="password" id="password" class="form-control" placeholder="Senha" required>
-                        <div class="input-group-append">
-                            <div class="input-group-text">
-                                <span class="fas fa-lock toggle-password" onclick="togglePasswordVisibility()"></span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12">
-                            <button id="submit-button" type="submit" class="btn btn-primary btn-block">
-                                Entrar
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
+    <div class="login-box text-center p-5 shadow-lg rounded-3" style="width: 100%; max-width: 500px;">
+
+        <!-- Ícone de Usuário no topo -->
+        <div class="mb-4">
+            <i class="fas fa-user-circle" style="font-size: 80px; color: #0d6efd;"></i>
         </div>
+
+        <!-- Título -->
+        <h2 class="mb-3 font-weight-bold" style="font-size: 32px; color: #0d6efd;">SEMED | SIEDGE</h2>
+        <p class="text-muted mb-5" style="font-size: 20px;"><b>Sistema Integrado de Educação e Gestão</b></p>
+
+        <!-- Formulário -->
+        <form id="loginForm" action="{% url 'login' %}" method="post" onsubmit="startProcessing(event)">
+            {% csrf_token %}
+
+            <!-- Campo Usuário -->
+            <div class="form-group mb-4">
+                <div class="input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-light border-right-0">
+                            <i class="fas fa-user"></i>
+                        </span>
+                    </div>
+                    <input type="text" name="username" id="username" class="form-control border-left-0"
+                        placeholder="Digite seu usuário" required autofocus>
+                </div>
+            </div>
+
+            <!-- Campo Senha -->
+            <div class="form-group mb-5">
+                <div class="input-group input-group-lg">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text bg-light border-right-0">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                    </div>
+                    <input type="password" name="password" id="password" class="form-control border-left-0"
+                        placeholder="Digite sua senha" required>
+                    <div class="input-group-append">
+                        <span class="input-group-text bg-light toggle-password" onclick="togglePasswordVisibility()">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão de Login -->
+            <button id="submit-button" type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold"
+                style="font-size: 20px;">
+                <i class="fas fa-sign-in-alt mr-2"></i> Entrar
+            </button>
+
+        </form>
+
+        <!-- Rodapé pequeno -->
+        <div class="text-center mt-5">
+            <small class="text-muted" style="font-size: 20px;">
+                <b>Secretaria Municipal de Educação de Canaã dos Carajás © {{ now|date:"Y" }}</b>
+              </small>
+              
+        </div>
+
     </div>
+</div>
 
-    <script>
-        // Exibir mensagem de sucesso ao logar
-        
+<!-- Painel da Direita: Imagem de fundo + Logo no canto superior direito -->
+<div class="right-panel d-flex position-relative">
+    <div class="logo-overlay">
+        <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED" class="img-fluid">
+    </div>
+</div>
 
-        // Função para visualizar ou ocultar a senha
-        function togglePasswordVisibility() {
-            const passwordField = document.getElementById('password');
-            const toggleIcon = document.querySelector('.toggle-password');
-
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                toggleIcon.classList.remove('fa-lock');
-                toggleIcon.classList.add('fa-lock-open');
-            } else {
-                passwordField.type = 'password';
-                toggleIcon.classList.remove('fa-lock-open');
-                toggleIcon.classList.add('fa-lock');
-            }
-        }
-
-        // Função para "Processando..."
-        function startProcessing(event) {
-            event.preventDefault();
-            const submitButton = document.getElementById('submit-button');
-            submitButton.disabled = true;
-            submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
-
-            setTimeout(() => {
-                event.target.submit();
-            }, 2000);
-        }
-    </script>
-
+<!-- Scripts -->
 <script>
-    document.getElementById('loginForm').addEventListener('submit', async function (event) {
-        event.preventDefault();
+    function togglePasswordVisibility() {
+        const passwordField = document.getElementById('password');
+        const toggleIcon = document.querySelector('.toggle-password i');
 
-        const form = event.target;
-        const formData = new FormData(form);
-
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
-                },
-                body: formData,
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                Swal.fire({
-                    icon: 'success',
-                    title: data.message,
-                    timer: 3000,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = data.redirect_url;
-                });
-            } else {
-                Swal.fire({
-                    icon: 'error',
-                    title: data.message,
-                });
-            }
-        } catch (error) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro ao processar o login. Tente novamente.',
-            });
+        if (passwordField.type === 'password') {
+            passwordField.type = 'text';
+            toggleIcon.classList.remove('fa-eye');
+            toggleIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordField.type = 'password';
+            toggleIcon.classList.remove('fa-eye-slash');
+            toggleIcon.classList.add('fa-eye');
         }
-    });
+    }
+
+
+    function startProcessing(event) {
+        event.preventDefault();
+        const submitButton = document.getElementById('submit-button');
+        submitButton.disabled = true;
+        submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
+
+        setTimeout(() => {
+            event.target.submit();
+        }, 1500);
+    }
+
+
 </script>
 
-    <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
 </body>
+
 </html>

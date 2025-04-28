@@ -39,10 +39,27 @@
 
             <!-- Link de Logout -->
             <li class="nav-item">
-                <a class="nav-link text-danger" href="{% url 'logout' %}">
+                <a id="logoutButton" class="nav-link text-danger" href="{% url 'login' %}" onclick="startLogout(event)">
                     <i class="fas fa-sign-out-alt"></i> SAIR
                 </a>
             </li>
+            
         </ul>
     </div>
 </nav>
+
+
+<script>
+    function startLogout(event) {
+        event.preventDefault();
+        const logoutButton = document.getElementById('logoutButton');
+        
+        logoutButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Saindo...`;
+        logoutButton.classList.add('disabled');
+    
+        setTimeout(() => {
+            window.location.href = logoutButton.href; // redireciona para a URL do botão (login)
+        }, 2500);
+    }
+    </script>
+    
