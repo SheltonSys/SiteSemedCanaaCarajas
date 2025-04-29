@@ -12617,3 +12617,58 @@ def get_sintese_dinamica(request):
 
 def sintese_pdde_view(request):
     return render(request, 'pdde/sintese_pdde.html')
+
+
+
+###***********************************************************************************************************************
+###*************************AUTENTICAÇÃO DOIS FATORES ********************************************************************
+###***********************************************************************************************************************
+from django.contrib.auth import authenticate, login
+from django.http import JsonResponse
+import random
+from django.contrib.auth.models import User
+from django.contrib.auth import login as do_login
+
+def login_ajax_view(request):
+    if request.method == 'POST':
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            code = str(random.randint(100000, 999999))
+            request.session['pre_2fa_user_id'] = user.id
+            request.session['2fa_code'] = code
+            return JsonResponse({'status': 'ok', 'codigo': code})
+        else:
+            return JsonResponse({'status': 'erro', 'mensagem': 'Usuário ou senha inválido.'})
+
+
+
+
+from django.http import JsonResponse
+from django.contrib.auth import get_user_model, login as do_login
+
+User = get_user_model()
+
+def verifica_2fa_ajax(request):
+    if request.method == 'POST':
+        input_code = request.POST.get('codigo')
+        if input_code == request.session.get('2fa_code'):
+            user_id = request.session.get('pre_2fa_user_id')
+            user = User.objects.get(id=user_id)
+            do_login(request, user)
+            request.session.pop('2fa_code')
+            request.session.pop('pre_2fa_user_id')
+            return JsonResponse({'status': 'ok'})
+        else:
+            return JsonResponse({'status': 'erro', 'mensagem': 'Código incorreto.'})
+
+
+
+
+
+
+
+
+###***********************************************************************************************************************

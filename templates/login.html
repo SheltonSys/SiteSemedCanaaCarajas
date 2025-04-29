@@ -126,7 +126,8 @@
         <p class="text-muted mb-5" style="font-size: 20px;"><b>Sistema Integrado de Educação e Gestão</b></p>
 
         <!-- Formulário -->
-        <form id="loginForm" action="{% url 'login' %}" method="post" onsubmit="startProcessing(event)">
+        <!-- <form id="loginForm" action="{% url 'login' %}" method="post" onsubmit="startProcessing(event)"> -->
+            <form id="loginForm" onsubmit="loginCom2FA(event)">
             {% csrf_token %}
 
             <!-- Campo Usuário -->
@@ -186,6 +187,12 @@
     </div>
 </div>
 
+
+
+<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+
 <!-- Scripts -->
 <script>
     function togglePasswordVisibility() {
@@ -215,12 +222,74 @@
         }, 1500);
     }
 
-
 </script>
 
-<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
-<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+
+<script>
+    function loginCom2FA(event) {
+        event.preventDefault();
+    
+        const form = document.getElementById("loginForm");
+        const data = new FormData(form);
+        const button = document.getElementById("submit-button");
+    
+        button.disabled = true;
+        button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Verificando...`;
+    
+        fetch("{% url 'login_ajax' %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: data
+        })
+        .then(res => res.json())
+        .then(json => {
+            if (json.status === 'ok') {
+                // Exibe o código e pede confirmação
+                Swal.fire({
+                    title: 'Autenticação em 2 Etapas',
+                    html: `<p>Código de verificação: <b>${json.codigo}</b></p>
+                           <input id="codigo" class="swal2-input" placeholder="Digite o código">`,
+                    confirmButtonText: 'Verificar',
+                    preConfirm: () => document.getElementById('codigo').value
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        const codigo = result.value;
+                        fetch("{% url 'verifica_2fa' %}", {
+                            method: "POST",
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: `codigo=${codigo}`
+                        }).then(res => res.json())
+                          .then(resp => {
+                            if (resp.status === 'ok') {
+                                window.location.href = "/dashboardadmin/";
+                            } else {
+                                Swal.fire('Erro', resp.mensagem, 'error');
+                                button.disabled = false;
+                                button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
+                            }
+                        });
+                    } else {
+                        button.disabled = false;
+                        button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
+                    }
+                });
+            } else {
+                Swal.fire('Erro', json.mensagem, 'error');
+                button.disabled = false;
+                button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
+            }
+        });
+    }
+    </script>
+    
+
+
 </body>
+
 
 </html>

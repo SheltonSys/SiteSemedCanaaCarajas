@@ -135,6 +135,8 @@ from .views import exportar_pptx_saida_rede
 from .views import gerar_pdf_relatorio_geral
 from .views import relatorio_saida_matematica_view
 
+from semedapp.views import login_ajax_view, verifica_2fa_ajax  # ← Adicionado aqui
+
 
 
 
@@ -1037,6 +1039,11 @@ urlpatterns = [
     path('relatorio/saida-matematica/', relatorio_saida_matematica_view, name='relatorio_saida_matematica'),
 
     path("relatorio/matematica-saida/", relatorio_saida_matematica_view, name="relatorio_saida_matematica"),
+
+    path('login-ajax/', login_ajax_view, name='login_ajax'),
+
+    path('verifica-2fa/', verifica_2fa_ajax, name='verifica_2fa'),
+
 
 
     
