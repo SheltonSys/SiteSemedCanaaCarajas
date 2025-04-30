@@ -96,6 +96,54 @@
         color: #555;
     }
 
+    #modal-2fa-overlay {
+    position: fixed;
+    z-index: 9999;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+    }
+
+    .modal-2fa-box {
+        background: #fff;
+        border-radius: 10px;
+        overflow: hidden;
+        width: 95%;
+        max-width: 420px;
+        animation: fadeInUp 0.35s ease;
+        box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-header-custom {
+        background: #0d6efd;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .modal-body-custom {
+        padding: 30px;
+        text-align: center;
+    }
+
+    .animated-zoom {
+        animation: zoomIn 0.3s ease-in-out;
+    }
+
+    @keyframes fadeInUp {
+        from { transform: translateY(30px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes zoomIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
     @media (max-width: 768px) {
 
         .left-panel,
@@ -189,6 +237,31 @@
 
 
 
+<!-- Modal 2FA personalizado -->
+<div id="modal-2fa-overlay" style="display: none;">
+    <div class="modal-2fa-box animated-zoom shadow">
+        <div class="modal-header-custom">
+            <i class="fas fa-shield-alt fa-3x text-white"></i>
+        </div>
+        <div class="modal-body-custom">
+            <h4 class="font-weight-bold text-dark mb-3">Confirmação de Segurança</h4>
+            <p class="text-muted mb-4">Digite o código enviado para validar seu acesso.</p>
+            <div class="alert alert-light border font-monospace mb-4">
+                <span class="text-uppercase text-secondary" style="font-size: 13px;">Código gerado</span><br>
+                <strong id="codigo-gerado" style="font-size: 24px;">******</strong>
+            </div>
+            <input type="text" id="codigo-input" class="form-control form-control-lg text-center mb-4" placeholder="Digite o código" maxlength="6">
+            <button onclick="verificarCodigo2FA()" class="btn btn-primary btn-lg btn-block shadow-sm">
+                <i class="fas fa-check-circle mr-2"></i> Verificar Código
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
@@ -198,7 +271,7 @@
     function togglePasswordVisibility() {
         const passwordField = document.getElementById('password');
         const toggleIcon = document.querySelector('.toggle-password i');
-
+    
         if (passwordField.type === 'password') {
             passwordField.type = 'text';
             toggleIcon.classList.remove('fa-eye');
@@ -209,23 +282,7 @@
             toggleIcon.classList.add('fa-eye');
         }
     }
-
-
-    function startProcessing(event) {
-        event.preventDefault();
-        const submitButton = document.getElementById('submit-button');
-        submitButton.disabled = true;
-        submitButton.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processando...`;
-
-        setTimeout(() => {
-            event.target.submit();
-        }, 1500);
-    }
-
-</script>
-
-
-<script>
+    
     function loginCom2FA(event) {
         event.preventDefault();
     
@@ -246,46 +303,10 @@
         .then(res => res.json())
         .then(json => {
             if (json.status === 'ok') {
-                // Exibe o código de 2FA e modal de digitação
-                Swal.fire({
-                    title: 'Autenticação em 2 Etapas',
-                    html: `<p>Código de verificação: <b>${json.codigo}</b></p>
-                           <input id="codigo" class="swal2-input" placeholder="Digite o código">`,
-                    confirmButtonText: 'Verificar',
-                    preConfirm: () => document.getElementById('codigo').value
-                }).then(result => {
-                    if (result.isConfirmed) {
-                        const codigo = result.value;
-                        fetch("{% url 'verifica_2fa' %}", {
-                            method: "POST",
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}',
-                                'Content-Type': 'application/x-www-form-urlencoded'
-                            },
-                            body: `codigo=${codigo}`
-                        }).then(res => res.json())
-                          .then(resp => {
-                            if (resp.status === 'ok') {
-                                window.location.href = "/dashboardadmin/";
-                            } else {
-                                Swal.fire('Erro', resp.mensagem, 'error');
-                                button.disabled = false;
-                                button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
-                            }
-                        })
-                        .catch(() => {
-                            Swal.fire('Erro', 'Falha na verificação do código.', 'error');
-                            button.disabled = false;
-                            button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
-                        });
-                    } else {
-                        button.disabled = false;
-                        button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
-                    }
-                });
-    
+                // Exibe código e ativa modal
+                document.getElementById("codigo-gerado").textContent = json.codigo;
+                document.getElementById("modal-2fa-overlay").style.display = "flex";
             } else if (json.status === 'inativo') {
-                // Modal especial para usuário inativo
                 Swal.fire({
                     icon: 'warning',
                     title: 'Usuário inativo',
@@ -294,12 +315,10 @@
                 });
                 button.disabled = false;
                 button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
-    
             } else if (json.status === 'erro') {
                 Swal.fire('Erro', json.mensagem, 'error');
                 button.disabled = false;
                 button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
-    
             } else {
                 Swal.fire('Erro', 'Resposta inesperada do servidor.', 'error');
                 button.disabled = false;
@@ -312,7 +331,38 @@
             button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
         });
     }
+    
+    function verificarCodigo2FA() {
+        const codigo = document.getElementById("codigo-input").value;
+        const button = document.getElementById("submit-button");
+    
+        if (codigo.trim().length !== 6 || isNaN(codigo)) {
+            Swal.fire('Aviso', 'Digite um código válido de 6 números.', 'warning');
+            return;
+        }
+    
+        fetch("{% url 'verifica_2fa' %}", {
+            method: "POST",
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `codigo=${codigo}`
+        })
+        .then(res => res.json())
+        .then(resp => {
+            if (resp.status === 'ok') {
+                window.location.href = "/dashboardadmin/";
+            } else {
+                Swal.fire('Erro', resp.mensagem, 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Erro', 'Falha na verificação do código.', 'error');
+        });
+    }
     </script>
+    
     
     
 
