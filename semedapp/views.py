@@ -131,6 +131,10 @@ from semedapp.models import Diretor
 from django.shortcuts import get_object_or_404, redirect
 from .forms import ProfessorForm
 
+from django.core.cache import cache
+from django.utils.timezone import now
+
+
 from django.contrib.auth.backends import ModelBackend
 from django.contrib.auth import get_user_model
 
@@ -145,9 +149,6 @@ from .forms import CurriculoForm, FormacaoForm, ExperienciaForm
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
-
-
-
 
 class Site1Backend(ModelBackend):
     def authenticate(self, request, username=None, password=None, **kwargs):
@@ -12628,26 +12629,45 @@ from django.http import JsonResponse
 import random
 from django.contrib.auth.models import User
 from django.contrib.auth import login as do_login
+from django.contrib.auth import get_user_model, login as do_login
+from django.contrib.auth import authenticate, get_user_model
+
+User = get_user_model()
 
 def login_ajax_view(request):
     if request.method == 'POST':
         username = request.POST.get("username")
         password = request.POST.get("password")
+        ip = request.META.get('REMOTE_ADDR')
+
+        cache_key = f'login_fails_{ip}'
+        fails = cache.get(cache_key, 0)
+
+        if fails >= 5:
+            return JsonResponse({
+                'status': 'erro',
+                'mensagem': 'Muitas tentativas falhadas. Tente novamente em 15 minutos.'
+            })
+
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
-            code = str(random.randint(100000, 999999))
-            request.session['pre_2fa_user_id'] = user.id
-            request.session['2fa_code'] = code
-            return JsonResponse({'status': 'ok', 'codigo': code})
+            if user.is_active:
+                # Login válido, zera falhas
+                cache.delete(cache_key)
+
+                code = str(random.randint(100000, 999999))
+                request.session['pre_2fa_user_id'] = user.id
+                request.session['2fa_code'] = code
+
+                return JsonResponse({'status': 'ok', 'codigo': code})
+            else:
+                return JsonResponse({'status': 'inativo', 'mensagem': 'Seu usuário está inativo. Contate o administrador.'})
         else:
+            cache.set(cache_key, fails + 1, timeout=900)  # 15 minutos
             return JsonResponse({'status': 'erro', 'mensagem': 'Usuário ou senha inválido.'})
 
 
-
-
-from django.http import JsonResponse
-from django.contrib.auth import get_user_model, login as do_login
 
 User = get_user_model()
 
@@ -12664,11 +12684,6 @@ def verifica_2fa_ajax(request):
         else:
             return JsonResponse({'status': 'erro', 'mensagem': 'Código incorreto.'})
 
-
-
-
-
-
-
-
+###***********************************************************************************************************************
+###************************************************FIM********************************************************************
 ###***********************************************************************************************************************

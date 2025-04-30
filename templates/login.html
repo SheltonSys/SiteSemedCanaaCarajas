@@ -246,7 +246,7 @@
         .then(res => res.json())
         .then(json => {
             if (json.status === 'ok') {
-                // Exibe o código e pede confirmação
+                // Exibe o código de 2FA e modal de digitação
                 Swal.fire({
                     title: 'Autenticação em 2 Etapas',
                     html: `<p>Código de verificação: <b>${json.codigo}</b></p>
@@ -272,20 +272,48 @@
                                 button.disabled = false;
                                 button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
                             }
+                        })
+                        .catch(() => {
+                            Swal.fire('Erro', 'Falha na verificação do código.', 'error');
+                            button.disabled = false;
+                            button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
                         });
                     } else {
                         button.disabled = false;
                         button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
                     }
                 });
-            } else {
+    
+            } else if (json.status === 'inativo') {
+                // Modal especial para usuário inativo
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Usuário inativo',
+                    html: json.mensagem + '<br>O acesso foi bloqueado para sua segurança.',
+                    confirmButtonText: 'OK'
+                });
+                button.disabled = false;
+                button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
+    
+            } else if (json.status === 'erro') {
                 Swal.fire('Erro', json.mensagem, 'error');
                 button.disabled = false;
                 button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
+    
+            } else {
+                Swal.fire('Erro', 'Resposta inesperada do servidor.', 'error');
+                button.disabled = false;
+                button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
             }
+        })
+        .catch(() => {
+            Swal.fire('Erro', 'Falha na comunicação com o servidor.', 'error');
+            button.disabled = false;
+            button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
         });
     }
     </script>
+    
     
 
 
