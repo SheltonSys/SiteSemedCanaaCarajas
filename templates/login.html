@@ -134,6 +134,21 @@
         animation: zoomIn 0.3s ease-in-out;
     }
 
+    .swal-custom-popup {
+    border-radius: 12px !important;
+    padding: 30px !important;
+    font-family: 'Roboto', sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3) !important;
+    }
+    .swal2-popup .btn-primary {
+        padding: 8px 22px;
+        font-weight: bold;
+        font-size: 16px;
+        border-radius: 6px;
+    }
+
+
+
     @keyframes fadeInUp {
         from { transform: translateY(30px); opacity: 0; }
         to { transform: translateY(0); opacity: 1; }
@@ -316,7 +331,17 @@
                 button.disabled = false;
                 button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
             } else if (json.status === 'erro') {
-                Swal.fire('Erro', json.mensagem, 'error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: json.mensagem,
+                    confirmButtonText: 'OK',
+                    backdrop: false,
+                    customClass: {
+                        popup: 'swal-custom-popup'
+                    }
+                });
+
                 button.disabled = false;
                 button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
             } else {
