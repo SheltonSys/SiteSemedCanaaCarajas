@@ -6,6 +6,10 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+MAINTENANCE_MODE = False  # Altere para True durante a manutenção
+
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -30,28 +34,44 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'semedapp',
     'widget_tweaks',
+    'django_otp',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_static',  # ← ESSENCIAL para o pacote funcionar!
 
 ]
 
 MIDDLEWARE = [
-    
     'django.middleware.security.SecurityMiddleware',
+
+    # Sessão e autenticação primeiro
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # Certifique-se de que está habilitado
-    'semedweb.middlewares.input_sanitization.InputSanitizationMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+
+    # Autenticação antes da manutenção
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+
+    # Agora pode verificar request.user com segurança
+    'semedweb.middlewares.maintenance_mode.MaintenanceModeMiddleware',
+
+    # Demais middlewares personalizados
+    'semedweb.middlewares.input_sanitization.InputSanitizationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'semedapp.middleware.AccessLogMiddleware',
 ]
+
 
 ROOT_URLCONF = 'semedweb.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [
+            BASE_DIR / 'templates',
+            # BASE_DIR / 'semedapp' / 'templates',  # ← Adicionado
+        ],
+
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

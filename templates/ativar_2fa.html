@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Ativar 2FA - SIEDGE</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
+        .qr-box { padding: 20px; background: #f4f6f9; border-radius: 12px; display: inline-block; }
+        img { width: 200px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <h2>Ativação do Google Authenticator</h2>
+    {% if qr_code %}
+        <p>Escaneie o QR Code abaixo com seu app Google Authenticator:</p>
+        <div class="qr-box">
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code">
+        </div>
+        <p>Após escanear, o app irá gerar códigos de 6 dígitos a cada 30 segundos.</p>
+    {% elif msg %}
+        <p>{{ msg }}</p>
+    {% endif %}
+</body>
+</html>

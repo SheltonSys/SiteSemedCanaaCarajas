@@ -135,10 +135,21 @@ from .views import exportar_pptx_saida_rede
 from .views import gerar_pdf_relatorio_geral
 from .views import relatorio_saida_matematica_view
 
+from .views import recuperar_senha_ajax  # ou from .views_senha import recuperar_senha_ajax
+
 from semedapp.views import login_ajax_view, verifica_2fa_ajax  # ← Adicionado aqui
+from .views import (
+    RecuperarSenhaView,
+    EmailEnviadoView,
+    ResetarSenhaView,
+    ConcluidoView
+)
 
+from django.urls import path
+from .views import recuperar_senha_curriculo_ajax
+from django.contrib.auth.views import PasswordResetConfirmView, PasswordResetCompleteView
 
-
+from .views import recuperar_senha_curriculo_ajax, ResetarSenhaCandidatoView, ConcluidoSenhaCandidatoView
 
 
 from .views import (
@@ -294,8 +305,6 @@ urlpatterns = [
     path('livro-caixa/editar/<int:id>/', views.editar_livro_caixa, name='editar_livro_caixa'),
     path('livro-caixa/excluir/<int:id>/', views.excluir_livro_caixa, name='excluir_livro_caixa'),
     path('livro-caixa/escola-info/<int:escola_id>/', views.escola_info, name='get_escola_info'),
-
-
 
 
 
@@ -1044,6 +1053,26 @@ urlpatterns = [
 
     path('verifica-2fa/', verifica_2fa_ajax, name='verifica_2fa'),
 
+    ############################################################################################################################################################
+    ############################################################################################################################################################
+    path('senha/recuperar/', RecuperarSenhaView.as_view(), name='password_reset'),
+    path('senha/email-enviado/', EmailEnviadoView.as_view(), name='password_reset_done'),
+    path('senha/resetar/<uidb64>/<token>/', ResetarSenhaView.as_view(), name='password_reset_confirm'),
+    path('senha/concluido/', ConcluidoView.as_view(), name='password_reset_complete'),
+    
+
+    path('recuperar-senha/ajax/', recuperar_senha_ajax, name='recuperar_senha_ajax'),
+    path('senha/resetar/<uidb64>/<token>/', ResetarSenhaView.as_view(), name='password_reset_confirm'),
+
+
+    path('banco-curriculos/recuperar-senha/', recuperar_senha_curriculo_ajax, name='recuperar_senha_curriculo_ajax'),
+    path('banco-curriculos/resetar/<uidb64>/<token>/', ResetarSenhaCandidatoView.as_view(), name='resetar_senha_candidato'),
+    path('banco-curriculos/sucesso/', ConcluidoSenhaCandidatoView.as_view(), name='senha_candidato_sucesso'),
+
+    path("banco-curriculos/sucesso/", ConcluidoSenhaCandidatoView.as_view(), name="concluido_senha_candidato"),
+
+    ############################################################################################################################################################
+    ############################################################################################################################################################
 
 
     

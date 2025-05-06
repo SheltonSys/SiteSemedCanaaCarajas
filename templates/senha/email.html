@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Redefinição de Senha - SEMED | SIEDGE</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f6f9; padding: 30px;">
+
+  <table align="center" width="100%" style="max-width: 600px; background-color: white; border-radius: 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); padding: 40px;">
+    <tr>
+      <td align="center" style="padding-bottom: 20px;">
+        <img src="{{ logo_url }}" alt="SEMED | SIEDGE" style="max-width: 160px;">
+      </td>
+    </tr>
+    <tr>
+      <td style="color: #333; font-size: 16px; line-height: 1.6;">
+        <p>Olá <strong>{{ user.get_full_name|default:user.username }}</strong>,</p>
+
+        <p>Você solicitou a redefinição de sua senha no sistema <strong>SEMED | SIEDGE</strong>.</p>
+
+        <p>Para criar uma nova senha, clique no botão abaixo:</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="{{ reset_url }}" style="display: inline-block; background-color: #0d6efd; color: white; text-decoration: none; padding: 14px 28px; border-radius: 6px; font-size: 16px; font-weight: bold;">
+            Redefinir Senha
+          </a>
+        </div>
+
+        <p>Se você não solicitou essa alteração, apenas ignore este e-mail. Nenhuma ação será realizada.</p>
+
+        <p style="margin-top: 40px; font-size: 14px; color: #999;">Atenciosamente,<br>Equipe SEMED | SIEDGE</p>
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>

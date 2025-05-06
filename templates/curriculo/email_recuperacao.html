@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; background: #f4f6f9; padding: 30px;">
+  <table align="center" width="100%" style="max-width: 600px; background: #ffffff; border-radius: 8px; box-shadow: 0 0 12px rgba(0,0,0,0.1); padding: 30px;">
+    <tr>
+      <td align="center" style="padding-bottom: 20px;">
+        <img src="{{ logo_url }}" alt="Banco de Currículos" style="max-width: 160px;">
+      </td>
+    </tr>
+    <tr>
+      <td style="font-size: 16px; color: #333;">
+        <p>Olá {{ user.get_full_name|default:user.email }},</p>
+        <p>Você solicitou a redefinição da sua senha no sistema <strong>Banco de Currículos</strong>.</p>
+        <p>Para redefinir sua senha, clique no botão abaixo:</p>
+        <p style="text-align: center; margin: 30px 0;">
+          <a href="{{ reset_url }}" style="background: #0d6efd; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 5px; font-weight: bold;">
+            Redefinir Senha
+          </a>
+        </p>
+        <p>Se você não solicitou essa ação, apenas ignore este e-mail.</p>
+        <p style="margin-top: 30px; font-size: 14px; color: #999;">Atenciosamente,<br>Sistema Banco de Currículos</p>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

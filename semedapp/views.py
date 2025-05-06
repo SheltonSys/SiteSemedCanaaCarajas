@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import redirect
 from django.contrib.auth import logout
 from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 from django.urls import reverse
 from django.http import JsonResponse
@@ -69,7 +69,7 @@ from django.conf import settings
 from django.templatetags.static import static
 from django.contrib.messages import get_messages
 from .models import Student, UploadedFile
-from django.contrib.auth.models import User  # Importe o modelo padrão do Django
+from django.contrib.auth import get_user_model
 from semedapp.models import IndicadoresTransporte
 from .models import IndicadoresTransporte
 from django.db.models import Count
@@ -92,7 +92,7 @@ from semedapp.forms import DiretorForm  # Certifique-se de que o formulário est
 from .models import Curriculo
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import CandidatoAutenticado
 from django.contrib import messages
 from django.db import IntegrityError
@@ -108,7 +108,7 @@ logger = logging.getLogger(__name__)
 
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from .models import CadastroCandidato
 from django.contrib import messages
 from .forms import TipoDemandaForm
@@ -4371,7 +4371,7 @@ def gerar_qrcode(request, diretor_id):
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate, login
 from .models import CadastroCandidato
 
@@ -4924,7 +4924,7 @@ def editar_perfil(request):
     return JsonResponse({"error": True, "message": "Método inválido"}, status=400)
 ###***********************************************************************************************************************
 
-# from django.contrib.auth.models import User
+# from django.contrib.auth import get_user_model
 # from .models import Candidato
 
 # # Exemplo ao criar um novo candidato
@@ -5064,7 +5064,7 @@ def editar_curriculo(request, candidato_id):
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.conf import settings
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 def recuperar_senha(request):
     if request.method == "POST":
@@ -5130,7 +5130,7 @@ from django.contrib import messages
 from django.urls import reverse
 import uuid
 from django.http import JsonResponse
-from django.contrib.auth.models import User  # Certifique-se de importar o modelo correto
+from django.contrib.auth import get_user_model
 
 def enviar_link_recuperacao(request):
     if request.method == "POST":
@@ -6768,7 +6768,7 @@ def orientadores_ocorrencias(request):
 
 # views.py
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 
 def editar_usuario(request, user_id):
@@ -6788,7 +6788,7 @@ def editar_usuario(request, user_id):
 
 # views.py
 from django.shortcuts import get_object_or_404, redirect
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib import messages
 
 def excluir_usuario(request, user_id):
@@ -12627,7 +12627,7 @@ def sintese_pdde_view(request):
 from django.contrib.auth import authenticate, login
 from django.http import JsonResponse
 import random
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.contrib.auth import login as do_login
 from django.contrib.auth import get_user_model, login as do_login
 from django.contrib.auth import authenticate, get_user_model
@@ -12686,4 +12686,185 @@ def verifica_2fa_ajax(request):
 
 ###***********************************************************************************************************************
 ###************************************************FIM********************************************************************
+###***********************************************************************************************************************
+from django.utils.encoding import force_bytes
+from django.contrib.auth import views as auth_views
+from django.contrib.auth import logout
+from django.contrib.auth.views import PasswordResetConfirmView
+from django.shortcuts import redirect
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.template.loader import render_to_string
+import json
+
+class RecuperarSenhaView(auth_views.PasswordResetView):
+    template_name = 'senha/recuperar.html'
+    email_template_name = 'senha/email.html'
+    subject_template_name = 'senha/assunto.txt'
+    success_url = '/senha/email-enviado/'
+
+class EmailEnviadoView(auth_views.PasswordResetDoneView):
+    template_name = 'senha/enviado.html'
+
+class ResetarSenhaView(PasswordResetConfirmView):
+    template_name = 'senha/resetar.html'
+    success_url = '/senha/concluido/'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            logout(request)  # Destroi a sessão ativa, se existir
+        return super().dispatch(request, *args, **kwargs)
+
+class ConcluidoView(auth_views.PasswordResetCompleteView):
+    template_name = 'senha/concluido.html'
+
+def recuperar_senha_ajax(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            email = data.get('email')
+
+            if not email:
+                return JsonResponse({'success': False, 'error': 'E-mail não informado.'})
+
+            # Usa o modelo de usuário customizado
+            User = get_user_model()
+            user = User.objects.get(email=email)
+
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+
+            # Monta URL para redefinição de senha
+            reset_url = f"{request.scheme}://{request.get_host()}/senha/resetar/{uid}/{token}/"
+
+            # Gera URL absoluta da imagem de logo
+            logo_url = request.build_absolute_uri(static('assets/dist/img/logoSite2.png'))
+
+            # Renderiza corpo do e-mail com logo e link
+            mensagem = render_to_string('senha/email.html', {
+                'user': user,
+                'reset_url': reset_url,
+                'logo_url': logo_url
+            })
+
+            send_mail(
+                subject='Recuperação de Senha - SEMED | SIEDGE',
+                message='',
+                html_message=mensagem,
+                from_email='noreply@semed.com.br',
+                recipient_list=[email],
+                fail_silently=False,
+            )
+
+            return JsonResponse({'success': True})
+
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'E-mail não cadastrado.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Erro interno: {str(e)}'})
+
+    return JsonResponse({'success': False, 'error': 'Método inválido.'})
+
+
+
+
+from django.contrib.auth.tokens import default_token_generator
+from django.views.generic import FormView
+from django.shortcuts import redirect
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.forms import SetPasswordForm
+from semedapp.models import CadastroCandidato
+from django.contrib import messages
+
+class ResetarSenhaCandidatoView(FormView):
+    template_name = 'curriculo/resetar.html'
+    form_class = SetPasswordForm
+    success_url = '/banco-curriculos/sucesso/'
+
+    def dispatch(self, request, uidb64=None, token=None, *args, **kwargs):
+        try:
+            uid = urlsafe_base64_decode(uidb64).decode()
+            self.user = CadastroCandidato.objects.get(pk=uid)
+        except Exception:
+            self.user = None
+
+        if self.user is not None and default_token_generator.check_token(self.user, token):
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            messages.error(request, 'Link inválido ou expirado.')
+            return redirect('login_candidato')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
+
+from django.views.generic import TemplateView
+
+class ConcluidoSenhaCandidatoView(TemplateView):
+    template_name = "curriculo/redefinida.html"
+
+
+
+
+
+from django.http import JsonResponse
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
+from django.templatetags.static import static
+from semedapp.models import CadastroCandidato
+
+def recuperar_senha_curriculo_ajax(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        if not email:
+            return JsonResponse({'success': False, 'message': 'E-mail não informado.'})
+
+        try:
+            user = CadastroCandidato.objects.get(email=email)
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = f"{request.scheme}://{request.get_host()}/banco-curriculos/resetar/{uid}/{token}/"
+            logo_url = request.build_absolute_uri(static('assets/dist/img/AdminLTELogo55335.png'))
+
+            mensagem = render_to_string('curriculo/email_recuperacao.html', {
+                'user': user,
+                'reset_url': reset_url,
+                'logo_url': logo_url,
+            })
+
+            send_mail(
+                subject='Redefinição de Senha - Banco de Currículos',
+                message='',
+                html_message=mensagem,
+                from_email='noreply@semed.com.br',
+                recipient_list=[email],
+                fail_silently=False,
+            )
+
+            return JsonResponse({'success': True, 'message': 'Link enviado para seu e-mail.'})
+
+        except CadastroCandidato.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'E-mail não cadastrado.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Erro interno: {str(e)}'})
+
+    return JsonResponse({'success': False, 'message': 'Método não permitido.'})
+
+
+
+ 
+
 ###***********************************************************************************************************************

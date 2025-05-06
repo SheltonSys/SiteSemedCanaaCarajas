@@ -183,16 +183,13 @@
         <div class="mb-4">
             <i class="fas fa-user-circle" style="font-size: 80px; color: #0d6efd;"></i>
         </div>
-
         <!-- Título -->
         <h2 class="mb-3 font-weight-bold" style="font-size: 32px; color: #0d6efd;">SEMED | SIEDGE</h2>
         <p class="text-muted mb-5" style="font-size: 20px;"><b>Sistema Integrado de Educação e Gestão</b></p>
 
-        <!-- Formulário -->
         <!-- <form id="loginForm" action="{% url 'login' %}" method="post" onsubmit="startProcessing(event)"> -->
             <form id="loginForm" onsubmit="loginCom2FA(event)">
             {% csrf_token %}
-
             <!-- Campo Usuário -->
             <div class="form-group mb-4">
                 <div class="input-group input-group-lg">
@@ -205,7 +202,6 @@
                         placeholder="Digite seu usuário" required autofocus>
                 </div>
             </div>
-
             <!-- Campo Senha -->
             <div class="form-group mb-5">
                 <div class="input-group input-group-lg">
@@ -223,13 +219,18 @@
                     </div>
                 </div>
             </div>
-
             <!-- Botão de Login -->
             <button id="submit-button" type="submit" class="btn btn-primary btn-lg btn-block font-weight-bold"
                 style="font-size: 20px;">
                 <i class="fas fa-sign-in-alt mr-2"></i> Entrar
             </button>
 
+            <div class="text-center mt-3">
+                <a href="#" class="text-primary" onclick="abrirModalRecuperarSenha()">Esqueci minha senha</a>
+
+              </div>
+              
+              
         </form>
 
         <!-- Rodapé pequeno -->
@@ -249,8 +250,6 @@
         <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED" class="img-fluid">
     </div>
 </div>
-
-
 
 <!-- Modal 2FA personalizado -->
 <div id="modal-2fa-overlay" style="display: none;">
@@ -273,15 +272,47 @@
     </div>
 </div>
 
-
-
-
+<div class="modal fade" id="modalRecuperarSenha" tabindex="-1" aria-labelledby="modalRecuperarSenhaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form id="formRecuperarSenha">
+        {% csrf_token %}
+        <div class="modal-content border-primary">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title" id="modalRecuperarSenhaLabel"><i class="fas fa-envelope me-2"></i> Recuperar Senha</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+          </div>
+          <div class="modal-body">
+            <label for="email_recuperacao" class="form-label">Informe seu e-mail cadastrado:</label>
+            <input type="email" class="form-control" id="email_recuperacao" name="email" required>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary fw-bold">
+              <i class="fas fa-paper-plane me-1"></i> Enviar Link
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  
 
 <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
 <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
 <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
 
-<!-- Scripts -->
+<script>
+    function abrirModalRecuperarSenha() {
+        const modalElement = document.getElementById('modalRecuperarSenha');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        } else {
+            console.error('Modal não encontrado.');
+        }
+    }
+    </script>
+    
+
 <script>
     function togglePasswordVisibility() {
         const passwordField = document.getElementById('password');
@@ -297,7 +328,6 @@
             toggleIcon.classList.add('fa-eye');
         }
     }
-    
     function loginCom2FA(event) {
         event.preventDefault();
     
@@ -356,7 +386,6 @@
             button.innerHTML = `<i class="fas fa-sign-in-alt mr-2"></i> Entrar`;
         });
     }
-    
     function verificarCodigo2FA() {
         const codigo = document.getElementById("codigo-input").value;
         const button = document.getElementById("submit-button");
@@ -387,12 +416,43 @@
         });
     }
     </script>
-    
-    
-    
 
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+    const formRecuperar = document.getElementById('formRecuperarSenha');
+    const modalRecuperar = new bootstrap.Modal(document.getElementById('modalRecuperarSenha'));
+
+    formRecuperar.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const email = document.getElementById('email_recuperacao').value;
+        const csrf = formRecuperar.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        fetch('/recuperar-senha/ajax/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrf,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                Swal.fire('Sucesso!', 'Um link foi enviado ao seu e-mail.', 'success');
+                modalRecuperar.hide();
+            } else {
+                Swal.fire('Erro!', data.error, 'error');
+            }
+        })
+        .catch(() => {
+            Swal.fire('Erro!', 'Erro ao processar requisição.', 'error');
+        });
+    });
+});
+
+</script>
+    
 </body>
-
 
 </html>

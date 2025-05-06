@@ -1,0 +1,7 @@
+<h2>Recuperar Senha</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.email.label_tag }}
+  {{ form.email }}
+  <button type="submit" class="btn btn-primary">Enviar link</button>
+</form>

@@ -1844,25 +1844,48 @@ class CandidatoD(AbstractUser):
 # ********************************************************************************************************************************
 from django.db import models
 from django.contrib.auth.hashers import make_password, check_password
+from django.utils import timezone
+
 
 class CadastroCandidato(models.Model):
     nome_completo = models.CharField(max_length=255)
     email = models.EmailField(unique=True)
     cpf = models.CharField(max_length=14, unique=True)
-    senha = models.CharField(max_length=128)  # Armazena senhas hash
+    password = models.CharField(max_length=128, null=True, blank=True)
+    last_login = models.DateTimeField(null=True, blank=True)
+
+    # Temporariamente recriado
+    senha = models.CharField(max_length=128, null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        # Apenas criptografe a senha se for uma nova criação ou se ela foi alterada
-        if not self.pk or self.senha:  # Apenas verifica se há senha nova
-            if not self.senha.startswith("pbkdf2_"):  # Verifica se já está criptografada
-                self.senha = make_password(self.senha)
+        if self.password and not self.password.startswith("pbkdf2_"):
+            self.password = make_password(self.password)
         super().save(*args, **kwargs)
 
     def check_senha(self, senha):
-        return check_password(senha, self.senha)
+        return check_password(senha, self.password)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def get_username(self):
+        return self.email
+
+    def get_full_name(self):
+        return self.nome_completo
+
+    def get_email_field_name(self):
+        return 'email'
+
+    def get_session_auth_hash(self):
+        return ''  # Pode implementar hash de sessão se necessário
 
     def __str__(self):
         return self.nome_completo
+
+
+
+
 # ********************************************************************************************************************************
 
 from django.db import models
@@ -3369,7 +3392,7 @@ class Conselho(models.Model):
 
     def __str__(self):
         return self.nome
-
+############################################################################################################################
 
 
 
@@ -3384,7 +3407,7 @@ class LancamentoDiario(models.Model):
 
     def __str__(self):
         return f"{self.data} - {self.historico}"
-
+############################################################################################################################
 
 
 
@@ -3401,7 +3424,7 @@ class MotivoIndeferimento(models.Model):
 
     def __str__(self):
         return f"Indeferimento - {self.plano.unidade_ensino}"
-
+############################################################################################################################
 
 
 class ConselhoMembro(models.Model):
@@ -3411,3 +3434,5 @@ class ConselhoMembro(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.cargo}"
+############################################################################################################################
+

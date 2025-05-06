@@ -4,8 +4,12 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.contrib.auth import views as auth_views
 from semedapp import views  # Substitua "semedapp" pelo nome do seu app
+from two_factor.urls import urlpatterns as tf_urls
+
+
 
 urlpatterns = [
+    path('account/', include(tf_urls)),  # <- esse é essencial
     path('admin/', admin.site.urls),
     path("", views.index, name="index"),  # Rota raiz aponta para index
     # path("semedapp/", include("semedapp.urls")),  # Inclua outras rotas

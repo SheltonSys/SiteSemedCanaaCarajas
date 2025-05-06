@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card shadow-lg">
+        <div class="card-body text-center p-5">
+            <i class="fas fa-envelope fa-4x text-primary mb-4"></i>
+            <h3 class="mb-3">E-mail enviado com sucesso</h3>
+            <p class="text-muted">
+                Um link de redefinição de senha foi enviado para o seu e-mail, caso ele esteja cadastrado.
+                Verifique sua caixa de entrada e também a pasta de spam.
+            </p>
+            <a href="{% url 'login' %}" class="btn btn-primary mt-3">Voltar ao Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
