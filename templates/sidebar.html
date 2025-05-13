@@ -477,7 +477,7 @@
                 </script>
 
 
-            {% if user.is_superuser %}
+            {% if user.is_superuser or user.username == "Neusa" %}
             <!-- SEPPEC -->
             <li class="nav-item">
                 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'contabilidade-menu')" data-id="seppec">
@@ -570,7 +570,7 @@
                             <li class="nav-item">
                                 <a href="{% url 'manuais' %}" class="nav-link">
                                     <i class="fas fa-book nav-icon"></i>
-                                    <p>Manuais dos Programas</p>
+                                    <p>Manuais Programas</p>
                                 </a>
                             </li>
                             

@@ -13,7 +13,7 @@
 
     <style>
         body {
-            background: url("{% static 'assets/dist/img/imagemCanaa555.webp' %}") no-repeat center center fixed;
+            background: url("{% static 'assets/dist/img/kssimagem.jpg' %}") no-repeat center center fixed;
             background-size: cover;
         }
         .login-box {
@@ -102,7 +102,8 @@
                         <p>Digite seu e-mail para receber um link de recuperação de senha.</p>
                         <div class="mb-3">
                             <label for="email" class="form-label">E-mail</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <input type="text" name="email" class="form-control" placeholder="E-mail"
+                            value="{{ email_candidato|default:'' }}" required>
                         </div>
                     </div>
                     <div class="modal-footer text-center">
@@ -166,5 +167,20 @@
             });
         });
     </script>
+
+
+{% if senha_desatualizada %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Atualize sua senha',
+            html: 'Sua senha atual não é mais aceita por questões de segurança.<br>Por favor, clique em <b>Recuperar Senha</b> para redefini-la.',
+            confirmButtonText: 'Ok, entendi'
+        });
+    });
+</script>
+{% endif %}
+
 </body>
 </html>

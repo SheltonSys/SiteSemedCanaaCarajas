@@ -1075,6 +1075,9 @@ urlpatterns = [
     ############################################################################################################################################################
 
 
+    path('permissoes/adicionar/<int:user_id>/', views.add_permission_to_user, name='add_permission_to_user'),
+
+
     
 
 ]

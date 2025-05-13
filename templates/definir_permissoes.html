@@ -1,8 +1,8 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 <div class="content-wrapper" style="flex: 1; display: flex; flex-direction: column; padding: 0; margin: 0; background-color: #f8f9fa;">
-    <!-- Header -->
     <div class="content-header" style="padding: 10px 20px; background-color: #343a40; color: white;">
         <div class="container-fluid">
             <div class="row align-items-center">
@@ -21,22 +21,19 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <section class="content" style="flex: 1; padding: 20px;">
-        <div class="container-fluid" style="max-width: 100%; height: calc(100% - 20px);">
-            <div class="card shadow-lg" style="height: 100%; border: none;">
-                <div class="card-header bg-primary text-white">
+        <div class="container-fluid">
+            <div class="card shadow-lg" style="border: none;">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h3 class="card-title m-0 font-weight-bold">
                         <i class="fas fa-user-cog"></i> Gerencie as permissões dos usuários
                     </h3>
+                    <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#addPermissionModal">
+                        <i class="fas fa-plus-circle"></i> Nova Permissão
+                    </button>
+
                 </div>
-                <div class="card-body" style="height: auto; padding: 20px;">
-                    <p class="text-muted">Adicione, remova ou atualize permissões para diferentes grupos de usuários.</p>
-                    <div class="d-flex justify-content-end mb-3">
-                        <button class="btn btn-success shadow-sm" data-toggle="modal" data-target="#addPermissionModal">
-                            <i class="fas fa-plus-circle"></i> Adicionar Permissão
-                        </button>
-                    </div>
+                <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover table-striped">
                             <thead class="thead-dark">
@@ -54,51 +51,84 @@
                                 {% for user in users %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>
-                                        <i class="fas fa-user text-primary"></i>
-                                        {{ user.first_name }} {{ user.last_name }}
-                                    </td>
+                                    <td><i class="fas fa-user text-primary"></i> {{ user.first_name }} {{ user.last_name }}</td>
                                     <td>{{ user.email }}</td>
                                     <td>
                                         {% if user.is_superuser %}
-                                        <span class="badge badge-danger">Administrador</span>
+                                            <span class="badge badge-danger">Administrador</span>
                                         {% elif user.is_staff %}
-                                        <span class="badge badge-primary">Técnico</span>
+                                            <span class="badge badge-primary">Técnico</span>
                                         {% else %}
-                                        <span class="badge badge-secondary">Usuário</span>
+                                            <span class="badge badge-secondary">Usuário</span>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% with user.user_permissions.all|slice:":2" as visible_permissions %}
-                                        {% for permission in visible_permissions %}
-                                        <span class="badge badge-info">{{ permission.name }}</span>
-                                        {% endfor %}
+                                            {% for permission in visible_permissions %}
+                                                <span class="badge badge-info">{{ permission.name }}</span>
+                                            {% endfor %}
                                         {% endwith %}
                                         {% if user.user_permissions.count > 2 %}
-                                        <small class="text-muted">+{{ user.user_permissions.count|add:"-2" }} mais</small>
+                                            <small class="text-muted">+{{ user.user_permissions.count|add:"-2" }} mais</small>
                                         {% endif %}
                                     </td>
                                     <td>
                                         {% with user.groups.all|slice:":2" as visible_groups %}
-                                        {% for group in visible_groups %}
-                                        <span class="badge badge-success">{{ group.name }}</span>
-                                        {% endfor %}
+                                            {% for group in visible_groups %}
+                                                <span class="badge badge-success">{{ group.name }}</span>
+                                            {% endfor %}
                                         {% endwith %}
                                         {% if user.groups.count > 2 %}
-                                        <small class="text-muted">+{{ user.groups.count|add:"-2" }} mais</small>
+                                            <small class="text-muted">+{{ user.groups.count|add:"-2" }} mais</small>
                                         {% endif %}
                                     </td>
                                     <td class="text-center">
-                                        <button class="btn btn-warning btn-sm shadow-sm" data-toggle="modal"
-                                            data-target="#editPermissionsModal{{ user.id }}">
+                                        <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editPermissionsModal{{ user.id }}">
                                             <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button class="btn btn-danger btn-sm shadow-sm" data-toggle="modal"
-                                            data-target="#deleteUserModal{{ user.id }}">
-                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </td>
                                 </tr>
+
+                                <!-- Modal: Edição -->
+                                <div class="modal fade" id="editPermissionsModal{{ user.id }}" tabindex="-1" aria-labelledby="editPermissionsModalLabel{{ user.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{% url 'edit_permissions' user.id %}">
+                                                {% csrf_token %}
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="editPermissionsModalLabel{{ user.id }}">
+                                                        Editar Permissões - {{ user.first_name }}
+                                                    </h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="form-group">
+                                                        <label for="permissions{{ user.id }}">Permissões</label>
+                                                        <select name="permissions[]" id="permissions{{ user.id }}" class="form-control" multiple required>
+                                                            {% for permission in permissions %}
+                                                                <option value="{{ permission.id }}" {% if permission in user.user_permissions.all %}selected{% endif %}>{{ permission.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="groups{{ user.id }}">Grupos</label>
+                                                        <select name="groups[]" id="groups{{ user.id }}" class="form-control" multiple required>
+                                                            {% for group in groups %}
+                                                                <option value="{{ group.id }}" {% if group in user.groups.all %}selected{% endif %}>{{ group.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                                                    <button type="submit" class="btn btn-primary">Salvar</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -109,26 +139,78 @@
     </section>
 </div>
 
-<!-- Custom Styles -->
+<div class="modal fade" id="addPermissionModal" tabindex="-1" aria-labelledby="addPermissionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'add_permission' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPermissionModalLabel">Adicionar Nova Permissão</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="permission_name">Nome da Permissão</label>
+                        <input type="text" class="form-control" id="permission_name" name="permission_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="permission_codename">Codename</label>
+                        <input type="text" class="form-control" id="permission_codename" name="permission_codename" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="app_label">App Label</label>
+                        <input type="text" class="form-control" id="app_label" name="app_label" placeholder="Ex: semedapp" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="model_name">Model Name</label>
+                        <input type="text" class="form-control" id="model_name" name="model_name" placeholder="Ex: customuserprof" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="usuarios">Atribuir a Usuários</label>
+                        <select class="form-control" name="usuarios[]" multiple>
+                            {% for user in users %}
+                                <option value="{{ user.id }}">{{ user.first_name }} {{ user.last_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="grupos">Atribuir a Grupos</label>
+                        <select class="form-control" name="grupos[]" multiple>
+                            {% for group in groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Adicionar Permissão</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- Scripts -->
+<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- Estilos -->
 <style>
     .content-header h1 {
         font-size: 1.8rem;
     }
-
     .table th, .table td {
         vertical-align: middle !important;
     }
-
     .btn {
         font-size: 0.9rem;
     }
-
-    .modal-header {
-        border-bottom: 1px solid #dee2e6;
-    }
-
-    .modal-footer {
-        border-top: 1px solid #dee2e6;
+    .modal-header, .modal-footer {
+        border-color: #dee2e6;
     }
 </style>
 {% endblock %}

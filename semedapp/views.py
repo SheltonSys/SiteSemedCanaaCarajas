@@ -243,10 +243,10 @@ def vinculacoes(request):
     return render(request, 'vinculacoes.html')
 # *********************************************************************************************************************
 
-def controle_usuarios(request):
-    users = User.objects.all()  # Ou o modelo correto de usuários
-    context = {'users': users}
-    return render(request, 'controle_usuarios.html', context)
+# def controle_usuarios(request):
+#     users = User.objects.all()  # Ou o modelo correto de usuários
+#     context = {'users': users}
+#     return render(request, 'controle_usuarios.html', context)
 
 # *********************************************************************************************************************
 
@@ -283,16 +283,33 @@ def logout_view(request):
     return redirect('login')  # Replace 'login' with the name of your login URL
 # *********************************************************************************************************************
 
-from django.contrib.auth import get_user_model
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware
+from .models import CustomUserProf
+from django.shortcuts import render
+from datetime import datetime
 
 def controle_usuarios(request):
-    User = get_user_model()  # Obtém o modelo correto (CustomUser)
-    usuarios = User.objects.all()  # Consulta todos os usuários
-    
-    context = {
-        'usuarios': usuarios,
-    }
+    usuarios_raw = CustomUserProf.objects.all()
+    usuarios = []
+
+    for usuario in usuarios_raw:
+        if isinstance(usuario.date_joined, str):
+            try:
+                dt = parse_datetime(usuario.date_joined)
+                usuario.date_joined = make_aware(dt) if dt else None
+            except Exception:
+                usuario.date_joined = None
+        usuarios.append(usuario)
+
+    context = {'usuarios': usuarios}
     return render(request, 'semedapp/controle_usuarios.html', context)
+
+
+
+
+
+
 
 # *********************************************************************************************************************
 
@@ -688,16 +705,34 @@ def indicadores_setor_pedagogico(request):
     return render(request, 'setor_pedagogico/indicadores.html')
 # *********************************************************************************************************************
 
+from datetime import datetime
+from django.utils.timezone import make_aware, get_current_timezone
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from semedapp.models import CustomUserProf
+from django.contrib.auth.models import Permission, Group
+
 @login_required
 def gerenciar_permissoes(request):
-    users = User.objects.all()
+    users = CustomUserProf.objects.all()
     permissions = Permission.objects.all()
     groups = Group.objects.all()
+
+    for user in users:
+        if isinstance(user.last_login, str):
+            try:
+                naive_dt = datetime.strptime(user.last_login, "%Y-%m-%d %H:%M:%S")
+                user.last_login = make_aware(naive_dt, get_current_timezone())
+            except Exception:
+                user.last_login = None
+
     return render(request, 'configuracoes/gerenciar_permissoes.html', {
         'users': users,
         'permissions': permissions,
         'groups': groups,
     })
+
+
 
 # *********************************************************************************************************************
 
@@ -805,27 +840,57 @@ def add_group(request):
     return redirect('gerenciar_permissoes')
 # *********************************************************************************************************************
 
+from django.contrib import messages
+from django.contrib.auth.models import Permission, Group
+from django.contrib.contenttypes.models import ContentType
+from django.shortcuts import redirect
+from semedapp.models import CustomUserProf  # ou o caminho correto
+
 def add_permission(request):
     if request.method == 'POST':
         permission_name = request.POST.get('permission_name')
         permission_codename = request.POST.get('permission_codename')
         app_label = request.POST.get('app_label')
         model_name = request.POST.get('model_name')
+        user_ids = request.POST.getlist('usuarios[]')
+        group_ids = request.POST.getlist('grupos[]')
 
-        if permission_name and permission_codename and app_label and model_name:
-            content_type, created = ContentType.objects.get_or_create(
-                app_label=app_label, model=model_name
-            )
-            Permission.objects.create(
-                name=permission_name,
-                codename=permission_codename,
-                content_type=content_type,
-            )
-            messages.success(request, f'Permissão "{permission_name}" adicionada com sucesso.')
+        if all([permission_name, permission_codename, app_label, model_name]):
+            try:
+                content_type, _ = ContentType.objects.get_or_create(
+                    app_label=app_label,
+                    model=model_name.lower()
+                )
+                permission = Permission.objects.create(
+                    name=permission_name,
+                    codename=permission_codename,
+                    content_type=content_type,
+                )
+
+                # Atribui a usuários
+                for user_id in user_ids:
+                    try:
+                        user = CustomUserProf.objects.get(id=user_id)
+                        user.user_permissions.add(permission)
+                    except CustomUserProf.DoesNotExist:
+                        continue
+
+                # Atribui a grupos
+                for group_id in group_ids:
+                    try:
+                        group = Group.objects.get(id=group_id)
+                        group.permissions.add(permission)
+                    except Group.DoesNotExist:
+                        continue
+
+                messages.success(request, f'Permissão "{permission_name}" adicionada com sucesso.')
+            except Exception as e:
+                messages.error(request, f'Erro ao adicionar permissão: {str(e)}')
         else:
             messages.error(request, 'Todos os campos são obrigatórios.')
 
     return redirect('gerenciar_permissoes')
+
 # *********************************************************************************************************************
 
 @login_required
@@ -3904,21 +3969,21 @@ def criar_demanda(request):
 
 
 
-def gestao_demandas(request):
-    demandas = TipoDemanda.objects.all()
-    total_demandas = demandas.count()
-    concluidas = demandas.filter(status="Finalizado").count()
-    em_andamento = demandas.filter(status="Em andamento").count()
-    pendentes = demandas.filter(status="Pendente").count()
+# def gestao_demandas(request):
+#     demandas = TipoDemanda.objects.all()
+#     total_demandas = demandas.count()
+#     concluidas = demandas.filter(status="Finalizado").count()
+#     em_andamento = demandas.filter(status="Em andamento").count()
+#     pendentes = demandas.filter(status="Pendente").count()
 
-    context = {
-        'demandas': demandas,
-        'total_demandas': total_demandas,
-        'concluidas': concluidas,
-        'em_andamento': em_andamento,
-        'pendentes': pendentes,
-    }
-    return render(request, 'demandas/gestao_demandas.html', context)
+#     context = {
+#         'demandas': demandas,
+#         'total_demandas': total_demandas,
+#         'concluidas': concluidas,
+#         'em_andamento': em_andamento,
+#         'pendentes': pendentes,
+#     }
+#     return render(request, 'demandas/gestao_demandas.html', context)
 
 
 from django.contrib.auth.decorators import user_passes_test
@@ -4420,6 +4485,7 @@ def registrar_candidato(request):
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from semedapp.models import CadastroCandidato
+from django.contrib.auth.hashers import check_password
 
 def login_candidato(request):
     if request.method == "POST":
@@ -4427,16 +4493,27 @@ def login_candidato(request):
         senha = request.POST.get("password")
 
         candidato = CadastroCandidato.objects.filter(email=email).first()
-        if candidato and candidato.check_senha(senha):
-            # Salve o ID e o nome na sessão para identificar o usuário logado
-            request.session["candidato_id"] = candidato.id
-            request.session["candidato_nome"] = candidato.nome_completo
-            messages.success(request, f"Bem-vindo, {candidato.nome_completo}!")
-            return redirect("area_candidato")  # Redirecione para a área do candidato
-        else:
-            messages.error(request, "E-mail ou senha inválidos.")
-    
+
+        if candidato:
+            # Verifica se a senha é inválida (antiga ou não hashada)
+            if not candidato.password or len(candidato.password) < 30:
+                # Retorna para o login com sinalizador para abrir modal
+                return render(request, "banco_curriculos/login.html", {
+                    "senha_desatualizada": True,
+                    "email_candidato": candidato.email
+                })
+
+            if check_password(senha, candidato.password):
+                request.session["candidato_id"] = candidato.id
+                request.session["candidato_nome"] = candidato.nome_completo
+                messages.success(request, f"Bem-vindo, {candidato.nome_completo}!")
+                return redirect("area_candidato")
+
+        messages.error(request, "E-mail ou senha inválidos.")
+
     return render(request, "banco_curriculos/login.html")
+
+
 
 
 
@@ -12868,3 +12945,16 @@ def recuperar_senha_curriculo_ajax(request):
  
 
 ###***********************************************************************************************************************
+
+from django.contrib.auth.models import Permission
+from django.shortcuts import get_object_or_404, redirect
+from .models import CustomUserProf
+
+@login_required
+def add_permission_to_user(request, user_id):
+    user = get_object_or_404(CustomUserProf, id=user_id)
+    if request.method == "POST":
+        permission_id = request.POST.get("permission")
+        permission = get_object_or_404(Permission, id=permission_id)
+        user.user_permissions.add(permission)
+    return redirect('gerenciar_permissoes')

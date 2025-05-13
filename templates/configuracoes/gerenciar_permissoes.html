@@ -95,131 +95,25 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {% for user in users %}
-                                        <tr>
-                                            <td>{{ forloop.counter }}</td>
-                                            <td>{{ user.first_name }} {{ user.last_name }}</td>
-                                            <td>{{ user.email }}</td>
-                                            <td>
-                                                {% if user.is_superuser %}
-                                                <span class="badge badge-danger">Administrador</span>
-                                                {% elif user.is_staff %}
-                                                <span class="badge badge-primary">Técnico</span>
-                                                {% else %}
-                                                <span class="badge badge-secondary">Usuário</span>
-                                                {% endif %}
-                                            </td>
-                                            <td>
-                                                {% with user.user_permissions.all|slice:":1" as visible_permissions %}
-                                                {% for permission in visible_permissions %}
-                                                <span class="badge badge-info">{{ permission.name }}</span>
-                                                {% endfor %}
-                                                {% endwith %}
-                                                {% if user.user_permissions.count > 1 %}
-                                                <div class="dropdown d-inline">
-                                                    <button class="btn btn-link dropdown-toggle" type="button" id="permissionsDropdown{{ user.id }}" data-toggle="dropdown" aria-expanded="false">
-                                                        +{{ user.user_permissions.count|add:"-1" }} mais
-                                                    </button>
-                                                    <div class="dropdown-menu" aria-labelledby="permissionsDropdown{{ user.id }}">
-                                                        {% for permission in user.user_permissions.all|slice:"1:" %}
-                                                        <span class="dropdown-item">{{ permission.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                            </td>
-
-
-                                            <td>
-                                                {% with user.groups.all|slice:":1" as visible_groups %}
-                                                {% for group in visible_groups %}
-                                                <span class="badge badge-success">{{ group.name }}</span>
-                                                {% endfor %}
-                                                {% endwith %}
-                                                
-                                                {% if user.groups.count > 1 %}
-                                                <div class="dropdown d-inline">
-                                                    <button class="btn btn-link dropdown-toggle btn-sm" type="button" id="groupsDropdown{{ user.id }}" data-toggle="dropdown" aria-expanded="false">
-                                                        +{{ user.groups.count|add:"-1" }} mais
-                                                    </button>
-                                                    <div class="dropdown-menu" aria-labelledby="groupsDropdown{{ user.id }}">
-                                                        {% for group in user.groups.all|slice:"1:" %}
-                                                        <span class="dropdown-item">{{ group.name }}</span>
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-                                                {% endif %}
-                                                
-                                                {% if user.groups.count == 0 %}
-                                                <span class="text-muted">Sem grupos</span>
-                                                {% endif %}
-                                            </td>
-                                            
-                                            <td class="user-actions">
-                                                <button class="btn btn-warning btn-permissions btn-sm" data-toggle="modal" data-target="#editPermissionsModal{{ user.id }}">
-                                                    <i class="fas fa-edit"></i> Permitir
-                                                </button>
-
-                                                <button 
-                                                class="btn btn-success btn-sm btn-access" 
-                                                data-user-id="{{ user.id }}">
+                                    {% for user in users %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>{{ user.nome_completo }}</td>
+                                        <td>{{ user.email }}</td>
+                                        <td>
+                                            <span class="badge badge-secondary">Usuário</span>
+                                        </td>
+                                        <td class="text-muted">N/A</td>
+                                        <td class="text-muted">N/A</td>
+                                        <td class="user-actions">
+                                            <button class="btn btn-success btn-sm btn-access" data-user-id="{{ user.id }}">
                                                 Acessar
                                             </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
 
-                                            
-                                             
-
-                                                
-                                                
-                                                
-
-                                            </td>
-                                        </tr>
-                                
-                                        <!-- Modal para cada usuário -->
-                                        <div class="modal fade" id="editPermissionsModal{{ user.id }}" tabindex="-1" aria-labelledby="editPermissionsModalLabel{{ user.id }}" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="editPermissionsModalLabel{{ user.id }}">Editar Permissões e Grupos</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <form method="POST" action="{% url 'edit_permissions' user.id %}">
-                                                        {% csrf_token %}
-                                                        <div class="modal-body">
-                                                            <div class="form-group">
-                                                                <label for="permissions{{ user.id }}">Permissões</label>
-                                                                <select class="form-control" id="permissions{{ user.id }}" name="permissions" multiple>
-                                                                    {% for permission in permissions %}
-                                                                    <option value="{{ permission.id }}" {% if permission in user.user_permissions.all %}selected{% endif %}>
-                                                                        {{ permission.name }}
-                                                                    </option>
-                                                                    {% endfor %}
-                                                                </select>
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label for="groups{{ user.id }}">Grupos</label>
-                                                                <select class="form-control" id="groups{{ user.id }}" name="groups" multiple>
-                                                                    {% for group in groups %}
-                                                                    <option value="{{ group.id }}" {% if group in user.groups.all %}selected{% endif %}>
-                                                                        {{ group.name }}
-                                                                    </option>
-                                                                    {% endfor %}
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                                                            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    </tbody>
                                 </table>
                                 
                                 

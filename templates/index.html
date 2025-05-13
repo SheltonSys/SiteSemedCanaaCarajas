@@ -1167,46 +1167,46 @@
         });
     </script>
 
-    <!-- Modal de Anúncio -->
-    <div class="modal fade" id="anuncioModal" tabindex="-1" aria-labelledby="anuncioModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content shadow-lg">
-                <!-- Cabeçalho -->
-                <div class="modal-header bg-warning text-white d-flex align-items-center justify-content-between">
-                    <div class="d-flex align-items-center">
-                        <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
-                            style="width: 80px; height: 50px;" class="me-3">
-                        <h5 class="modal-title flex-grow-1 text-center mb-0" id="anuncioModalLabel">
-                            Plano de Gestão Escolar - PGE
-                        </h5>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+<!-- Modal de Anúncio Junino -->
+<div class="modal fade" id="anuncioModal" tabindex="-1" aria-labelledby="anuncioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <!-- Cabeçalho -->
+            <div class="modal-header bg-info text-white d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 80px; height: 50px;" class="me-3">
+                    <h5 class="modal-title flex-grow-1 text-center mb-0" id="anuncioModalLabel">
+                        Viva São João! 🌽🎉
+                    </h5>
                 </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
 
-           <!-- Corpo -->
+            <!-- Corpo -->
             <div class="modal-body">
                 <div class="text-center mb-4">
-                    <img src="{% static 'assets/dist/img/pge-banner.png' %}" alt="Banner PGE"
-                        class="img-fluid rounded" style="max-width: 70%; height: auto;">
+                    <!-- <img src="{% static 'assets/dist/img/festajuninaemed2024.jpg' %}" alt="Festa Junina Banner"
+                        class="img-fluid rounded" style="max-width: 70%; height: auto;"> -->
                 </div>
 
-                <div class="alert alert-warning fs-5 border-2 border-warning" role="alert" style="text-align: justify;">
+                <div class="alert alert-info fs-5 border-2 border-info" role="alert" style="text-align: justify;">
                     <p class="mb-3">
-                        <strong>Diretores e Vice-Diretores:</strong> Atenção ao prazo!
+                        <strong>Junho chegou com alegria!</strong> A SEMED convida todas as escolas para entrarem no clima da <strong>Festa Junina</strong> 🎊
                     </p>
                     <p>
-                        No máximo em <strong>49 (quarenta e nove) dias úteis</strong> após a sua nomeação, o Diretor e o Vice-Diretor deverão <strong>elaborar e encaminhar</strong>, com base no <strong>Anexo II do Edital 008/2023-SEMED/GS</strong>, o <strong>Plano de Gestão Escolar – PGE</strong> da unidade escolar à qual foram designados.
+                        Preparem suas bandeirolas, quadrilhas, comidas típicas e apresentações culturais! O mês de junho será recheado de atividades temáticas e interação com toda a comunidade escolar.
                     </p>
                     <p>
-                        O envio deve ser feito <strong>exclusivamente pela internet</strong>, acessando o site da Secretaria Municipal de Educação (SEMED) e clicando no banner do Plano de Gestão Escolar – PGE.
+                        Envie o cronograma de atividades juninas da sua escola até o dia <strong>10 de junho</strong> e participe da seleção para destaque junino municipal!
                     </p>
                     <div class="text-center mt-4">
-                        <a href="{% url 'site_pedagogico' %}" class="btn btn-primary btn-lg" target="_blank">
-                            <i class="fas fa-paper-plane"></i> Enviar Plano de Gestão Escolar
+                        <a href="{% url 'site_pedagogico' %}" class="btn btn-warning btn-lg" target="_blank">
+                            <i class="fas fa-calendar-check"></i> Enviar Cronograma Junino
                         </a>
                     </div>
                     <p class="mt-4 mb-0">
-                        Após análise da SEMED, o Diretor e o Vice-Diretor deverão apresentar o referido PGE.
+                        Vamos celebrar juntos a cultura e a tradição do nosso povo com muita animação e criatividade! 🌽🔥
                     </p>
                 </div>
             </div>
@@ -1214,12 +1214,13 @@
             <!-- Rodapé -->
             <div class="modal-footer bg-light">
                 <p class="text-muted text-center w-100 m-0">
-                    © SEMED Canaã dos Carajás - Transformando a educação para um futuro melhor.
+                    © SEMED Canaã dos Carajás - Valorizando a cultura nordestina nas escolas.
                 </p>
             </div>
         </div>
     </div>
 </div>
+
 
     
     <script>

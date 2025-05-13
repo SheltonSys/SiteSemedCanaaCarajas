@@ -28,7 +28,7 @@ class Module(models.Model):
     Representa um módulo no sistema que pode ser acessado por usuários.
     """
     nome = models.CharField(max_length=100, unique=True)
-    url = models.CharField(max_length=255, unique=True)
+    url = models.CharField(max_length=191, unique=True)
 
     class Meta:
         db_table = "semedapp_module"
@@ -83,7 +83,7 @@ def module_required(module_name):
 # ********************************************************************************************************************************
 
 class Habilidade(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     descricao = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -102,8 +102,8 @@ class Acompanhamento(models.Model):
 from django.db import models
 
 class Aluno(models.Model):
-    pessoa_nome = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=14, blank=True, null=True)
+    pessoa_nome = models.CharField(max_length=191)
+    cpf = models.CharField(max_length=25, blank=True, null=True)
     idade = models.IntegerField(blank=True, null=True)
     modalidade = models.CharField(max_length=50, blank=True, null=True)
     avaliado = models.CharField(max_length=10, choices=[('SIM', 'Sim'), ('NAO', 'Não')], default='NAO')
@@ -134,7 +134,7 @@ class Estudante(models.Model):
 
 class PDDE(models.Model):
     ano = models.IntegerField()
-    escola = models.CharField(max_length=255)
+    escola = models.CharField(max_length=191)
     status = models.CharField(
         max_length=20,
         choices=[('aprovado', 'Aprovado'), ('pendente', 'Pendente')],
@@ -147,22 +147,22 @@ class PDDE(models.Model):
 # ********************************************************************************************************************************
 
 class Diretoria(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     cargo = models.CharField(max_length=50, choices=[
         ("Presidente", "Presidente"),
         ("Vice-Presidente", "Vice-Presidente"),
         ("Secretário", "Secretário"),
         ("Tesoureiro", "Tesoureiro"),
     ])
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     bairro = models.CharField(max_length=100)
     telefone = models.CharField(max_length=20)
     email = models.EmailField()
     cep = models.CharField(max_length=10)
-    cpf = models.CharField(max_length=14)
+    cpf = models.CharField(max_length=25)
     vencimento = models.DateField(null=True, blank=True)
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
-    conselho = models.CharField(max_length=255, blank=True, null=True)  # ✅ Aqui que estava faltando
+    conselho = models.CharField(max_length=191, blank=True, null=True)  # ✅ Aqui que estava faltando
 
     def __str__(self):
         return f"{self.nome} - {self.cargo}"
@@ -173,22 +173,22 @@ class Diretoria(models.Model):
 
 class MembroConselho(models.Model):
     inep = models.CharField(max_length=20)
-    escola = models.CharField(max_length=255)
-    conselho = models.CharField(max_length=255, blank=True, null=True)  # Conselho vinculado
+    escola = models.CharField(max_length=191)
+    conselho = models.CharField(max_length=191, blank=True, null=True)  # Conselho vinculado
     data_abertura = models.DateField()
     data_vencimento = models.DateField()
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     funcao = models.CharField(max_length=50, choices=[
         ('Conselho Fiscal - Efetivo', 'Conselho Fiscal - Efetivo'),
         ('Conselho Fiscal - Suplente', 'Conselho Fiscal - Suplente'),
         ('Conselho Deliberativo', 'Conselho Deliberativo'),
     ])
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     bairro = models.CharField(max_length=100)
     telefone = models.CharField(max_length=15)
     email = models.EmailField()
     cep = models.CharField(max_length=10)
-    cpf = models.CharField(max_length=14)
+    cpf = models.CharField(max_length=25)
 
     def __str__(self):
         return self.nome
@@ -197,7 +197,7 @@ class MembroConselho(models.Model):
 class LivroCaixa(models.Model):
     ano_base = models.IntegerField()
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
-    conselho_escolar = models.CharField(max_length=255)
+    conselho_escolar = models.CharField(max_length=191)
     cnpj = models.CharField(max_length=20)
     rendimentos_aplicacao = models.DecimalField(max_digits=10, decimal_places=2)
     saldo_anterior = models.DecimalField(max_digits=10, decimal_places=2)
@@ -215,7 +215,7 @@ class LivroCaixa(models.Model):
 
 class EscrituraFiscal(models.Model):
     ano_base = models.IntegerField()
-    conselho_escolar = models.CharField(max_length=255)
+    conselho_escolar = models.CharField(max_length=191)
     cnpj = models.CharField(max_length=18)
     rendimentos_aplicacao = models.DecimalField(max_digits=10, decimal_places=2)
     saldo_anterior = models.DecimalField(max_digits=10, decimal_places=2)
@@ -231,7 +231,7 @@ class EscrituraFiscal(models.Model):
 class Relatorio(models.Model):
     tipo = models.CharField(max_length=50)  # Tipo do relatório
     ano = models.IntegerField()  # Ano
-    escola = models.CharField(max_length=255)  # Nome da escola
+    escola = models.CharField(max_length=191)  # Nome da escola
     data_geracao = models.DateTimeField(auto_now_add=True)  # Data de criação
     arquivo = models.FileField(upload_to='manuals/')  # Caminho do arquivo
 
@@ -241,28 +241,28 @@ class Relatorio(models.Model):
 
 class Escola(models.Model):
     # Dados da Unidade
-    nome = models.CharField(max_length=255)  # Remova unique=True se estiver
-    endereco = models.CharField(max_length=255, blank=True, null=True)  # <-- Aqui
+    nome = models.CharField(max_length=191)  # Remova unique=True se estiver
+    endereco = models.CharField(max_length=191, blank=True, null=True)  # <-- Aqui
     cep = models.CharField(max_length=9, null=True, blank=True)  # Ex.: 68356-055
-    bairro = models.CharField(max_length=255, null=True, blank=True)
-    cidade = models.CharField(max_length=255, default="Canaã dos Carajás")
+    bairro = models.CharField(max_length=191, null=True, blank=True)
+    cidade = models.CharField(max_length=191, default="Canaã dos Carajás")
     uf = models.CharField(max_length=2, default="PA")
     tipo = models.CharField(max_length=50, null=True, blank=True)  # Ex.: Escola, Creche
     habilitado = models.BooleanField(default=True)
-    segmento = models.CharField(max_length=255, null=True, blank=True)
+    segmento = models.CharField(max_length=191, null=True, blank=True)
     zona = models.CharField(max_length=50, choices=[("Rural", "Rural"), ("Urbana", "Urbana")], default="Urbana")
     local_funcionamento = models.CharField(max_length=100, null=True, blank=True)
     ocupacao_predio = models.CharField(max_length=50, null=True, blank=True)
     compartilhado = models.BooleanField(default=False)
     codigo_compartilhado = models.CharField(max_length=50, null=True, blank=True)
-    modalidade_ensino = models.CharField(max_length=255, null=True, blank=True)
+    modalidade_ensino = models.CharField(max_length=191, null=True, blank=True)
     autorizacao = models.CharField(max_length=50, null=True, blank=True)
     protocolo = models.CharField(max_length=50, null=True, blank=True)
     codigo_inep = models.CharField(max_length=10, null=True, blank=True)
     cnpj = models.CharField(max_length=18, null=True, blank=True)
     fundacao = models.DateField(null=True, blank=True)
     situacao = models.CharField(max_length=50, null=True, blank=True)
-    distrito = models.CharField(max_length=255, null=True, blank=True)
+    distrito = models.CharField(max_length=191, null=True, blank=True)
     dependencia_administrativa = models.CharField(max_length=50, null=True, blank=True)
     
     # Dados do Censo
@@ -270,8 +270,8 @@ class Escola(models.Model):
     abastecimento_agua = models.CharField(max_length=50, null=True, blank=True)
     energia = models.CharField(max_length=50, null=True, blank=True)
     esgotamento_sanitario = models.CharField(max_length=50, null=True, blank=True)
-    destinacao_lixo = models.CharField(max_length=255, null=True, blank=True)
-    tratamento_lixo = models.CharField(max_length=255, null=True, blank=True)
+    destinacao_lixo = models.CharField(max_length=191, null=True, blank=True)
+    tratamento_lixo = models.CharField(max_length=191, null=True, blank=True)
     dependencias_fisicas = models.TextField(null=True, blank=True)  # Lista separada por vírgulas
     acessibilidade = models.TextField(null=True, blank=True)  # Lista separada por vírgulas
     internet = models.BooleanField(default=False)
@@ -293,21 +293,21 @@ class Escola(models.Model):
     quantidade_controladores_acesso = models.IntegerField(default=0)
 
     # Pedagógico
-    diretor = models.CharField(max_length=255, null=True, blank=True)
+    diretor = models.CharField(max_length=191, null=True, blank=True)
     telefone_diretor = models.CharField(max_length=15, null=True, blank=True)
     email_diretor = models.EmailField(null=True, blank=True)
-    vice_diretor = models.CharField(max_length=255, null=True, blank=True)
+    vice_diretor = models.CharField(max_length=191, null=True, blank=True)
     telefone_vice_diretor = models.CharField(max_length=15, null=True, blank=True)
     email_vice_diretor = models.EmailField(null=True, blank=True)
     coordenador_pedagogico = models.CharField(
-        max_length=255,
+        max_length=191,
         null=True,     # permite NULL no banco de dados
         blank=True     # permite campo vazio no formulário
     )
 
     telefone_coordenador_pedagogico = models.CharField(max_length=15, null=True, blank=True)
     email_coordenador_pedagogico = models.EmailField(null=True, blank=True)
-    secretario = models.CharField(max_length=255, null=True, blank=True)
+    secretario = models.CharField(max_length=191, null=True, blank=True)
     telefone_secretario = models.CharField(max_length=15, null=True, blank=True)
     email_secretario = models.EmailField(null=True, blank=True)
 
@@ -326,11 +326,11 @@ from django.db import models
 from django.conf import settings  # Corrige a referência ao usuário customizado
 
 class Escolas(models.Model):
-    nome = models.CharField(max_length=255)  # Remova unique=True se estiver
-    unidade_educacional = models.CharField(max_length=255, blank=True, null=True)
-    endereco = models.CharField(max_length=255, blank=True, null=True)  # <-- Aqui
+    nome = models.CharField(max_length=191)  # Remova unique=True se estiver
+    unidade_educacional = models.CharField(max_length=191, blank=True, null=True)
+    endereco = models.CharField(max_length=191, blank=True, null=True)  # <-- Aqui
     telefone = models.CharField(max_length=20, blank=True, null=True)   # (opcional também)
-    diretor = models.CharField(max_length=255, blank=True, null=True)   # (opcional também)
+    diretor = models.CharField(max_length=191, blank=True, null=True)   # (opcional também)
     # 🔹 Correção: referenciar o AUTH_USER_MODEL dinamicamente
     coordenador = models.ForeignKey(
         settings.AUTH_USER_MODEL,  # Usa o modelo configurado em settings.py
@@ -347,8 +347,8 @@ class Escolas(models.Model):
 # ********************************************************************************************************************************
 
 class Membro(models.Model):
-    nome = models.CharField(max_length=255)
-    funcao = models.CharField(max_length=255, null=True, blank=True)
+    nome = models.CharField(max_length=191)
+    funcao = models.CharField(max_length=191, null=True, blank=True)
     data_admissao = models.DateField(null=True, blank=True)
 
     def __str__(self):
@@ -356,7 +356,7 @@ class Membro(models.Model):
 # ********************************************************************************************************************************
 
 class Caixa(models.Model):
-    descricao = models.CharField(max_length=255)
+    descricao = models.CharField(max_length=191)
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     data_movimento = models.DateField()
 
@@ -367,7 +367,7 @@ class Caixa(models.Model):
 from django.db import models
 
 class Certidao(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     descricao = models.TextField()
     data_emissao = models.DateField(auto_now_add=True)
     arquivo = models.FileField(upload_to='certidoes/', null=True, blank=True)  # Novo campo
@@ -378,7 +378,7 @@ class Certidao(models.Model):
 # ********************************************************************************************************************************
 
 class Legislacao(models.Model):
-    titulo = models.CharField(max_length=255)
+    titulo = models.CharField(max_length=191)
     descricao = models.TextField()
     data_publicacao = models.DateField()
     categoria = models.CharField(max_length=100)
@@ -441,11 +441,11 @@ class Evento(models.Model):
 # ********************************************************************************************************************************
 
 class Funcionario(models.Model):
-    nome_completo = models.CharField(max_length=255)
-    rg = models.CharField(max_length=20)
-    cpf = models.CharField(max_length=14, unique=True)
+    nome_completo = models.CharField(max_length=191)
+    rg = models.CharField(max_length=50)
+    cpf = models.CharField(max_length=25, unique=True)
     telefone = models.CharField(max_length=15)
-    email = models.EmailField(max_length=255)
+    email = models.EmailField(max_length=191)
     cargo = models.CharField(max_length=100)
     lotacao = models.CharField(max_length=100)  # Lotação refers to the work location or department
 
@@ -454,24 +454,24 @@ class Funcionario(models.Model):
  # ********************************************************************************************************************************   
 
 class Usuario(AbstractUser):
-    nome_completo = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=11, unique=True)  # CPF único
+    nome_completo = models.CharField(max_length=191)
+    cpf = models.CharField(max_length=25, unique=True)  # CPF único
     email = models.EmailField(unique=True)
     data_cadastro = models.DateTimeField(auto_now_add=True)
     data_nascimento = models.DateField()  # Campo de data de nascimento
     telefone = models.CharField(max_length=15, null=True, blank=True)  # Telefone do Candidato
     telefone_contato_2 = models.CharField(max_length=15, null=True, blank=True)  # Telefone de Contato 2
     telefone_secundario = models.CharField(max_length=15, null=True, blank=True)
-    endereco = models.CharField(max_length=255, null=True, blank=True)  # Endereço
+    endereco = models.CharField(max_length=191, null=True, blank=True)  # Endereço
     bairro = models.CharField(max_length=100, null=True, blank=True)  # Bairro
-    ponto_referencia = models.CharField(max_length=255, null=True, blank=True)  # Ponto de Referência
+    ponto_referencia = models.CharField(max_length=191, null=True, blank=True)  # Ponto de Referência
     maior_de_18 = models.BooleanField(default=False)  # O Candidato é maior de 18 anos?
 
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     senha = models.CharField(max_length=128)  # Certifique-se de hashar senhas
 
     # New fields
-    responsavel_legal = models.CharField(max_length=255, null=True, blank=True)
+    responsavel_legal = models.CharField(max_length=191, null=True, blank=True)
     tipo_responsavel = models.CharField(max_length=50, choices=[
         ('Mãe', 'Mãe'),
         ('Pai', 'Pai'),
@@ -495,7 +495,7 @@ class Usuario(AbstractUser):
         ('Etapa III', 'Etapa III')
     ], null=True, blank=True)
 
-    nome_responsavel = models.CharField(max_length=255, null=True, blank=True)  # Nome do Responsável Legal
+    nome_responsavel = models.CharField(max_length=191, null=True, blank=True)  # Nome do Responsável Legal
     tipo_responsavel = models.CharField(max_length=50, choices=[('Mãe', 'Mãe'), ('Pai', 'Pai'), ('Responsável Legal', 'Responsável Legal')], null=True, blank=True)  # Tipo de Responsável Legal
     possui_necessidade_especial = models.BooleanField(default=False)  # Possui alguma necessidade especial?
     necessidade_especial_detalhe = models.CharField(
@@ -555,18 +555,18 @@ class Inscricao(models.Model):
     usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     candidato = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name="inscricao")
     data_inscricao = models.DateTimeField(auto_now_add=True)
-    responsavel_legal = models.CharField(max_length=255, null=True, blank=True)
+    responsavel_legal = models.CharField(max_length=191, null=True, blank=True)
     tipo_responsavel = models.CharField(max_length=100, null=True, blank=True)
     telefone = models.CharField(max_length=15, null=True, blank=True)
     telefone_secundario = models.CharField(max_length=15, null=True, blank=True)
-    endereco = models.CharField(max_length=255, null=True, blank=True)
+    endereco = models.CharField(max_length=191, null=True, blank=True)
     bairro = models.ForeignKey('semedapp.Bairro', on_delete=models.CASCADE)
-    cidade = models.CharField(max_length=255, null=True, blank=True)  # Optional field
-    ponto_referencia = models.CharField(max_length=255, null=True, blank=True)
+    cidade = models.CharField(max_length=191, null=True, blank=True)  # Optional field
+    ponto_referencia = models.CharField(max_length=191, null=True, blank=True)
     necessidade_especial = models.BooleanField(default=False)
     tipo_necessidade_especial = models.CharField(max_length=100, null=True, blank=True)
     turno_disponivel = models.CharField(max_length=100, null=True, blank=True)
-    etapa_pretendida = models.CharField(max_length=255, null=True, blank=True)
+    etapa_pretendida = models.CharField(max_length=191, null=True, blank=True)
     prova_realizada = models.BooleanField(default=False)  # Example field definition
     nota = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)  # Add nota field
     aprovado = models.BooleanField(default=False)  # Add this field
@@ -675,13 +675,13 @@ class Candidato(models.Model):
     # user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='candidato')
     #user = models.ForeignKey(User, on_delete=models.CASCADE)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    nome_completo = models.CharField(max_length=255)
-    nome = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=191)
+    nome = models.CharField(max_length=191)
     email = models.EmailField()
-    cpf = models.CharField(max_length=14)  # Add input mask for CPF in the form later
+    cpf = models.CharField(max_length=25)  # Add input mask for CPF in the form later
     data_nascimento = models.DateField()
     maior_de_18 = models.BooleanField()  # Yes or No (Checkbox)
-    nome_responsavel = models.CharField(max_length=255, blank=True, null=True)
+    nome_responsavel = models.CharField(max_length=191, blank=True, null=True)
     
     TIPO_RESPONSAVEL_CHOICES = [
         ('mae', 'Mãe'),
@@ -692,9 +692,9 @@ class Candidato(models.Model):
     
     telefone = models.CharField(max_length=15)
     telefone_2 = models.CharField(max_length=15, blank=True, null=True)
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     bairro = models.CharField(max_length=100)
-    ponto_referencia = models.CharField(max_length=255, blank=True, null=True)
+    ponto_referencia = models.CharField(max_length=191, blank=True, null=True)
     
     possui_necessidade_especial = models.BooleanField()  # Checkbox for Yes or No
     
@@ -726,18 +726,18 @@ class Candidato(models.Model):
 #**********************************************************************************************************
 
 class School(models.Model):
-    name = models.CharField(max_length=255)
-    neighborhood = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
+    name = models.CharField(max_length=191)
+    neighborhood = models.CharField(max_length=191)
+    address = models.CharField(max_length=191)
     cep = models.CharField(max_length=10)  # Adding CEP field
 
     def __str__(self):
         return self.name
 #**********************************************************************************************************
 class Bairro(models.Model):
-    nome = models.CharField(max_length=255)
-    logradouro_nome = models.CharField(max_length=255)
-    bairro_distrito = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
+    logradouro_nome = models.CharField(max_length=191)
+    bairro_distrito = models.CharField(max_length=191)
     cep = models.CharField(max_length=20)
 
     def __str__(self):
@@ -752,7 +752,7 @@ class Bairro(models.Model):
 #         return self.nome
 #**********************************************************************************************************
 class Prova(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     data = models.DateField()
     status = models.CharField(max_length=50)
 
@@ -762,7 +762,7 @@ class Prova(models.Model):
 
 class DiagnoseInicProfPort(models.Model):
     item = models.CharField(max_length=50)
-    habilidade = models.CharField(max_length=255)
+    habilidade = models.CharField(max_length=191)
     descricao_habilidade = models.TextField(null=True, blank=True)  # Campo para armazenar a des
 
     # Campos para os números dos professores
@@ -985,20 +985,20 @@ class PortuguesProfessores(models.Model):
 
 class Student(models.Model):
     numero_matricula = models.CharField(max_length=20, unique=True)
-    nome_completo = models.CharField(max_length=255)
-    escola = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=191)
+    escola = models.CharField(max_length=191)
     data_nascimento = models.DateField()
     sexo = models.CharField(max_length=10)
     turno = models.CharField(max_length=20)
     telefone = models.CharField(max_length=20)
     nivel_escolaridade = models.CharField(max_length=50)
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     bairro = models.CharField(max_length=100)
     cep = models.CharField(max_length=10)
     codigo_rota = models.CharField(max_length=20)
     email_responsavel = models.EmailField()
     cpf_responsavel = models.CharField(max_length=20)
-    nome_responsavel = models.CharField(max_length=255)
+    nome_responsavel = models.CharField(max_length=191)
     parentesco = models.CharField(max_length=50)
     telefone_responsavel = models.CharField(max_length=20)
     responsavel_legal = models.CharField(max_length=10)
@@ -1039,7 +1039,7 @@ class UserManager(BaseUserManager):
 ############################################################################################################################
 
 class UploadedFile(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=191)
     file = models.FileField(upload_to='uploads/')
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -1087,11 +1087,11 @@ class IndicadoresTransporte(models.Model):
         verbose_name="Número de Matrícula"
     )
     nome_completo = models.CharField(
-        max_length=255,
+        max_length=191,
         verbose_name="Nome Completo"
     )
     escola = models.CharField(
-        max_length=255,
+        max_length=191,
         verbose_name="Escola"
     )
     data_nascimento = models.DateField(
@@ -1124,7 +1124,7 @@ class IndicadoresTransporte(models.Model):
         verbose_name="Nível de Escolaridade"
     )
     endereco = models.CharField(
-        max_length=255,
+        max_length=191,
         verbose_name="Endereço"
     )
     bairro = models.CharField(
@@ -1159,7 +1159,7 @@ class IndicadoresTransporte(models.Model):
         ]
     )
     nome_responsavel = models.CharField(
-        max_length=255,
+        max_length=191,
         verbose_name="Nome do Responsável"
     )
     parentesco = models.CharField(
@@ -1198,11 +1198,11 @@ class IndicadoresTransporte(models.Model):
 ############################################################################################################################
 
 # class Funcionario(models.Model):
-#     nome_completo = models.CharField(max_length=255)
+#     nome_completo = models.CharField(max_length=191)
 #     rg = models.CharField(max_length=20)
-#     cpf = models.CharField(max_length=14, unique=True)
+#     cpf = models.CharField(max_length=25, unique=True)
 #     telefone = models.CharField(max_length=15)
-#     email = models.EmailField(max_length=255)
+#     email = models.EmailField(max_length=191)
 #     cargo = models.CharField(max_length=100)
 #     lotacao = models.CharField(max_length=100)  # Lotação refers to the work location or department
 
@@ -1246,16 +1246,16 @@ class RegimentoCadastro(models.Model):
         ('rejeitado', 'Rejeitado'),
     ]
     
-    titulo = models.CharField(max_length=255)
-    capitulo = models.CharField(max_length=255)
+    titulo = models.CharField(max_length=191)
+    capitulo = models.CharField(max_length=191)
     tipo_alteracao = models.CharField(max_length=50)
     justificativa = models.TextField()
-    nome_completo = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=191)
     email = models.EmailField()
-    cpf = models.CharField(max_length=14)
+    cpf = models.CharField(max_length=25)
     telefone = models.CharField(max_length=20)
-    cargo = models.CharField(max_length=255)
-    lotacao = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=191)
+    lotacao = models.CharField(max_length=191)
     observacoes_adicionais = models.TextField(null=True, blank=True)
     data_submissao = models.DateTimeField(auto_now_add=True)  # Automatic timestamp on creation
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pendente')
@@ -1270,7 +1270,7 @@ class Regimento(models.Model):
     tipo_alteracao = models.CharField(max_length=100)
     justificativa = models.TextField()
     nome_completo = models.CharField(max_length=200)
-    cpf = models.CharField(max_length=14)
+    cpf = models.CharField(max_length=25)
     email = models.EmailField()
     telefone = models.CharField(max_length=15)
     cargo = models.CharField(max_length=100)
@@ -1282,16 +1282,16 @@ class Regimento(models.Model):
 #**********************************************************************************************************
 
 class Registro(models.Model):
-    titulo = models.CharField(max_length=255)
-    capitulo = models.CharField(max_length=255)
+    titulo = models.CharField(max_length=191)
+    capitulo = models.CharField(max_length=191)
     tipo_alteracao = models.CharField(max_length=100, choices=[('insercao', 'Inserção'), ('alteracao', 'Alteração'), ('supressao', 'Supressão'), ('exclusao', 'Exclusão')])
     justificativa = models.TextField()
-    nome_completo = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=191)
     email = models.EmailField()
-    cpf = models.CharField(max_length=14)  # Mascara de CPF pode ser aplicada no frontend
+    cpf = models.CharField(max_length=25)  # Mascara de CPF pode ser aplicada no frontend
     telefone = models.CharField(max_length=15)
-    cargo = models.CharField(max_length=255)
-    lotacao = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=191)
+    lotacao = models.CharField(max_length=191)
     observacoes_adicionais = models.TextField(blank=True, null=True)
     data_submissao = models.DateTimeField(auto_now_add=True)
 
@@ -1300,22 +1300,22 @@ class Registro(models.Model):
 #**********************************************************************************************************
 
 class SemedAppRegimentoCadastro(models.Model):
-    titulo = models.CharField(max_length=255)
-    capitulo = models.CharField(max_length=255, null=True, blank=True)  # Certifique-se de que este campo está definido
-    tipo_alteracao = models.CharField(max_length=255)
-    nome_completo = models.CharField(max_length=255)
+    titulo = models.CharField(max_length=191)
+    capitulo = models.CharField(max_length=191, null=True, blank=True)  # Certifique-se de que este campo está definido
+    tipo_alteracao = models.CharField(max_length=191)
+    nome_completo = models.CharField(max_length=191)
     email = models.EmailField()
-    cpf = models.CharField(max_length=14)
+    cpf = models.CharField(max_length=25)
     telefone = models.CharField(max_length=20)
-    cargo = models.CharField(max_length=255)
-    lotacao = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=191)
+    lotacao = models.CharField(max_length=191)
     data_submissao = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50)
 #**********************************************************************************************************
 
 class HabilidadeProf(models.Model):
     item = models.IntegerField()
-    habilidade = models.CharField(max_length=255)
+    habilidade = models.CharField(max_length=191)
     turma_401 = models.IntegerField(default=0)
     turma_403 = models.IntegerField(default=0)
     turma_404 = models.IntegerField(default=0)
@@ -1368,7 +1368,7 @@ class HabilidadeProf(models.Model):
 
 class HabilidadeProfAnosFinais(models.Model):
     item = models.IntegerField()
-    habilidade = models.CharField(max_length=255)
+    habilidade = models.CharField(max_length=191)
     
     # Campos para as turmas
     turma_101 = models.IntegerField(default=0)
@@ -1425,7 +1425,7 @@ class HabilidadeProfAnosFinais(models.Model):
 
 class HabilidadeProfFinal(models.Model):
     item = models.IntegerField()
-    habilidade = models.CharField(max_length=255)
+    habilidade = models.CharField(max_length=191)
     turma_101 = models.IntegerField(default=0)
     turma_102 = models.IntegerField(default=0)
     # Continue para todas as turmas...
@@ -1453,13 +1453,13 @@ class HabilidadeProfFinal(models.Model):
 
 class Curriculo(models.Model):
     ano_conclusao = models.PositiveIntegerField(blank=True, null=True)
-    nome_completo = models.CharField(max_length=255, null=True, blank=True)
+    nome_completo = models.CharField(max_length=191, null=True, blank=True)
     email = models.EmailField()
     telefone = models.CharField(max_length=15)
     foto = models.ImageField(upload_to='fotos/', null=True, blank=True)
     curriculo_pdf = models.FileField(upload_to='curriculos/', null=True, blank=True)
-    cpf = models.CharField(max_length=14, unique=True)  # Corrigido para ser único
-    rg = models.CharField(max_length=12, blank=True, null=True)
+    cpf = models.CharField(max_length=25, unique=True)  # Corrigido para ser único
+    rg = models.CharField(max_length=50, blank=True, null=True)
     data_nascimento = models.DateField(null=True, blank=True)
     genero = models.CharField(
         max_length=15,
@@ -1479,7 +1479,7 @@ class Curriculo(models.Model):
             ('Viuvo', 'Viúvo(a)')
         ]
     )
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     cidade = models.CharField(max_length=100, default='Canaã dos Carajás')
     bairro = models.CharField(max_length=100, blank=True, null=True)
     cep = models.CharField(max_length=9, blank=True, null=True)
@@ -1488,9 +1488,9 @@ class Curriculo(models.Model):
     # Campos adicionais
     data_cadastro = models.DateTimeField(auto_now_add=True)
     ano_conclusao = models.PositiveIntegerField(blank=True, null=True)
-    formacao_academica = models.CharField(max_length=255, blank=True, null=True)
-    instituicao = models.CharField(max_length=255, blank=True, null=True)
-    curso = models.CharField(max_length=255, blank=True, null=True)
+    formacao_academica = models.CharField(max_length=191, blank=True, null=True)
+    instituicao = models.CharField(max_length=191, blank=True, null=True)
+    curso = models.CharField(max_length=191, blank=True, null=True)
     experiencias_texto = models.TextField(blank=True, null=True)  # Renomeado para evitar conflitos
 
     def __str__(self):
@@ -1513,8 +1513,8 @@ class Formacao(models.Model):
             ('Doutor', 'Doutor'),
         ]
     )
-    curso = models.CharField(max_length=255)
-    instituicao = models.CharField(max_length=255)
+    curso = models.CharField(max_length=191)
+    instituicao = models.CharField(max_length=191)
     ano_conclusao = models.DateField()
 
     def __str__(self):
@@ -1529,8 +1529,8 @@ class Experiencia(models.Model):
         on_delete=models.CASCADE,
         related_name='experiencias'  # Nome único para evitar conflitos
     )
-    empresa = models.CharField(max_length=255)
-    cargo = models.CharField(max_length=255)
+    empresa = models.CharField(max_length=191)
+    cargo = models.CharField(max_length=191)
     data_inicio = models.DateField()
     data_fim = models.DateField(null=True, blank=True)
     descricao_experiencia = models.TextField(blank=True, null=True)
@@ -1574,7 +1574,7 @@ class TipoDemanda(models.Model):
         ('Atrasado', 'Atrasado'),
     ]
 
-    nome = models.CharField(max_length=255, verbose_name="Nome da Demanda")
+    nome = models.CharField(max_length=191, verbose_name="Nome da Demanda")
     descricao = models.TextField(max_length=500, blank=True, null=True, verbose_name="Descrição")
     status = models.CharField(
         max_length=20,
@@ -1648,12 +1648,12 @@ def renomear_arquivo(instance, filename):
 #         ('phdI', 'PHD Incompleto'),
 #     ]
 
-#     nome_completo = models.CharField(max_length=255)
-#     cpf = models.CharField(max_length=14, unique=False)
+#     nome_completo = models.CharField(max_length=191)
+#     cpf = models.CharField(max_length=25, unique=False)
 #     rg = models.CharField(max_length=12, blank=True, null=True)
 #     email = models.EmailField(unique=True)
 #     telefone = models.CharField(max_length=15)
-#     endereco = models.CharField(max_length=255)
+#     endereco = models.CharField(max_length=191)
 #     bairro = models.CharField(max_length=100, blank=True, null=True)
 #     cidade = models.CharField(max_length=100, default='Canaã dos Carajás')
 #     cep = models.CharField(max_length=9, blank=True, null=True)
@@ -1661,10 +1661,10 @@ def renomear_arquivo(instance, filename):
 #     sexo = models.CharField(max_length=15, choices=SEXO_CHOICES)
 #     data_nascimento = models.DateField(null=True, blank=True)
 #     formacao_academica = models.CharField(max_length=20, choices=FORMACAO_CHOICES, blank=True, null=True)
-#     curso = models.CharField(max_length=255, blank=True, null=True)
-#     instituicao = models.CharField(max_length=255, blank=True, null=True)
+#     curso = models.CharField(max_length=191, blank=True, null=True)
+#     instituicao = models.CharField(max_length=191, blank=True, null=True)
 #     ano_conclusao = models.PositiveIntegerField(blank=True, null=True)
-#     foto = models.ImageField(upload_to=renomear_arquivo, max_length=255, blank=True, null=True)
+#     foto = models.ImageField(upload_to=renomear_arquivo, max_length=191, blank=True, null=True)
 #     curriculo_pdf = models.FileField(upload_to='curriculos/', blank=True, null=True)
 #     certificados_pdf = models.FileField(upload_to='certificados/', blank=True, null=True)
 #     experiencia_profissional = models.TextField(blank=True, null=True)
@@ -1726,19 +1726,19 @@ class Diretor(models.Model):
         ('phdI', 'PHD Incompleto'),
     ]
 
-    nome_completo = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=14, unique=True)
-    rg = models.CharField(max_length=12, blank=True, null=True)
+    nome_completo = models.CharField(max_length=191)
+    cpf = models.CharField(max_length=25, unique=True)
+    rg = models.CharField(max_length=50, blank=True, null=True)
     email = models.EmailField(unique=True)
     telefone = models.CharField(max_length=15)
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     bairro = models.CharField(max_length=100, blank=True, null=True)
     cidade = models.CharField(max_length=100, default='Canaã dos Carajás')
     cep = models.CharField(max_length=10, blank=True, null=True)
     data_nascimento = models.DateField(null=True, blank=True)
     formacao_academica = models.CharField(max_length=100, blank=True, null=True)
-    curso = models.CharField(max_length=255, blank=True, null=True)
-    instituicao = models.CharField(max_length=255, blank=True, null=True)
+    curso = models.CharField(max_length=191, blank=True, null=True)
+    instituicao = models.CharField(max_length=191, blank=True, null=True)
     ano_conclusao = models.DateField(null=True, blank=True)
     foto = models.ImageField(upload_to='fotos_diretores/', blank=True, null=True)
     curriculo_pdf = models.FileField(upload_to='diretores_curriculos/', blank=True, null=True)
@@ -1748,8 +1748,8 @@ class Diretor(models.Model):
     sexo = models.CharField(max_length=50, choices=SEXO_CHOICES)
 
     data_cadastro = models.DateTimeField(default=now)
-    empresa = models.CharField(max_length=255, blank=True, null=True)
-    cargo = models.CharField(max_length=255, blank=True, null=True)
+    empresa = models.CharField(max_length=191, blank=True, null=True)
+    cargo = models.CharField(max_length=191, blank=True, null=True)
     data_inicio = models.DateField(blank=True, null=True)
     data_fim = models.DateField(blank=True, null=True)
     qr_code = models.ImageField(upload_to='diretores_qrcodes/', null=True, blank=True)
@@ -1792,8 +1792,8 @@ class Diretor(models.Model):
 
 class ExperienciaProfissional(models.Model):
     diretor = models.ForeignKey(Diretor, on_delete=models.CASCADE, related_name='experiencias')
-    empresa = models.CharField(max_length=255)
-    cargo = models.CharField(max_length=255)
+    empresa = models.CharField(max_length=191)
+    cargo = models.CharField(max_length=191)
     data_inicio = models.DateField(null=True, blank=True)
     data_fim = models.DateField(null=True, blank=True)
 # ********************************************************************************************************************************
@@ -1801,8 +1801,8 @@ class ExperienciaProfissional(models.Model):
 class FormacaoAcademica(models.Model):
     diretor = models.ForeignKey(Diretor, on_delete=models.CASCADE, related_name="formacoes")
     nivel = models.CharField(max_length=100)  # Ex.: Graduação Completa
-    instituicao = models.CharField(max_length=255)
-    curso = models.CharField(max_length=255)
+    instituicao = models.CharField(max_length=191)
+    curso = models.CharField(max_length=191)
     ano_conclusao = models.DateField()
 
     def __str__(self):
@@ -1813,14 +1813,14 @@ class FormacaoAcademica(models.Model):
 class Certificado(models.Model):
     diretor = models.ForeignKey(Diretor, on_delete=models.CASCADE, related_name='certificados')
     arquivo = models.FileField(upload_to='certificados/')
-    descricao = models.CharField(max_length=255, null=True, blank=True)
+    descricao = models.CharField(max_length=191, null=True, blank=True)
 # ********************************************************************************************************************************
 
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 class CandidatoD(AbstractUser):
-    cpf = models.CharField(max_length=14, unique=True, verbose_name="CPF")
+    cpf = models.CharField(max_length=25, unique=True, verbose_name="CPF")
     telefone = models.CharField(max_length=15, blank=True, null=True)
     endereco = models.TextField(blank=True, null=True)
 
@@ -1848,9 +1848,9 @@ from django.utils import timezone
 
 
 class CadastroCandidato(models.Model):
-    nome_completo = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=191)
     email = models.EmailField(unique=True)
-    cpf = models.CharField(max_length=14, unique=True)
+    cpf = models.CharField(max_length=25, unique=True)
     password = models.CharField(max_length=128, null=True, blank=True)
     last_login = models.DateTimeField(null=True, blank=True)
 
@@ -1893,10 +1893,10 @@ from django.db import models
 class CandidatoCurriculo(models.Model):
     #user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='candidatos_curriculos')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    nome_completo = models.CharField(max_length=255)
+    nome_completo = models.CharField(max_length=191)
     email = models.EmailField(unique=True)
-    cpf = models.CharField(max_length=14, unique=True)
-    password = models.CharField(max_length=255)
+    cpf = models.CharField(max_length=25, unique=True)
+    password = models.CharField(max_length=191)
 
     def __str__(self):
         return self.nome_completo
@@ -1907,7 +1907,7 @@ from django.db import models
 class CandidatoAutenticado(models.Model):
     #user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="perfil_candidato")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    cpf = models.CharField(max_length=14, unique=True)  # CPF único para o candidato
+    cpf = models.CharField(max_length=25, unique=True)  # CPF único para o candidato
 
     def __str__(self):
         return self.user.first_name
@@ -2007,7 +2007,7 @@ from django.db import models
 
 class CurriculoAntigo(models.Model):
     id = models.AutoField(primary_key=True)
-    cpf = models.CharField(max_length=20, null=True, blank=True)
+    cpf = models.CharField(max_length=25, null=True, blank=True)
     nome = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(max_length=100, null=True, blank=True)
     senha = models.CharField(max_length=100, null=True, blank=True)
@@ -2087,7 +2087,7 @@ class Conceito(models.Model):
 #     from django.db import models
 
 # class Aluno(models.Model):
-#     nome = models.CharField(max_length=255)
+#     nome = models.CharField(max_length=191)
 #     turma = models.CharField(max_length=50)
 
 #     def __str__(self):
@@ -2099,7 +2099,7 @@ class Conceito(models.Model):
 from django.db import models
 
 class ConceitoLancado(models.Model):
-    aluno = models.CharField(max_length=255)
+    aluno = models.CharField(max_length=191)
     turma = models.CharField(max_length=100)
     ano = models.CharField(max_length=4)
     modalidade = models.CharField(max_length=100)
@@ -2127,11 +2127,11 @@ class AtendimentoSOE(models.Model):
     estudante = models.ForeignKey(Estudante, on_delete=models.CASCADE)
     data = models.DateTimeField()
     descricao = models.TextField()
-    nome_unidade_ensino = models.CharField(max_length=255)
+    nome_unidade_ensino = models.CharField(max_length=191)
     ano_serie = models.CharField(max_length=100, blank=True, null=True)
     nome_turma = models.CharField(max_length=100, blank=True, null=True)
     classificacao_nome = models.CharField(max_length=100)
-    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    tipo_ocorrencia_nome = models.CharField(max_length=191)
     registro = models.DateTimeField()
     status_descricao = models.CharField(max_length=50)
     fonte_dado = models.CharField(max_length=50, choices=[
@@ -2152,13 +2152,13 @@ class AtendimentoSOE(models.Model):
 # ********************************************************************************************************************************
 
 class SynapticAtendimento(models.Model):
-    nome_unidade_ensino = models.CharField(max_length=255)
-    ano_serie = models.CharField(max_length=255)
-    nome_turma = models.CharField(max_length=255)
-    classificacao_nome = models.CharField(max_length=255)
-    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    nome_unidade_ensino = models.CharField(max_length=191)
+    ano_serie = models.CharField(max_length=191)
+    nome_turma = models.CharField(max_length=191)
+    classificacao_nome = models.CharField(max_length=191)
+    tipo_ocorrencia_nome = models.CharField(max_length=191)
     registro = models.DateTimeField()
-    status_descricao = models.CharField(max_length=255)
+    status_descricao = models.CharField(max_length=191)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -2168,11 +2168,11 @@ class SynapticAtendimento(models.Model):
 from django.db import models
 
 class SIGEAtendimento(models.Model):
-    nome_unidade_ensino = models.CharField(max_length=255)
+    nome_unidade_ensino = models.CharField(max_length=191)
     ano_serie = models.CharField(max_length=100, blank=True, null=True)
     nome_turma = models.CharField(max_length=100, blank=True, null=True)
     classificacao_nome = models.CharField(max_length=100)
-    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    tipo_ocorrencia_nome = models.CharField(max_length=191)
     registro = models.DateTimeField()
     status_descricao = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -2189,11 +2189,11 @@ class SIGEAtendimento(models.Model):
 # ********************************************************************************************************************************
 
 class AutoKeeAtendimento(models.Model):
-    nome_unidade_ensino = models.CharField(max_length=255)
+    nome_unidade_ensino = models.CharField(max_length=191)
     ano_serie = models.CharField(max_length=100, blank=True, null=True)
     nome_turma = models.CharField(max_length=100, blank=True, null=True)
     classificacao_nome = models.CharField(max_length=100)
-    tipo_ocorrencia_nome = models.CharField(max_length=255)
+    tipo_ocorrencia_nome = models.CharField(max_length=191)
     registro = models.DateTimeField()
     status_descricao = models.CharField(max_length=50)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -2206,8 +2206,8 @@ class AutoKeeAtendimento(models.Model):
 from django.db import models
 
 class OrientadoresAtendimento(models.Model):
-    nome_orientador = models.CharField(max_length=255)
-    escola = models.CharField(max_length=255)
+    nome_orientador = models.CharField(max_length=191)
+    escola = models.CharField(max_length=191)
     ocorrencias_conselho_tutelar = models.IntegerField(default=0)
     ameaca = models.IntegerField(default=0)
     agressao_fisica = models.IntegerField(default=0)
@@ -2245,7 +2245,7 @@ class OrientadoresAtendimento(models.Model):
 # ********************************************************************************************************************************
 
 class SOEAtendimento(models.Model):
-    nome_unidade_ensino = models.CharField(max_length=255)
+    nome_unidade_ensino = models.CharField(max_length=191)
     ano_serie = models.CharField(max_length=50)
     nome_turma = models.CharField(max_length=100)
     classificacao_nome = models.CharField(max_length=100)
@@ -2269,12 +2269,12 @@ class Indicador(models.Model):
 # models.py
 
 class ProfessorEI(models.Model):
-    unidade_ensino = models.CharField(max_length=255)
+    unidade_ensino = models.CharField(max_length=191)
     ano = models.IntegerField()
-    modalidade = models.CharField(max_length=255)
-    formato_letivo = models.CharField(max_length=255)
-    turma = models.CharField(max_length=255)
-    nome_professor = models.CharField(max_length=255)
+    modalidade = models.CharField(max_length=191)
+    formato_letivo = models.CharField(max_length=191)
+    turma = models.CharField(max_length=191)
+    nome_professor = models.CharField(max_length=191)
     cpf_professor = models.CharField(max_length=14)
     email_professor = models.EmailField()
 
@@ -2283,11 +2283,11 @@ class ProfessorEI(models.Model):
 ############################################################################################################################
 
 class Coordenador(models.Model):
-    unidade_ensino = models.CharField(max_length=255)
+    unidade_ensino = models.CharField(max_length=191)
     ano = models.IntegerField()
-    modalidade = models.CharField(max_length=255)
-    formato_letivo = models.CharField(max_length=255)
-    nome_Coordenadora = models.CharField(max_length=255)
+    modalidade = models.CharField(max_length=191)
+    formato_letivo = models.CharField(max_length=191)
+    nome_Coordenadora = models.CharField(max_length=191)
     cpf_professor = models.CharField(max_length=14)
     email_Coordenadora = models.EmailField()
 
@@ -2296,11 +2296,11 @@ class Coordenador(models.Model):
 ############################################################################################################################
 
 class CoordenadorEI(models.Model):
-    unidade_ensino = models.CharField(max_length=255)
+    unidade_ensino = models.CharField(max_length=191)
     ano = models.CharField(max_length=20)
     modalidade = models.CharField(max_length=100)
     formato_letivo = models.CharField(max_length=100)
-    nome_Coordenadora = models.CharField(max_length=255)
+    nome_Coordenadora = models.CharField(max_length=191)
     cpf_professor = models.CharField(max_length=14)
     email_Coordenadora = models.EmailField()
 
@@ -2355,7 +2355,7 @@ class CustomUserProf(AbstractUser):
     username = models.CharField(max_length=150, unique=True)
     first_name = models.CharField(max_length=30, blank=True, null=True)
     last_name = models.CharField(max_length=30, blank=True, null=True)
-    cpf = models.CharField(max_length=11, unique=True)
+    cpf = models.CharField(max_length=25, unique=True)
     email = models.EmailField(blank=True, null=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -2411,8 +2411,8 @@ User = get_user_model()
 from django.db import models
 
 class UnidadeEscolar(models.Model):
-    nome = models.CharField(max_length=255)
-    endereco = models.CharField(max_length=255, blank=True, null=True)
+    nome = models.CharField(max_length=191)
+    endereco = models.CharField(max_length=191, blank=True, null=True)
     telefone = models.CharField(max_length=20, blank=True, null=True)
     email = models.EmailField(blank=True, null=True)
 
@@ -2424,13 +2424,13 @@ class UnidadeEscolar(models.Model):
 from django.db import models
 alunos = Aluno
 class Professor(models.Model):
-    nome = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=11, unique=True)
+    nome = models.CharField(max_length=191)
+    cpf = models.CharField(max_length=25, unique=True)
     email = models.EmailField()
 ############################################################################################################################
 
 class Turma(models.Model):
-    nome = models.CharField(max_length=255)  # <-- Removido unique=True
+    nome = models.CharField(max_length=191)  # <-- Removido unique=True
     ano_letivo = models.IntegerField(default=2025)  # Garante que tenha um valor padrão
     professor = models.ForeignKey(
     settings.AUTH_USER_MODEL,
@@ -2448,9 +2448,9 @@ class Turma(models.Model):
 ############################################################################################################################
     
 class CadastroEscola(models.Model):
-    unidade_ensino = models.CharField(max_length=255)
+    unidade_ensino = models.CharField(max_length=191)
     formato_letivo = models.CharField(max_length=50)
-    cpf = models.CharField(max_length=11)
+    cpf = models.CharField(max_length=25)
     data_nascimento = models.DateField()
     turma = models.ForeignKey(Turma, on_delete=models.CASCADE, related_name="escolas")
     professor = models.ForeignKey(
@@ -2461,7 +2461,7 @@ class CadastroEscola(models.Model):
 )
     ano = models.IntegerField()
     modalidade = models.CharField(max_length=50)
-    pessoa_nome = models.CharField(max_length=255)
+    pessoa_nome = models.CharField(max_length=191)
     idade = models.IntegerField()
     avaliado = models.CharField(max_length=3, choices=[("SIM", "Sim"), ("NÃO", "Não")])
 
@@ -2494,13 +2494,13 @@ class CadastroEI(models.Model):
         blank=True
     )
     id_matricula = models.AutoField(primary_key=True)
-    unidade_ensino = models.CharField(max_length=255)
-    formato_letivo = models.CharField(max_length=255, null=True, blank=True)
-    cpf = models.CharField(max_length=11)
+    unidade_ensino = models.CharField(max_length=191)
+    formato_letivo = models.CharField(max_length=191, null=True, blank=True)
+    cpf = models.CharField(max_length=25)
     data_nascimento = models.DateField(null=True, blank=True)
     ano = models.CharField(max_length=4)
     modalidade = models.CharField(max_length=100)
-    pessoa_nome = models.CharField(max_length=255)
+    pessoa_nome = models.CharField(max_length=191)
     idade = models.IntegerField()
     avaliado = models.CharField(
         max_length=3, choices=[("SIM", "Sim"), ("NAO", "Não")], default="NAO"
@@ -2608,7 +2608,7 @@ class ReceitaDespesa(models.Model):
     ]
 
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name="receitadespesa")
-    programa = models.CharField(max_length=255)
+    programa = models.CharField(max_length=191)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default="receita")
     periodo_execucao = models.IntegerField()
 
@@ -2689,7 +2689,7 @@ from django.db import models
 
 class Receita(models.Model):
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name="receitas")
-    programa = models.CharField(max_length=255)
+    programa = models.CharField(max_length=191)
     data_inicio = models.DateField()
     data_fim = models.DateField(default="2025-12-31")
 
@@ -2729,9 +2729,9 @@ class Receita(models.Model):
 from django.db import models
 
 class Programa(models.Model):
-    nome = models.CharField(max_length=255, unique=True, verbose_name="Nome do Programa")
+    nome = models.CharField(max_length=191, unique=True, verbose_name="Nome do Programa")
     descricao = models.TextField(blank=True, null=True, verbose_name="Descrição do Programa")
-    resolucao = models.CharField(max_length=255, blank=True, null=True, verbose_name="Resolução")
+    resolucao = models.CharField(max_length=191, blank=True, null=True, verbose_name="Resolução")
     data_inicio = models.DateField(verbose_name="Data de Início", null=True, blank=True)
     data_fim = models.DateField(verbose_name="Data de Fim", null=True, blank=True)
 
@@ -2750,7 +2750,7 @@ class EscolaPdde(models.Model):
     ]
 
     # **Identificação**
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     ano = models.IntegerField(default=2024)  # Campo do ano do PDDE
     status = models.CharField(
         max_length=20,
@@ -2758,10 +2758,10 @@ class EscolaPdde(models.Model):
         default="pendente"
     )
     cnpj = models.CharField(max_length=18, unique=True)
-    endereco = models.CharField(max_length=255, null=True, blank=True)
+    endereco = models.CharField(max_length=191, null=True, blank=True)
     cep = models.CharField(max_length=9, null=True, blank=True)  # ✅ Adicionado
-    bairro = models.CharField(max_length=255, null=True, blank=True)  # ✅ Adicionado
-    cidade = models.CharField(max_length=255, default="Canaã dos Carajás")  # ✅ Adicionado
+    bairro = models.CharField(max_length=191, null=True, blank=True)  # ✅ Adicionado
+    cidade = models.CharField(max_length=191, default="Canaã dos Carajás")  # ✅ Adicionado
     uf = models.CharField(max_length=2, default="PA")
 
     # 🔹 Adicionando a relação muitos para muitos com Programas
@@ -2785,7 +2785,7 @@ class EscolaPdde(models.Model):
 
     # **Nível de Ensino**
     ensino = models.CharField(
-        max_length=255, 
+        max_length=191, 
         null=True, blank=True, 
         help_text="Informe os níveis de ensino disponíveis na escola"
     )
@@ -2797,7 +2797,7 @@ class EscolaPdde(models.Model):
     quantidade_alunos = models.IntegerField(default=0)
 
     # **Novo Campo**
-    nome_conselho = models.CharField(max_length=255, null=True, blank=True, help_text="Nome do Conselho Escolar") 
+    nome_conselho = models.CharField(max_length=191, null=True, blank=True, help_text="Nome do Conselho Escolar") 
     
 
     def __str__(self):
@@ -2835,9 +2835,9 @@ from django.core.exceptions import ObjectDoesNotExist
 
 class Pagamento(models.Model):
     escola = models.ForeignKey("EscolaPdde", on_delete=models.CASCADE)
-    programa = models.CharField(max_length=255)
-    nome_favorecido = models.CharField(max_length=255)
-    cnpj_cpf = models.CharField(max_length=20, blank=True, null=True)
+    programa = models.CharField(max_length=191)
+    nome_favorecido = models.CharField(max_length=191)
+    cnpj_cpf = models.CharField(max_length=25, blank=True, null=True)
     tipo_pagamento = models.CharField(
         max_length=50,
         choices=[("Custeio", "Custeio"), ("Capital", "Capital")]
@@ -2930,7 +2930,7 @@ class ContaBancaria(models.Model):
         related_name="contas"
     )
     conselho = models.CharField(
-        max_length=255, 
+        max_length=191, 
         blank=True, 
         null=True,
         help_text="Conselho vinculado à escola."
@@ -3006,7 +3006,7 @@ class LancamentoBancario(models.Model):
     ]
 
     data = models.DateField(verbose_name="Data do Lançamento")
-    descricao = models.CharField(max_length=255, verbose_name="Descrição")
+    descricao = models.CharField(max_length=191, verbose_name="Descrição")
     tipo = models.CharField(max_length=7, choices=TIPO_CHOICES, verbose_name="Tipo de Lançamento")
     valor = models.DecimalField(max_digits=15, decimal_places=2, verbose_name="Valor (R$)")
     conta_bancaria = models.ForeignKey(
@@ -3015,7 +3015,7 @@ class LancamentoBancario(models.Model):
         related_name='lancamentos',
         verbose_name="Conta Bancária"
     )
-    origem_destino = models.CharField(max_length=255, blank=True, null=True, verbose_name="Origem/Destino")
+    origem_destino = models.CharField(max_length=191, blank=True, null=True, verbose_name="Origem/Destino")
     
     # 🔹 Atualizando a referência para o usuário customizado
     usuario = models.ForeignKey(
@@ -3067,7 +3067,7 @@ class LancamentoBancario(models.Model):
 from django.db import models
 
 class Categoria(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
 
     def __str__(self):
         return self.nome
@@ -3075,7 +3075,7 @@ class Categoria(models.Model):
 
 class Subcategoria(models.Model):
     categoria = models.ForeignKey(Categoria, on_delete=models.CASCADE)
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
 
     def __str__(self):
         return f"{self.categoria.nome} - {self.nome}"
@@ -3084,7 +3084,7 @@ class Subcategoria(models.Model):
 from django.db import models
 
 class Item(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     descricao = models.TextField(blank=True, null=True)
     unidade_medida = models.CharField(max_length=50)
     categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
@@ -3097,11 +3097,11 @@ class Item(models.Model):
 from django.db import models
 
 class Proponente(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     cpf_cnpj = models.CharField(max_length=18, unique=True)  # Aceita CPF ou CNPJ
-    email = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=191, unique=True)
     telefone = models.CharField(max_length=50)
-    endereco = models.CharField(max_length=255)
+    endereco = models.CharField(max_length=191)
     bairro = models.CharField(max_length=100)
     cidade = models.CharField(max_length=100)
     estado = models.CharField(max_length=2, choices=[
@@ -3118,7 +3118,7 @@ class Proponente(models.Model):
         ("Pessoa Física", "Pessoa Física"),
         ("Pessoa Jurídica", "Pessoa Jurídica")
     ])
-    representante_legal = models.CharField(max_length=255, blank=True, null=True)
+    representante_legal = models.CharField(max_length=191, blank=True, null=True)
     observacoes = models.TextField(blank=True, null=True)
 
     def __str__(self):
@@ -3256,7 +3256,7 @@ class Documento(models.Model):
 
 class BemAdquirido(models.Model):
     documento = models.ForeignKey(Documento, on_delete=models.CASCADE, related_name="bens")
-    especificacao = models.CharField(max_length=255)
+    especificacao = models.CharField(max_length=191)
     quantidade = models.IntegerField()
     valor_unitario = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -3271,11 +3271,11 @@ class BemAdquirido(models.Model):
 from django.db import models
 
 class RepresentanteLegal(models.Model):
-    nome = models.CharField(max_length=255)
-    cpf = models.CharField(max_length=14, unique=True)  # Confirme se existe
+    nome = models.CharField(max_length=191)
+    cpf = models.CharField(max_length=25, unique=True)  # Confirme se existe
     email = models.EmailField(unique=True)  # Confirme se existe
     telefone = models.CharField(max_length=15)  # Confirme se existe
-    cargo = models.CharField(max_length=255)
+    cargo = models.CharField(max_length=191)
 
     def __str__(self):
         return self.nome
@@ -3291,13 +3291,13 @@ class Bem(models.Model):
     )
 
     nome_conselho = models.CharField(
-        max_length=255,
+        max_length=191,
         blank=True,
         null=True,
         verbose_name="Nome do Conselho"
     )
 
-    nome = models.CharField(max_length=255, verbose_name="Nome do Bem")
+    nome = models.CharField(max_length=191, verbose_name="Nome do Bem")
     documento = models.FileField(upload_to="documentos_bens/", verbose_name="Documento de Aquisição")
     quantidade = models.PositiveIntegerField(verbose_name="Quantidade")
     valor_unitario = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Valor Unitário (R$)")
@@ -3318,15 +3318,15 @@ from django.db import models
 
 class TermoDoacao(models.Model):
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
-    conselho = models.CharField(max_length=255)
+    conselho = models.CharField(max_length=191)
     bem = models.ForeignKey('BemDoado', on_delete=models.CASCADE, null=True, blank=True)
     data_emissao = models.DateField(auto_now_add=True)
 ############################################################################################################################
 
 class BemDoado(models.Model):
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, verbose_name="Escola")
-    conselho = models.CharField(max_length=255, verbose_name="Conselho Escolar")
-    descricao = models.CharField(max_length=255, verbose_name="Descrição do Bem")
+    conselho = models.CharField(max_length=191, verbose_name="Conselho Escolar")
+    descricao = models.CharField(max_length=191, verbose_name="Descrição do Bem")
     quantidade = models.PositiveIntegerField()
     numero_nota = models.CharField(max_length=50, verbose_name="Nº Nota Fiscal")
     data_nota = models.DateField(verbose_name="Data da Nota Fiscal")
@@ -3355,9 +3355,9 @@ STATUS_CHOICES = (
 )
 
 class PlanoGestaoEscolar(models.Model):
-    unidade_ensino = models.CharField(max_length=255)
+    unidade_ensino = models.CharField(max_length=191)
     cargo = models.CharField(max_length=100, default='Diretor')
-    servidor = models.CharField(max_length=255)
+    servidor = models.CharField(max_length=191)
     telefone = models.CharField(max_length=20)
     arquivo = models.FileField(upload_to='pge_planos/')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Não Enviado')  # <- aqui
@@ -3372,9 +3372,9 @@ class PlanoGestaoEscolar(models.Model):
 from django.db import models
 
 class PGEPlanoGestaoEscolar(models.Model):
-    unidade_ensino = models.CharField(max_length=255)
+    unidade_ensino = models.CharField(max_length=191)
     cargo = models.CharField(max_length=50)
-    servidor = models.CharField(max_length=255)
+    servidor = models.CharField(max_length=191)
     telefone = models.CharField(max_length=20)
     arquivo = models.FileField(upload_to='pge/', blank=True, null=True)
     enviado = models.BooleanField(default=False)
@@ -3400,7 +3400,7 @@ from django.db import models
 
 class LancamentoDiario(models.Model):
     data = models.DateField()
-    historico = models.CharField(max_length=255)
+    historico = models.CharField(max_length=191)
     recebimento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     pagamento = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     saldo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -3428,7 +3428,7 @@ class MotivoIndeferimento(models.Model):
 
 
 class ConselhoMembro(models.Model):
-    nome = models.CharField(max_length=255)
+    nome = models.CharField(max_length=191)
     escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE)
     cargo = models.CharField(max_length=100)
 
