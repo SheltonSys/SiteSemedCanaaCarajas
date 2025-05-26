@@ -750,19 +750,25 @@ class ProgramaForm(forms.ModelForm):
 # *******************************************************************************************************************
 
 from django import forms
-from .models import EscolaPdde, Programa
+from .models import EscolaPdde, Programa, CustomUserProf
 
 class VincularEscolaProgramaForm(forms.Form):
     escola = forms.ModelChoiceField(
         queryset=EscolaPdde.objects.all(),
-        label="Escolha a Escola",
-        widget=forms.Select(attrs={"class": "form-control"})
+        label="Escolha a Escola"
     )
     programas = forms.ModelMultipleChoiceField(
         queryset=Programa.objects.all(),
-        label="Escolha os Programas",
-        widget=forms.SelectMultiple(attrs={"class": "form-control"})
+        widget=forms.CheckboxSelectMultiple,
+        label="Programas"
     )
+    coordenador = forms.ModelChoiceField(
+        queryset=CustomUserProf.objects.filter(is_coordenador=True),
+        required=False,
+        label="Coordenador Responsável"
+    )
+
+
 
 # *******************************************************************************************************************
 # ***************************************************PESQUISA DE PREÇOS**********************************************
@@ -831,12 +837,13 @@ class BemAdquiridoForm(forms.ModelForm):
         }
 # *******************************************************************************************************************
 
+from django import forms
 from .models import RepresentanteLegal
 
 class RepresentanteLegalForm(forms.ModelForm):
     class Meta:
         model = RepresentanteLegal
-        fields = ["nome", "cpf", "cargo", "email", "telefone"]
+        exclude = ['escola']  # Remove o campo escola do formulário
         widgets = {
             'nome': forms.TextInput(attrs={'class': 'form-control'}),
             'cpf': forms.TextInput(attrs={'class': 'form-control'}),
@@ -844,6 +851,7 @@ class RepresentanteLegalForm(forms.ModelForm):
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
             'telefone': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
 # *******************************************************************************************************************
 
 from .models import Bem
@@ -863,22 +871,31 @@ class BemForm(forms.ModelForm):
 # *******************************************************************************************************************
 
 # forms.py
-from .models import TermoDoacao, BemDoado
 from django import forms
+from .models import TermoDoacao, EscolaPdde
 
 class TermoDoacaoForm(forms.ModelForm):
     class Meta:
         model = TermoDoacao
         fields = ['escola', 'conselho', 'bem']
-        widgets = {
-            'escola': forms.Select(attrs={'class': 'form-control'}),
-            'conselho': forms.TextInput(attrs={'class': 'form-control'}),
-            'bem': forms.Select(attrs={'class': 'form-control'}),
-        }
 
     def __init__(self, *args, **kwargs):
-        super(TermoDoacaoForm, self).__init__(*args, **kwargs)
-        self.fields['bem'].queryset = BemDoado.objects.all().order_by('descricao')
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+
+        # Estilo Bootstrap para todos os campos
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+        # Lógica de filtragem por usuário
+        if user:
+            if user.is_superuser:
+                self.fields['escola'].queryset = EscolaPdde.objects.all()
+            elif hasattr(user, 'escolas'):
+                self.fields['escola'].queryset = user.escolas.all()
+
+
+
 # *******************************************************************************************************************
 
 from .models import BemDoado
@@ -919,3 +936,14 @@ from django.utils.html import strip_tags
 def clean_descricao(self):
     data = self.cleaned_data['descricao']
     return strip_tags(data)
+
+
+from django import forms
+from .models import EscolaPdde
+
+class TrocarEscolaForm(forms.Form):
+    nova_escola = forms.ModelChoiceField(
+        queryset=EscolaPdde.objects.all(),
+        label="Selecione a nova escola",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )

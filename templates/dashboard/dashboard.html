@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Painel Administrativo - SEPPEC</h1>
+            <p class="text-muted">Bem-vindo(a), {{ user.first_name }}! Acompanhe os principais dados e módulos do sistema.</p>
+        </div>
+
+        <!-- Indicadores -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-school fa-3x text-primary mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Escolas</h6>
+                        <p class="text-muted">Total: <strong>{{ total_escolas }}</strong></p>
+                        <a href="{% url 'escolas' %}" class="btn btn-outline-primary btn-sm">Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-users fa-3x text-success mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Membros Conselho</h6>
+                        <p class="text-muted">Total: <strong>{{ total_membros }}</strong></p>
+                        <a href="{% url 'conselho_membros' %}" class="btn btn-outline-success btn-sm">Detalhes</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-file-alt fa-3x text-warning mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Documentos Enviados</h6>
+                        <p class="text-muted">Total: <strong>{{ total_certidoes }}</strong></p>
+                        <a href="{% url 'emissao_certidoes' %}" class="btn btn-outline-warning btn-sm">Ver</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-chart-pie fa-3x text-info mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Informações e Orientações</h6>
+                        <p class="text-muted">Análise Consolidada</p>
+                        <a href="{% url 'sintese_pdde' %}" class="btn btn-outline-info btn-sm">Visualizar</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+<!-- Área de Filtros Estilizada -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title fw-bold mb-0">
+            <i class="fas fa-filter me-2"></i> Filtros de Pesquisa - PDDE
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="{% url 'sintese_pdde' %}" id="filtrosForm">
+            <div class="row g-3">
+
+                <!-- Escola -->
+                <div class="col-md-4">
+                    <label for="escola" class="form-label">Escola</label>
+                    <!-- Filtro Escolas -->
+<select name="escola" id="escola" class="form-select">
+    <option value="">Todas</option>
+    {% for escola in escolas %}
+        <option value="{{ escola.id }}" {% if request.GET.escola == escola.id|stringformat:"s" %}selected{% endif %}>
+            {{ escola.nome }}
+        </option>
+    {% endfor %}
+</select>
+                </div>
+
+                <!-- Ano -->
+                <div class="col-md-4">
+                    <label for="ano" class="form-label">Ano</label>
+                    <!-- Filtro Ano -->
+<select name="ano" id="ano" class="form-select">
+    <option value="">Todos</option>
+    {% for ano in anos %}
+        <option value="{{ ano }}" {% if request.GET.ano == ano|stringformat:"s" %}selected{% endif %}>{{ ano }}</option>
+    {% endfor %}
+</select>
+                </div>
+
+                <!-- Programa -->
+                <div class="col-md-4">
+                    <label for="programa" class="form-label">Programa</label>
+                    <!-- Filtro Programa -->
+<select name="programa" id="programa" class="form-select">
+    <option value="">Todos</option>
+    {% for p in programas %}
+        <option value="{{ p }}" {% if request.GET.programa == p %}selected{% endif %}>{{ p }}</option>
+    {% endfor %}
+</select>
+                </div>
+            </div>
+
+            <div class="text-end mt-4">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                <button type="reset" class="btn btn-secondary" onclick="limparFiltros()">
+                    <i class="fas fa-undo"></i> Limpar Filtros
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+
+
+        <!-- Gráfico Resumo -->
+        <div class="card shadow-lg border-0 mb-4">
+            <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+                <h2 class="h6 mb-0"><i class="fas fa-chart-bar me-2"></i> Indicadores Financeiros</h2>
+            </div>
+            <div class="card-body bg-light">
+                <canvas id="graficoResumo" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Elementos Contábeis -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-coins me-2"></i> Elementos Contábeis - PDDE</h2>
+    </div>
+    <div class="card-body bg-light">
+
+
+
+        <div class="row text-center">
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-arrow-down text-success fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Receita Total</h6>
+            <p class="h5 text-success">R$ {{ receita_total|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-arrow-up text-danger fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Despesa Total</h6>
+            <p class="h5 text-danger">R$ {{ despesa_total|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-wallet text-primary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Saldo Reprogramado</h6>
+            <p class="h5 text-primary">R$ {{ saldo_reprogramado|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+            <p class="h5 text-warning">{{ percentual_execucao|floatformat:2 }}%</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Último Lançamento</h6>
+            <p class="h6 text-secondary">{{ ultimo_lancamento|default:"--" }}</p>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!-- Outros Elementos Contábeis -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-balance-scale me-2"></i> Informações Complementares - PDDE</h2>
+    </div>
+    <div class="card-body bg-light">
+        <div class="row text-center">
+
+
+            <div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+            <p class="h5 text-warning">{{ percentual_execucao|floatformat:2 }}%</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Último Lançamento</h6>
+            <p class="h6 text-secondary">{{ ultimo_lancamento|default:"--" }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-hand-holding-usd text-info fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Recursos Próprios</h6>
+            <p class="h5 text-info">R$ {{ recursos_proprios|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-piggy-bank text-success fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Rendimentos de Aplicação</h6>
+            <p class="h5 text-success">R$ {{ rendimentos_aplicacao|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-undo text-danger fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Devoluções FNDE</h6>
+            <p class="h5 text-danger">R$ {{ devolucoes_fnde|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-school text-primary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Nº Escolas Atendidas</h6>
+            <p class="h5 text-primary">{{ escolas_atendidas }}</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-check-circle text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Situação Financeira</h6>
+            <p class="h6 {{ situacao_classe }} fw-bold">{{ situacao_financeira }}</p>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+</div>
+
+
+
+
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    
+    
+
+<style>
+.content-wrapper {
+    margin-left: 0;
+    padding: 20px;
+}
+
+.hover-underline-animation {
+    position: relative;
+    display: inline-block;
+}
+
+.hover-underline-animation::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 3px;
+    bottom: -3px;
+    left: 0;
+    background-color: #007bff;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+}
+
+.hover-underline-animation:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+</style>
+
+{% endblock %}

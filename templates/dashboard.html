@@ -141,44 +141,46 @@
         <h2 class="h6 mb-0"><i class="fas fa-coins me-2"></i> Elementos Contábeis - PDDE</h2>
     </div>
     <div class="card-body bg-light">
+
+
+
         <div class="row text-center">
-            <div class="col-md-4 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-arrow-down text-success fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Receita Total</h6>
-                    <p class="h5 text-success receita-total">R$ 0,00</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-arrow-up text-danger fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Despesa Total</h6>
-                    <p class="h5 text-danger despesa-total">R$ 0,00</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-wallet text-primary fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Saldo Reprogramado</h6>
-                    <p class="h5 text-primary saldo-reprogramado">R$ 0,00</p>
-                </div>
-            </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-arrow-down text-success fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Receita Total</h6>
+            <p class="h5 text-success">R$ {{ receita_total|floatformat:2 }}</p>
         </div>
-        <div class="row text-center mt-3">
-            <div class="col-md-6 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Percentual de Execução</h6>
-                    <p class="h5 text-warning percentual-execucao">0,00%</p>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Último Lançamento</h6>
-                    <p class="h6 text-secondary ultimo-lancamento">--</p>
-                </div>
-            </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-arrow-up text-danger fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Despesa Total</h6>
+            <p class="h5 text-danger">R$ {{ despesa_total|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-wallet text-primary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Saldo Reprogramado</h6>
+            <p class="h5 text-primary">R$ {{ saldo_reprogramado|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+            <p class="h5 text-warning">{{ percentual_execucao|floatformat:2 }}%</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Último Lançamento</h6>
+            <p class="h6 text-secondary">{{ ultimo_lancamento|default:"--" }}</p>
         </div>
     </div>
 </div>
@@ -193,44 +195,67 @@
     </div>
     <div class="card-body bg-light">
         <div class="row text-center">
-            <div class="col-md-4 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-hand-holding-usd text-info fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Recursos Próprios</h6>
-                    <p class="h5 text-info recursos-proprios">R$ 0,00</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-piggy-bank text-success fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Rendimentos de Aplicação</h6>
-                    <p class="h5 text-success rendimentos-aplicacao">R$ 0,00</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-undo text-danger fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Devoluções FNDE</h6>
-                    <p class="h5 text-danger devolucoes-fnde">R$ 0,00</p>
-                </div>
-            </div>
+
+
+            <div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+            <p class="h5 text-warning">{{ percentual_execucao|floatformat:2 }}%</p>
         </div>
-        <div class="row text-center mt-3">
-            <div class="col-md-6 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-school text-primary fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Nº Escolas Atendidas</h6>
-                    <p class="h5 text-primary escolas-atendidas">0</p>
-                </div>
-            </div>
-            <div class="col-md-6 mb-3">
-                <div class="border rounded bg-white p-3 shadow-sm">
-                    <i class="fas fa-check-circle text-secondary fa-2x mb-2"></i>
-                    <h6 class="fw-bold text-muted">Situação Financeira</h6>
-                    <p class="h6 situacao-financeira fw-bold">Neutra</p>
-                </div>
-            </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Último Lançamento</h6>
+            <p class="h6 text-secondary">{{ ultimo_lancamento|default:"--" }}</p>
         </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-hand-holding-usd text-info fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Recursos Próprios</h6>
+            <p class="h5 text-info">R$ {{ recursos_proprios|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-piggy-bank text-success fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Rendimentos de Aplicação</h6>
+            <p class="h5 text-success">R$ {{ rendimentos_aplicacao|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-undo text-danger fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Devoluções FNDE</h6>
+            <p class="h5 text-danger">R$ {{ devolucoes_fnde|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-school text-primary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Nº Escolas Atendidas</h6>
+            <p class="h5 text-primary">{{ escolas_atendidas }}</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-check-circle text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Situação Financeira</h6>
+            <p class="h6 {{ situacao_classe }} fw-bold">{{ situacao_financeira }}</p>
+        </div>
+    </div>
+</div>
+
+
     </div>
 </div>
 
@@ -242,95 +267,7 @@
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById('graficoResumo').getContext('2d');
-    fetch('/contas/sintese-receita/')
-        .then(response => response.json())
-        .then(data => {
-            const s = data.sintese;
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Receita Custeio', 'Despesa Custeio', 'Líquido Custeio', 'Receita Capital', 'Despesa Capital', 'Líquido Capital'],
-                    datasets: [{
-                        label: 'Valores (R$)',
-                        data: [
-                            s.valor_total_receita.custeio,
-                            s.valor_despesa_realizada.custeio,
-                            s.valor_total_receita.custeio - (s.devolucao_fnde.custeio + s.valor_despesa_realizada.custeio + s.saldo_devolvido.custeio),
-                            s.valor_total_receita.capital,
-                            s.valor_despesa_realizada.capital,
-                            s.valor_total_receita.capital - (s.devolucao_fnde.capital + s.valor_despesa_realizada.capital + s.saldo_devolvido.capital)
-                        ],
-                        backgroundColor: ['#007bff', '#dc3545', '#28a745', '#17a2b8', '#ffc107', '#20c997']
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
-                }
-            });
-        })
-        .catch(error => {
-            console.error('❌ Erro ao carregar dados do gráfico:', error);
-        });
-});
-</script>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('/contas/sintese-receita/')
-            .then(response => response.json())
-            .then(data => {
-                const r = data.sintese.resumo_cards;
-    
-                // Valores financeiros
-                document.querySelector('.receita-total').textContent = `R$ ${formatarValor(r.receita_total)}`;
-                document.querySelector('.despesa-total').textContent = `R$ ${formatarValor(r.despesa_total)}`;
-                document.querySelector('.saldo-reprogramado').textContent = `R$ ${formatarValor(r.saldo_reprogramado)}`;
-                document.querySelector('.percentual-execucao').textContent = `${r.percentual_execucao}%`;
-                document.querySelector('.ultimo-lancamento').textContent = "--"; // ajuste depois
-                document.querySelector('.recursos-proprios').textContent = `R$ ${formatarValor(r.recursos_proprios)}`;
-                document.querySelector('.rendimentos-aplicacao').textContent = `R$ ${formatarValor(r.rendimentos_aplicacao)}`;
-                document.querySelector('.devolucoes-fnde').textContent = `R$ ${formatarValor(r.devolucoes_fnde)}`;
-                document.querySelector('.escolas-atendidas').textContent = r.escolas_atendidas;
-    
-                // Situação financeira
-                const situacao = document.querySelector('.situacao-financeira');
-                situacao.classList.remove('text-success', 'text-danger', 'text-warning');
-                if (r.percentual_execucao >= 100) {
-                    situacao.textContent = 'Positiva';
-                    situacao.classList.add('text-success');
-                } else if (r.percentual_execucao <= 30) {
-                    situacao.textContent = 'Negativa';
-                    situacao.classList.add('text-danger');
-                } else {
-                    situacao.textContent = 'Neutra';
-                    situacao.classList.add('text-warning');
-                }
-    
-                // 🏫 Contagem de escolas, membros e certidões
-                document.querySelector('.total-escolas').textContent = r.total_escolas;
-                document.querySelector('.total-membros').textContent = r.total_membros;
-                document.querySelector('.total-certidoes').textContent = r.total_certidoes;
-            })
-            .catch(error => {
-                console.error('❌ Erro ao carregar dados dos cards:', error);
-            });
-    
-        function formatarValor(valor) {
-            return parseFloat(valor).toLocaleString('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-    });
-    </script>
     
     
 

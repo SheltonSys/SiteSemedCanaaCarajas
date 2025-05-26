@@ -1,0 +1,21 @@
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title font-weight-bold">
+            <i class="fas fa-plus-circle"></i> Ações PDDE
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            <!-- Aqui vão os botões como Lançar Receita, Pagamento etc -->
+            <a class="btn btn-outline-primary m-1" href="{% url 'pddelancar_receita' %}">
+                <i class="fas fa-plus-circle"></i> Lançar Receita
+            </a>
+            <a class="btn btn-outline-secondary m-1" href="{% url 'pddelancar_pagamento' %}">
+                <i class="fas fa-money-check-alt"></i> Lançar Pagamento
+            </a>
+            <a class="btn btn-outline-success m-1" href="{% url 'vincular_escola_programa' %}">
+                <i class="fas fa-link"></i> Vinculação
+            </a>
+        </div>
+    </div>
+</div>

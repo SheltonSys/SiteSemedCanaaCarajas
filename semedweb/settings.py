@@ -24,7 +24,17 @@ SECRET_KEY = 'django-insecure-zrvbu@igm3yi3k&l)8tt3=94!#tgo&1io_#s1=tl^apan#w=$0
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
 # Hosts permitidos
-ALLOWED_HOSTS = ["*","portal.semedcanaadoscarajas.pa.gov.br", "54.207.94.5", "127.0.0.1", "10.19.34.132"]
+ALLOWED_HOSTS = [
+    "*",  # ou mantenha todos os IPs conhecidos
+    "localhost",
+    "127.0.0.1",
+    "10.19.34.132",
+    "10.19.35.214",
+    "portal.semedcanaadoscarajas.pa.gov.br",
+]
+
+
+CSRF_TRUSTED_ORIGINS = ["http://10.19.35.214:8000"]
 
 
 # Application definition
@@ -39,10 +49,12 @@ INSTALLED_APPS = [
     'semedapp',
     'widget_tweaks',
     'django_otp',
-    'django_otp.plugins.otp_totp',
-    'django_otp.plugins.otp_static',  # ← ESSENCIAL para o pacote funcionar!
+    # 'django_otp.plugins.otp_totp',
+    # 'django_otp.plugins.otp_static',  # ← ESSENCIAL para o pacote funcionar!
 
 ]
+
+AUTH_USER_MODEL = 'semedapp.CustomUserProf'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -100,36 +112,36 @@ WSGI_APPLICATION = 'semedweb.wsgi.application'
 # }
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'siedge_db',
-#         'USER': 'siedge_user',
-#         'PASSWORD': '@Drik16091985',
-#         'HOST': 'localhost',
-#         'PORT': '3306',
-#         'OPTIONS': {
-#             'charset': 'utf8mb4',
-#             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-#         },
-#     }
-# }
-
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": os.getenv("DB_NAME"),
-        "USER": os.getenv("DB_USER"),
-        "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST", "localhost"),
-        "PORT": os.getenv("DB_PORT", "3306"),
-        "OPTIONS": {
-            "charset": "utf8mb4",
-            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
-
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'siedge_db',
+        'USER': 'siedge_user',
+        'PASSWORD': '@Drik16091985',
+        'HOST': 'localhost',
+        'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
     }
 }
+
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.mysql",
+#         "NAME": os.getenv("DB_NAME"),
+#         "USER": os.getenv("DB_USER"),
+#         "PASSWORD": os.getenv("DB_PASSWORD"),
+#         "HOST": os.getenv("DB_HOST", "localhost"),
+#         "PORT": os.getenv("DB_PORT", "3306"),
+#         "OPTIONS": {
+#             "charset": "utf8mb4",
+#             "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+
+#         },
+#     }
+# }
 
 
 
@@ -217,12 +229,12 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000  # Aumente o valor conforme necessário
 
 
-AUTH_USER_MODEL = 'semedapp.CustomUserProf'
+
 
 
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SECURE = True  # se estiver usando HTTPS
-CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = False  # se estiver usando HTTPS
+CSRF_COOKIE_SECURE = False
 
 

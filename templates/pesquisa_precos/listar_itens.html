@@ -46,13 +46,21 @@
                             <td>{{ item.categoria.nome }}</td>
                             <td>{{ item.subcategoria.nome }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-warning">
+                                <a href="{% url 'editar_item' item.id %}" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Editar
                                 </a>
-                                <a href="#" class="btn btn-sm btn-danger">
-                                    <i class="fas fa-trash-alt"></i> Excluir
-                                </a>
+                                <button class="btn btn-sm btn-danger"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalExcluir"
+                                    data-id="{{ item.id }}"
+                                    data-nome="{{ item.nome }}"
+                                    onclick="prepararExclusaoPorData(this)">
+                                <i class="fas fa-trash-alt"></i> Excluir
+                            </button>
+
                             </td>
+
+
                         </tr>
                         {% empty %}
                         <tr>
@@ -66,4 +74,48 @@
 
     </div>
 </div>
+
+
+
+<div class="modal fade" id="modalExcluir" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow-lg">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="modalExcluirLabel">Confirmar Exclusão</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-0">Tem certeza que deseja excluir o item <strong id="itemNomeExcluir"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <form method="POST" id="formExcluirItem" action="">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Excluir</button>
+        </form>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function prepararExclusao(itemId, nome) {
+    document.getElementById("itemNomeExcluir").textContent = nome;
+    const form = document.getElementById("formExcluirItem");
+    form.action = `/banco-curriculos/itens/excluir/${itemId}/`;
+  }
+</script>
+
+<script>
+function prepararExclusaoPorData(el) {
+    const id = el.getAttribute("data-id");
+    const nome = el.getAttribute("data-nome");
+
+    document.getElementById("itemNomeExcluir").textContent = nome;
+    document.getElementById("formExcluirItem").action = `/banco-curriculos/itens/excluir/${id}/`;
+}
+</script>
+
+
+
 {% endblock %}

@@ -1,0 +1,14 @@
+<div class="col-md-4 mb-4">
+  <div class="card shadow-sm h-100">
+    <img src="{{ noticia.imagem.url }}" class="card-img-top" alt="{{ noticia.titulo }}">
+    <div class="card-body">
+      <h5 class="card-title text-center">{{ noticia.titulo }}</h5>
+      <p class="card-text text-center">{{ noticia.conteudo|truncatechars:120 }}</p>
+      {% if noticia.publicado %}
+        <span class="badge bg-success d-block text-center">Publicado</span>
+      {% else %}
+        <span class="badge bg-warning text-dark d-block text-center">Aguardando Publicação</span>
+      {% endif %}
+    </div>
+  </div>
+</div>

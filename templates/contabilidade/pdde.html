@@ -23,13 +23,20 @@
     <section class="content" style="padding: 20px;">
         <div class="container-fluid">
 
+
+            
+
+
+
             <!-- Botões para Ações PDDE -->
-            <div class="card shadow-lg border-0 mb-4">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title font-weight-bold">
-                        <i class="fas fa-plus-circle"></i> Ações PDDE
-                    </h5>
-                </div>
+            {% if pdde_data or user.is_superuser or user.username == "Icleia" or user.username == "Alde" or user.username == "Mauro"  %}
+<!-- Botões para Ações PDDE -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title font-weight-bold">
+            <i class="fas fa-plus-circle"></i> Ações PDDE
+        </h5>
+    </div>
                 <div class="card-body">
                     <div class="d-flex flex-wrap justify-content-center gap-2">
                         <!-- PDDE - Opções -->
@@ -53,9 +60,12 @@
                                     <i class="fas fa-money-check-alt"></i> Lançar Pagamento
                                 </a>
 
-                                <a class="dropdown-item" href="{% url 'vincular_escola_programa' %}">
-                                    <i class="fas fa-money-check-alt"></i> Vinculação
-                                </a>
+                                {% if user.is_superuser %}
+<a class="dropdown-item text-danger fw-bold" href="{% url 'vincular_escola_programa' %}">
+    <i class="fas fa-money-check-alt"></i> Vinculação (Apenas Superuser)
+</a>
+{% endif %}
+
 
                             </div>
                         </div>
@@ -143,7 +153,7 @@
                                     <i class="fas fa-file-alt"></i> Cadastrar Documento
                                 </a>
 
-                                <a class="dropdown-item" href="{% url 'listar_documento' %}">
+                                <a class="dropdown-item" href="{% url 'listar_documentos' %}">
                                     <i class="fas fa-file-alt"></i> Listar Documento
                                 </a>
                                 <a class="dropdown-item" href="{% url 'cadastrar_bem' %}">
@@ -261,11 +271,57 @@
                         
                     </div>
                 </div>
+
+
+                
+
+
+
             </div>
             <!-- Fim Tabela de Dados -->
         </div>
     </section>
 </div>
+
+<!-- Cards de Dados do PDDE -->
+<div class="row">
+    {% for pdde in pdde_data %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card shadow border-0 h-100">
+            <div class="card-body">
+                <h5 class="card-title text-primary font-weight-bold">
+                    <i class="fas fa-school"></i> {{ pdde.escola }}
+                </h5>
+                <p class="card-text mb-1">
+                    <strong>Ano:</strong> {{ pdde.ano }}
+                </p>
+                <p class="card-text mb-1">
+                    <strong>Status:</strong> 
+                    <span class="badge {% if pdde.status == 'aprovado' %}badge-success{% else %}badge-warning{% endif %}">
+                        {{ pdde.status|capfirst }}
+                    </span>
+                </p>
+            </div>
+            <div class="card-footer bg-white border-0 text-end">
+                <a href="{% url 'view_pdde' pdde.id %}" class="btn btn-sm btn-outline-primary shadow-sm">
+                    <i class="fas fa-eye"></i> Visualizar
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center text-muted">
+        <p class="mt-4">Nenhum registro encontrado.</p>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% else %}
+    <div class="alert alert-warning text-center mt-4">
+        <i class="fas fa-exclamation-triangle"></i> Você não está vinculado a nenhuma escola PDDE.
+    </div>
+{% endif %}
 
 
 <script>

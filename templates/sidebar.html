@@ -477,7 +477,7 @@
                 </script>
 
 
-            {% if user.is_superuser or user.username == "Neusa" %}
+            {% if user.is_superuser or user.username == "Neusa" or user.username == "Icleia" or user.username == "Alde" or user.username == "Mauro" %}
             <!-- SEPPEC -->
             <li class="nav-item">
                 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'contabilidade-menu')" data-id="seppec">
@@ -487,6 +487,9 @@
                         <i class="right fas fa-angle-left"></i>
                     </p>
                 </a>
+                
+
+               
                 <ul class="nav nav-treeview submenu" id="contabilidade-menu" style="display: none;">
                     <li class="nav-item">
                         <a href="{% url 'dashboard' %}" class="nav-link" data-id="seppecpainel">
@@ -500,6 +503,7 @@
                             <p>Escolas</p>
                         </a>
                     </li>
+                    
                     <li class="nav-item has-treeview">
                         <a href="#" class="nav-link" data-id="movimentacao"
                             onclick="toggleDropdown(event, 'movimentacao')">
@@ -546,26 +550,32 @@
                                 </a>
                             </li>
 
+                            
                             <li class="nav-item">
                                 <a href="{% url 'adicionar_livro_caixa' %}" class="nav-link" data-id="pddecaixa">
                                     <i class="fas fa-cash-register nav-icon"></i>
                                     <p>Caixa</p>
                                 </a>
                             </li>
+                            
 
+                            {% if user.is_superuser or user.username == "Neusa" %}
                             <li class="nav-item">
                                 <a href="{% url 'livro_diario' %}" class="nav-link" data-id="pddecaixa">
                                     <i class="fas fa-cash-register nav-icon"></i>
                                     <p>Livro Diário</p>
                                 </a>
                             </li>
+                            {% endif %}
 
+                            {% if user.is_superuser or user.username == "Neusa" %}
                             <li class="nav-item">
                                 <a href="{% url 'listar_livro_caixa' %}" class="nav-link" data-id="pdderel">
                                     <i class="fas fa-file-alt nav-icon"></i>
                                     <p>Relatórios PDDE</p>
                                 </a>
                             </li>
+                            {% endif %}
 
                             <li class="nav-item">
                                 <a href="{% url 'manuais' %}" class="nav-link">
@@ -574,6 +584,7 @@
                                 </a>
                             </li>
                             
+                            
                             <li class="nav-item">
                                 <a href="{% url 'contas' %}" class="nav-link" data-id="pmatematica"
                                     data-id="pdeecontas">
@@ -581,6 +592,8 @@
                                     <p>Contas</p>
                                 </a>
                             </li>
+                            
+
                             <li class="nav-item">
                                 <a href="{% url 'emissao_certidoes' %}" class="nav-link" data-id="pddecertidoes">
                                     <i class="fas fa-file-alt nav-icon"></i>

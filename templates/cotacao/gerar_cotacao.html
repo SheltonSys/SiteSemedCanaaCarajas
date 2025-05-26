@@ -34,12 +34,25 @@
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ item.nome }}</td>
                                     <td>{{ item.unidade_medida }}</td>
-                                    <td><input type="number" name="quantidade_{{ item.id }}" class="form-control" value="1" min="1"></td>
-                                    <td><input type="text" name="valor_{{ item.id }}" class="form-control" placeholder="0,00"></td>
-                                    <td><input type="checkbox" name="selecionados" value="{{ item.id }}"></td>
+                                    <td>
+                                        <input type="number" name="quantidade_{{ item.id }}" class="form-control" value="1" min="1">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="valor_{{ item.id }}" class="form-control" placeholder="0,00">
+                                    </td>
+                                    <td>
+                                        <select name="selecionado_{{ item.id }}" class="form-select">
+                                            <option value="sim" selected>Sim</option>
+                                            <option value="nao">Não</option>
+                                        </select>
+                                    </td>
+
+
+
                                 </tr>
                                 {% endfor %}
                             </tbody>
+
                         </table>
                     </div>
 
@@ -64,4 +77,30 @@
         $('[data-toggle="tooltip"]').tooltip();
     });
 </script>
+
+
+
+<script>
+document.querySelector("form").addEventListener("submit", function (e) {
+    // Remove os campos ocultos antigos
+    document.querySelectorAll(".hidden-selecionado").forEach(el => el.remove());
+
+    // Adiciona campos hidden para checkboxes marcados
+    document.querySelectorAll(".item-checkbox").forEach(checkbox => {
+        if (checkbox.checked) {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = "selecionados";
+            input.classList.add("hidden-selecionado");
+            input.value = checkbox.dataset.id;
+            this.appendChild(input);
+        }
+    });
+});
+</script>
+
+
+
+
+
 {% endblock %}

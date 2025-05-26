@@ -1,166 +1,402 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="content-wrapper" style="margin-left: 0; padding: 20px;">
     <div class="container-fluid">
-        <!-- Header -->
-        <div class="row mb-3">
-            <div class="col">
-                <h1 class="text-primary font-weight-bold">
-                    <i class="fas fa-tachometer-alt"></i> Dashboard SEPPEC
-                </h1>
-            </div>
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Painel Administrativo - SEPPEC</h1>
+            <h3 class="text-muted">Bem-vindo(a), {{ user.first_name }}! Acompanhe os principais dados e módulos do sistema.</h3>
         </div>
 
-        <!-- Cards -->
-        <div class="row">
+        <!-- Indicadores -->
+        <div class="row mb-4">
             <div class="col-md-3">
-                <div class="card bg-primary text-white shadow">
-                    <div class="card-body">
-                        <h5>Total de Escolas</h5>
-                        <h2>{{ total_escolas }}</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-success text-white shadow">
-                    <div class="card-body">
-                        <h5>Total de Membros</h5>
-                        <h2>{{ total_membros }}</h2>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-school fa-3x text-primary mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Escolas</h6>
+                        <p class="text-muted">Total: <strong>{{ total_escolas }}</strong></p>
+                        <a href="{% url 'escolas' %}" class="btn btn-outline-primary btn-sm">Detalhes</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card bg-warning text-white shadow">
-                    <div class="card-body">
-                        <h5>Total PDDE</h5>
-                        <h2>R$ {{ total_pdde|floatformat:2 }}</h2>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-users fa-3x text-success mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Membros Conselho</h6>
+                        <p class="text-muted">Total: <strong>{{ total_membros }}</strong></p>
+                        <a href="{% url 'conselho_membros' %}" class="btn btn-outline-success btn-sm">Detalhes</a>
                     </div>
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card bg-danger text-white shadow">
-                    <div class="card-body">
-                        <h5>Total em Caixa</h5>
-                        <h2>R$ {{ total_caixas|floatformat:2 }}</h2>
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-file-alt fa-3x text-warning mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Documentos Enviados</h6>
+                        <p class="text-muted">Total: <strong>{{ total_certidoes }}</strong></p>
+                        <a href="{% url 'emissao_certidoes' %}" class="btn btn-outline-warning btn-sm">Ver</a>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Recent Movements & Certificates -->
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="card-title"><i class="fas fa-history"></i> Movimentações Recentes</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-hover table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Descrição</th>
-                                    <th>Valor</th>
-                                    <th>Data</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for movement in recent_movements %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ movement.descricao }}</td>
-                                    <td>R$ {{ movement.valor|floatformat:2 }}</td>
-                                    <td>{{ movement.data_movimentacao|date:"d/m/Y" }}</td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Nenhuma movimentação recente</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-6">
-                <div class="card shadow">
-                    <div class="card-header bg-secondary text-white">
-                        <h5 class="card-title"><i class="fas fa-file-alt"></i> Certidões Recentes</h5>
-                    </div>
-                    <div class="card-body">
-                        <table class="table table-hover table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nome</th>
-                                    <th>Data</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for certidao in recent_certidoes %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ certidao.nome }}</td>
-                                    <td>{{ certidao.data_emissao|date:"d/m/Y" }}</td>
-                                    <td>
-                                        <a href="{% url 'download_manual' certidao.arquivo %}" class="btn btn-info btn-sm">
-                                            <i class="fas fa-download"></i> Baixar
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Nenhuma certidão recente</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-chart-pie fa-3x text-info mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Informações e Orientações</h6>
+                        <p class="text-muted">Análise Consolidada</p>
+                        <a href="{% url 'sintese_pdde' %}" class="btn btn-outline-info btn-sm">Visualizar</a>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Graphs -->
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <canvas id="pddeChart"></canvas>
+
+<!-- Área de Filtros Estilizada -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="card-title fw-bold mb-0">
+            <i class="fas fa-filter me-2"></i> Filtros de Pesquisa - PDDE
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" action="" id="filtrosForm">
+
+            <div class="row g-3">
+
+                <!-- Escola -->
+                <div class="col-md-4">
+                    <label for="escola" class="form-label">Escola</label>
+                    <!-- Filtro Escolas -->
+<select name="escola" id="escola" class="form-select">
+    <option value="">Todas</option>
+    {% for escola in escolas %}
+        <option value="{{ escola.id }}" {% if request.GET.escola == escola.id|stringformat:"s" %}selected{% endif %}>
+            {{ escola.nome }}
+        </option>
+    {% endfor %}
+</select>
+                </div>
+
+                <!-- Ano -->
+                <div class="col-md-4">
+                    <label for="ano" class="form-label">Ano</label>
+                    <!-- Filtro Ano -->
+<select name="ano" id="ano" class="form-select">
+    <option value="">Todos</option>
+    {% for ano in anos %}
+        <option value="{{ ano }}" {% if request.GET.ano == ano|stringformat:"s" %}selected{% endif %}>{{ ano }}</option>
+    {% endfor %}
+</select>
+                </div>
+
+                <!-- Programa -->
+                <div class="col-md-4">
+                    <label for="programa" class="form-label">Programa</label>
+                    <!-- Filtro Programa -->
+<select name="programa" id="programa" class="form-select">
+    <option value="">Todos</option>
+    {% for p in programas %}
+        <option value="{{ p }}" {% if request.GET.programa == p %}selected{% endif %}>{{ p }}</option>
+    {% endfor %}
+</select>
+                </div>
             </div>
-            <div class="col-md-6">
-                <canvas id="membrosChart"></canvas>
-            </div>
+
+            <div class="text-end mt-4">
+        <button type="submit" class="btn btn-primary me-2">
+            <i class="fas fa-search"></i> Filtrar
+        </button>
+        <button type="reset" class="btn btn-secondary" onclick="limparFiltros()">
+            <i class="fas fa-undo"></i> Limpar Filtros
+        </button>
+    </div>
+</form>
+    </div>
+</div>
+
+
+
+
+
+
+
+        <!-- Gráfico Resumo -->
+        <!-- Gráfico Resumo -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-chart-bar me-2"></i> Indicadores Financeiros</h2>
+    </div>
+    <div class="card-body bg-light">
+        <canvas id="graficoResumo" height="100"></canvas>
+    </div>
+</div>
+
+
+
+
+
+
+
+        <!-- Elementos Contábeis -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-coins me-2"></i> Elementos Contábeis - PDDE</h2>
+    </div>
+    <div class="card-body bg-light">
+
+
+
+        <div class="row text-center">
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-arrow-down text-success fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Receita Total</h6>
+            <p class="h5 text-success">R$ {{ receita_total|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-arrow-up text-danger fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Despesa Total</h6>
+            <p class="h5 text-danger">R$ {{ despesa_total|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-wallet text-primary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Saldo Reprogramado</h6>
+            <p class="h5 text-primary">R$ {{ saldo_reprogramado|floatformat:2 }}</p>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- <script>
-    const pddeChartCtx = document.getElementById('pddeChart').getContext('2d');
-    new Chart(pddeChartCtx, {
-        type: 'bar',
-        data: {
-            labels: ['PDDE Aprovado', 'PDDE Pendente'],
-            datasets: [{
-                label: 'Valores (R$)',
-                data: [{{ total_pdde }}, 50000], // Exemplo: ajuste dinamicamente
-                backgroundColor: ['#007bff', '#dc3545'],
-            }]
-        }   
-    });
+<div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+            <p class="h5 text-warning">{{ percentual_execucao|floatformat:2 }}%</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Último Lançamento</h6>
+            <p class="h6 text-secondary">{{ ultimo_lancamento|default:"--" }}</p>
+        </div>
+    </div>
+</div>
 
-    const membrosChartCtx = document.getElementById('membrosChart').getContext('2d');
-    new Chart(membrosChartCtx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Ativos', 'Inativos'],
-            datasets: [{
-                label: 'Membros',
-                data: [{{ total_membros }}, 10], // Exemplo: ajuste dinamicamente
-                backgroundColor: ['#28a745', '#ffc107'],
-            }]
-        }
-    }); -->
+
+
+
+<!-- Outros Elementos Contábeis -->
+<div class="card shadow-lg border-0 mb-4">
+    <div class="card-header bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h2 class="h6 mb-0"><i class="fas fa-balance-scale me-2"></i> Informações Complementares - PDDE</h2>
+    </div>
+    <div class="card-body bg-light">
+        <div class="row text-center">
+
+
+            <!-- <div class="row text-center mt-3">
+    <div class="col-md-6 mb-3"> -->
+        <!-- <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-percentage text-warning fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Percentual de Execução</h6>
+            <p class="h5 text-warning">{{ percentual_execucao|floatformat:2 }}%</p>
+        </div> -->
+    <!-- </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-calendar-day text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Último Lançamento</h6>
+            <p class="h6 text-secondary">{{ ultimo_lancamento|default:"--" }}</p>
+        </div>
+    </div>
+</div> -->
+
+<div class="row text-center mt-3">
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-hand-holding-usd text-info fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Recursos Próprios</h6>
+            <p class="h5 text-info">R$ {{ recursos_proprios|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-piggy-bank text-success fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Rendimentos de Aplicação</h6>
+            <p class="h5 text-success">R$ {{ rendimentos_aplicacao|floatformat:2 }}</p>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-undo text-danger fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Devoluções FNDE</h6>
+            <p class="h5 text-danger">R$ {{ devolucoes_fnde|floatformat:2 }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="row text-center mt-3">
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-school text-primary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Nº Escolas Atendidas</h6>
+            <p class="h5 text-primary">{{ escolas_atendidas }}</p>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="border rounded bg-white p-3 shadow-sm">
+            <i class="fas fa-check-circle text-secondary fa-2x mb-2"></i>
+            <h6 class="fw-bold text-muted">Situação Financeira</h6>
+            <p class="h6 {{ situacao_classe }} fw-bold">{{ situacao_financeira }}</p>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+</div>
+
+
+
+
+    </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById('graficoResumo').getContext('2d');
+
+        const receitaCusteio = parseFloat("{{ receita_custeio|default:0 }}");
+        const receitaCapital = parseFloat("{{ receita_capital|default:0 }}");
+        const despesaCusteio = parseFloat("{{ despesa_custeio|default:0 }}");
+        const despesaCapital = parseFloat("{{ despesa_capital|default:0 }}");
+        const saldoCusteio = parseFloat("{{ saldo_custeio|default:0 }}");
+        const saldoCapital = parseFloat("{{ saldo_capital|default:0 }}");
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [
+                    'Receita Custeio', 'Receita Capital',
+                    'Despesa Custeio', 'Despesa Capital',
+                    'Saldo Custeio', 'Saldo Capital'
+                ],
+                datasets: [{
+                    label: 'Valores em R$',
+                    data: [
+                        receitaCusteio, receitaCapital,
+                        despesaCusteio, despesaCapital,
+                        saldoCusteio, saldoCapital
+                    ],
+                    backgroundColor: [
+                        '#28a745', '#198754',
+                        '#dc3545', '#e55353',
+                        '#0d6efd', '#339af0'
+                    ],
+                    borderRadius: 10,
+                    barPercentage: 0.5,  // Espessura das barras
+                    categoryPercentage: 0.6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                layout: {
+                    padding: {
+                        top: 20,
+                        bottom: 20,
+                        left: 10,
+                        right: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: {
+                            font: {
+                                size: 14
+                            }
+                        }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'R$ ' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                            },
+                            font: {
+                                size: 14
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
 </script>
+
+
+
+
+    
+
+
+<style>
+.content-wrapper {
+    margin-left: 0;
+    padding: 20px;
+}
+
+.hover-underline-animation {
+    position: relative;
+    display: inline-block;
+}
+
+.hover-underline-animation::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 3px;
+    bottom: -3px;
+    left: 0;
+    background-color: #007bff;
+    transform-origin: bottom right;
+    transition: transform 0.25s ease-out;
+}
+
+.hover-underline-animation:hover::after {
+    transform: scaleX(1);
+    transform-origin: bottom left;
+}
+
+#graficoResumo {
+        width: 100% !important;
+        height: 400px !important;  /* Ajuste a altura como quiser */
+    }
+</style>
+
 {% endblock %}

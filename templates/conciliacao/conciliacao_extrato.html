@@ -11,6 +11,9 @@
             <p class="text-muted">Visualize os lançamentos bancários registrados no sistema.</p>
         </div>
 
+        <!-- <p>DEBUG ESCOLAS: {{ escolas|length }}</p> -->
+
+
         <!-- Formulário de Seleção -->
         <div class="card shadow-lg border-0">
             <div class="card-header bg-gradient-primary text-white">
@@ -19,12 +22,26 @@
             <div class="card-body bg-light">
                 <form id="form-extrato">
                     <div class="row">
+
                         <div class="col-md-6">
-                            <label for="escola">Escolha a Escola:</label>
-                            <select id="escola" name="escola" class="form-control" required>
-                                <option value="" selected disabled>Selecione uma escola</option>
-                            </select>
-                        </div>
+    <label for="escola">Escolha a Escola:</label>
+
+    {% if escolas|length == 1 %}
+        {% with escola=escolas.0 %}
+            <input type="hidden" id="escola" name="escola" value="{{ escola.id }}">
+            <p class="form-control-plaintext fw-bold">{{ escola.nome }}</p>
+        {% endwith %}
+    {% else %}
+        <select id="escola" name="escola" class="form-control" required>
+            <option value="" selected disabled>Selecione uma escola</option>
+            {% for escola in escolas %}
+                <option value="{{ escola.id }}">{{ escola.nome }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+</div>
+
+
                         <div class="col-md-6">
                             <label for="conta_bancaria">Conta Bancária:</label>
                             <select id="conta_bancaria" name="conta_bancaria" class="form-control" required>
@@ -75,46 +92,51 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    let formExtrato = document.getElementById("form-extrato");
-    let tabelaExtrato = document.getElementById("tabela-extrato");
-    let escolaSelect = document.getElementById("escola");
-    let contaSelect = document.getElementById("conta_bancaria");
+    const formExtrato = document.getElementById("form-extrato");
+    const tabelaExtrato = document.getElementById("tabela-extrato");
+    const escolaEl = document.getElementById("escola");
+    const contaSelect = document.getElementById("conta_bancaria");
 
-    // 🚀 Carrega todas as escolas ao carregar a página
-    fetch("/api/escolas/")
-        .then(response => response.json())
-        .then(data => {
-            escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
-            data.escolas.forEach(escola => {
-                escolaSelect.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
-            });
-        })
-        .catch(error => console.error("Erro ao carregar escolas:", error));
+    const isEscolaUnica = escolaEl.tagName === "INPUT";
 
-    // 🎯 Quando uma escola for selecionada, carregar as contas vinculadas
-    escolaSelect.addEventListener("change", function () {
-        let escolaId = this.value;
-        if (!escolaId) return;
-
-        contaSelect.innerHTML = '<option value="">Carregando contas...</option>';
-
+    function carregarContas(escolaId) {
         fetch(`/api/contas/${escolaId}/`)
             .then(response => response.json())
             .then(data => {
                 contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
+                const contasSet = new Set(); // evita duplicatas
                 data.contas.forEach(conta => {
-                    contaSelect.innerHTML += `<option value="${conta.id}">${conta.banco} - Ag: ${conta.agencia} - Conta: ${conta.conta}</option>`;
+                    const chave = `${conta.banco}|${conta.agencia}|${conta.conta}`;
+                    if (!contasSet.has(chave)) {
+                        contasSet.add(chave);
+                        contaSelect.innerHTML += `<option value="${conta.id}">${conta.banco} - Ag: ${conta.agencia} - Conta: ${conta.conta}</option>`;
+                    }
                 });
             })
-            .catch(error => console.error("Erro ao carregar contas bancárias:", error));
-    });
+            .catch(error => {
+                console.error("Erro ao carregar contas bancárias:", error);
+                contaSelect.innerHTML = `<option value="" disabled selected>Erro ao carregar contas</option>`;
+            });
+    }
 
-    // 🔍 Busca os extratos ao enviar o formulário
+    // 🚀 Se for uma escola única, já carrega as contas
+    if (isEscolaUnica) {
+        carregarContas(escolaEl.value);
+    } else {
+        // Carrega as contas ao mudar a escola
+        escolaEl.addEventListener("change", function () {
+            if (this.value) {
+                carregarContas(this.value);
+            }
+        });
+    }
+
+    // 🔍 Submissão do formulário
     formExtrato.addEventListener("submit", function (event) {
         event.preventDefault();
 
-        let escolaId = escolaSelect.value;
-        let contaId = contaSelect.value;
+        const escolaId = escolaEl.value;
+        const contaId = contaSelect.value;
 
         if (!escolaId || !contaId) {
             alert("Selecione uma escola e uma conta para continuar.");
@@ -137,7 +159,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             <td>${extrato.escola}</td>
                             <td>${extrato.conta_bancaria}</td>
                             <td>${extrato.tipo}</td>
-                            <td class="text-right">R$ ${parseFloat(extrato.valor).toFixed(2)}</td>
+                            <td class="text-end">R$ ${parseFloat(extrato.valor).toFixed(2).replace('.', ',')}</td>
                         </tr>`;
                         tabelaExtrato.innerHTML += row;
                     });
@@ -152,5 +174,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 </script>
+
+
 
 {% endblock %}

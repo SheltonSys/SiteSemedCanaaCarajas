@@ -46,13 +46,40 @@
                             <td>{{ proponente.email }}</td>
                             <td>{{ proponente.telefone }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-warning">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                                <a href="#" class="btn btn-sm btn-danger">
-                                    <i class="fas fa-trash-alt"></i> Excluir
-                                </a>
-                            </td>
+                            <!-- Botão Editar -->
+                            <a href="{% url 'editar_proponente' proponente.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+
+                            <!-- Botão que abre a modal de exclusão -->
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalExcluir{{ proponente.id }}">
+                                <i class="fas fa-trash-alt"></i> Excluir
+                            </button>
+
+                            <!-- Modal de confirmação -->
+                            <div class="modal fade" id="modalExcluir{{ proponente.id }}" tabindex="-1" aria-labelledby="modalLabel{{ proponente.id }}" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content shadow">
+                                        <div class="modal-header bg-danger text-white">
+                                            <h5 class="modal-title" id="modalLabel{{ proponente.id }}"><i class="fas fa-exclamation-triangle"></i> Confirmar Exclusão</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+                                        </div>
+                                        <div class="modal-body text-dark">
+                                            Tem certeza que deseja excluir o proponente <strong>{{ proponente.nome }}</strong>?
+                                        </div>
+                                        <div class="modal-footer">
+                                            <form method="POST" action="{% url 'excluir_proponente' proponente.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger">Sim, excluir</button>
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+
                         </tr>
                         {% empty %}
                         <tr>

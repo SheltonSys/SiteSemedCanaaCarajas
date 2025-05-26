@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SEMED Canaã dos Carajás - Transformando a educação para um futuro melhor.">
+    <title>SEMED Canaã dos Carajás</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        html {
+            overflow: hidden;
+            /* Impede a barra de rolagem global */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            /* Remove margens padrão */
+            padding: 0;
+            /* Remove padding padrão */
+            height: 100vh;
+            /* Define a altura total da tela */
+            overflow-y: scroll;
+            /* Permite a rolagem no eixo Y */
+            scrollbar-width: none;
+            /* Remove barra de rolagem no Firefox */
+        }
+
+        /* Remove barra de rolagem para navegadores baseados em Webkit (Chrome, Edge, Safari) */
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .navbar {
+            background-color: #007bff;
+        }
+
+        .navbar-brand img {
+            height: 50px;
+        }
+
+        .hero-section {
+            position: relative;
+            height: 400px;
+        }
+
+        .carousel-inner img {
+            height: 400px;
+            object-fit: cover;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 10;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+
+        footer a {
+            color: #ffffff;
+            text-decoration: underline;
+        }
+
+        footer a:hover {
+            text-decoration: none;
+            color: #007bff;
+        }
+
+        .card {
+            transition: transform 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-img-top {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+            display: block;
+        }
+
+        .card {
+            height: 100%;
+        }
+
+        .card-body {
+            min-height: 100px;
+        }
+
+        #student-count {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            padding: 50px 20px;
+        }
+
+        #student-count .count-box {
+            margin: 20px 0;
+        }
+
+        #student-count i {
+            color: #ffd700;
+        }
+
+        #student-count h3 {
+            font-weight: bold;
+            margin: 0;
+        }
+
+        #student-count p {
+            margin-top: 10px;
+            font-size: 1.2rem;
+        }
+
+        .footer-bg {
+            background-image: url('{% static "assets/dist/img/footer-bg1.jpg" %}');
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-size: cover;
+            position: relative;
+            color: white;
+        }
+
+        .footer-bg .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* Transparência de 50% */
+            z-index: 1;
+        }
+
+        .footer-bg .container {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique na frente do overlay */
+        }
+
+
+        /* Transparência aplicada */
+        .footer-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            /* Preta com 50% de opacidade */
+            z-index: 1;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 2;
+            /* Garante que o conteúdo fique acima da camada de transparência */
+        }
+
+        .text-warning {
+            color: #ffd700 !important;
+        }
+
+        .text-info {
+            color: #17a2b8 !important;
+        }
+
+        .text-success {
+            color: #28a745 !important;
+        }
+
+        .list-group-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+        }
+
+        .list-group-item i,
+        .list-group-item img {
+            margin-right: 10px;
+            flex-shrink: 0;
+            /* Evita redimensionamento do ícone/imagem */
+        }
+
+        .list-group-item strong {
+            margin-right: 5px;
+            /* Espaçamento entre o título e o texto */
+        }
+
+        .list-group-item img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            border-radius: 50%;
+            /* Opcional, adiciona um efeito circular */
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <!-- <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#" aria-label="SEMED Canaã dos Carajás">
+                <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page"
+                            href="{% url 'index' %}">Início</a></li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Institucional
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{% url 'apresentacao' %}">Sobre a
+                                    Semed</a></li>
+                            <li><a class="dropdown-item" href="{% url 'organograma' %}">Organograma</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarConhecaRede" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Conheça a Rede
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarConhecaRede">
+                            <li><a class="dropdown-item" href="{% url 'escola' %}">Escolas</a></li>
+                            <li><a class="dropdown-item" href="{% url 'centro_viver_conviver' %}">Centro Viver e
+                                    Conviver</a></li>
+                            <li><a class="dropdown-item" href="{% url 'centro_formacao' %}"> Centro de Formação</a></li>
+                            <li><a class="dropdown-item" href="{% url 'diretoria_ensino_superior' %}"> Diretoria de
+                                    Ensino Superior</a></li>
+                            <li><a class="dropdown-item" href="{% url 'centro_midias_educacionais' %}"> Centro de Mídias
+                                    Educacionais</a></li>
+                        </ul>
+                    </li>
+
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarEventos" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Eventos
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarEventos">
+                            <li><a class="dropdown-item" href="{% url 'agenda' %}">Agenda</a></li>
+                            <li><a class="dropdown-item" href="{% url 'inscricoes' %}">Inscrições</a></li>
+                            <li><a class="dropdown-item" href="{% url 'certificado' %}">Emita seu Certificado</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarServices" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Serviços
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarServices">
+                            <li><a class="dropdown-item" href="{% url 'repositorio' %}">Repositório</a></li>
+                            <li><a class="dropdown-item" href="{% url 'curriculo_ensino' %}">Currículo de Ensino</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'programas_projetos' %}">Programas e Projetos em
+                                    Rede</a></li>
+                            <li><a class="dropdown-item" href="{% url 'calendario_escolar' %}">Calendário Escolar</a>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'portal_aluno' %}">Portal do Aluno</a></li>
+                            <li><a class="dropdown-item" href="https://canaa.algtec.com.br/auth" target="_blank" class="btn btn-light btn-sm">SYNAPTIC</a></li>
+                            <li><a class="dropdown-item"
+                                    href="https://sistema.semedcanaadoscarajas.pa.gov.br/documentos-public/todos"
+                                    target="_blank">Consulta Pública</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarSocial" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Participação Social
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarSocial">
+                            <li><a class="dropdown-item" href="{% url 'conselho_municipal_educacao' %}">Conselho
+                                    Municipal de Educação</a></li>
+                            <li><a class="dropdown-item" href="{% url 'cacs_fundeb' %}">CACS-FUNDEB</a></li>
+                            <li><a class="dropdown-item" href="{% url 'conselho_alimentacao_escolar' %}">Conselho de
+                                    Alimentação Escolar</a></li>
+                            <li><a class="dropdown-item" href="{% url 'forum_municipal_educacao' %}">Fórum Municipal de
+                                    Educação</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'transparencia_index' %}">Transparência</a>
+                    </li>
+                    
+                    <li class="nav-item"><a class="nav-link" href="{% url 'fale_conosco' %}">Fale Conosco</a></li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}" target="_blank">ADM</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav> -->
+
+    {% if user.is_authenticated %}
+    {% if user.groups.all.0.name == "Publicador" %}
+        <div class="alert alert-warning text-center m-0">
+            🔒 Você está visualizando o site como <strong>publicador</strong>. Conteúdo aguardando aprovação será exibido com destaque.
+        </div>
+    {% endif %}
+{% endif %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container">
+    <a class="navbar-brand" href="{% url 'index' %}">
+      <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED" height="50">
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}" href="{% url 'index' %}">Início</a></li>
+
+        {% if user.is_authenticated and user.groups.all.0.name == "Publicador" %}
+            <li class="nav-item"><a class="nav-link text-warning" href="{% url 'painel_aprovacao' %}"><i class="fas fa-edit"></i> Aprovar Conteúdo</a></li>
+        {% endif %}
+
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Institucional</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="{% url 'apresentacao' %}">Apresentação</a></li>
+            <li><a class="dropdown-item" href="{% url 'organograma' %}">Organograma</a></li>
+          </ul>
+        </li>
+        <!-- (replicar para Conheça a Rede, Serviços, etc.) -->
+
+        <li class="nav-item"><a class="nav-link" href="{% url 'fale_conosco' %}">Fale Conosco</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'login' %}" target="_blank">ADM</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    
+    
+    <!-- Hero Section com Carrossel -->
+    <section class="hero-section">
+        <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="{% static 'assets/dist/img/cidadeCanaa.png' %}" class="d-block w-100" alt="Imagem 1">
+                </div>
+                <div class="carousel-item">
+                    <img src="{% static 'assets/dist/img/imagemCanaa2.jpeg' %}" class="d-block w-100" alt="Imagem 2">
+                </div>
+                <div class="carousel-item">
+                    <img src="{% static 'assets/dist/img/imagemCanaa555.webp' %}" class="d-block w-100" alt="Imagem 3">
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Anterior</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Próximo</span>
+            </button>
+        </div>
+        <div class="hero-content">
+            <h1>Bem-vindo à SEMED Canaã dos Carajás</h1>
+            <p>Transformando a educação para um futuro melhor</p>
+            <a href="{% url 'site_curriculos' %}" class="btn btn-light btn-lg mt-3" target="_blank">
+                <i class="fas fa-briefcase"></i> Acesse o Banco de Currículos
+            </a>
+        </div>
+    </section>
+
+
+    <!-- Cards Section 1 -->
+    <div class="container my-5">
+        <div class="row text-center">
+
+            <!-- Card para Envio do Plano de Gestão Escolar -->
+<div class="container mt-5 px-3">
+    <div class="row">
+        <div class="col-12">
+            <div class="card px-5 pt-5 pb-4 shadow bg-primary text-white text-center">
+                <h4 class="font-weight-bold text-uppercase">
+                    Envio do Plano de Gestão Escolar
+                </h4>
+                <p class="mt-3" style="text-align: justify;">
+                    Envie aqui o Plano de Gestão Escolar da sua unidade, garantindo a organização e planejamento das atividades pedagógicas.
+                </p>
+                <a href="{% url 'site_pedagogico' %}" class="btn btn-light btn-lg mt-3" target="_blank">
+                    <i class="fas fa-paper-plane"></i> Enviar Plano de Gestão Escolar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cards Secundários -->
+<div class="container mt-5 px-3">
+    <div class="row text-center gy-4">
+
+        <!-- Calendário Escolar -->
+        <div class="col-md-4">
+            <div class="card px-4 pt-4 pb-3 shadow">
+                <i class="fas fa-calendar-alt fa-3x text-success"></i>
+                <h5 class="mt-3 text-uppercase font-weight-bold">Calendário Escolar</h5>
+                <p style="text-align: justify;">Confira as datas e eventos importantes do ano letivo.</p>
+                <a href="{% url 'calendario_escolar' %}" class="btn btn-success btn-sm">
+                    <i class="fas fa-calendar-check"></i> Acesse o Calendário
+                </a>
+            </div>
+        </div>
+
+        <!-- Planetário -->
+        <div class="col-md-4">
+            <div class="card px-4 pt-4 pb-3 shadow">
+                <i class="fas fa-globe fa-3x text-info"></i>
+                <h5 class="mt-3 text-uppercase font-weight-bold">Planetário</h5>
+                <p style="text-align: justify;">Explore o universo e acompanhe as atividades do Planetário Municipal.</p>
+                <a href="{% url 'planetario' %}" class="btn btn-info btn-sm" target="_blank">
+                    <i class="fas fa-arrow-right"></i> Faça uma Visita
+                </a>
+            </div>
+        </div>
+
+        <!-- SYNAPTIC -->
+        <div class="col-md-4">
+            <div class="card px-4 pt-4 pb-3 shadow"
+                style="background: linear-gradient(135deg, #ffcc00, #ff9900); color: white;">
+                <i class="fas fa-chart-line fa-3x"></i>
+                <h5 class="mt-3 font-weight-bold">SYNAPTIC</h5>
+                <p style="text-align: justify;">Gestão escolar integrada e análises educacionais em tempo real.</p>
+                <a href="https://canaa.algtec.com.br/auth" target="_blank" class="btn btn-light btn-sm">
+                    <i class="fas fa-arrow-right"></i> Acesse o Sistema
+                </a>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+        </div>
+    </div>
+    <!-- FIM Cards Section 1 -->
+
+
+        <!-- Seção de Notícias -->
+
+        <!-- <section id="noticias" class="py-5 bg-light">
+            <div class="container">
+                <h2 class="text-center text-primary mb-4">Fique por Dentro</h2>
+                <div class="row"> -->
+    
+                    <!-- Notícia Atualizada -->
+                    <!-- <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/alimentacaoEscolar22.png' %}" class="card-img-top" alt="Notícia COMAE">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Lista de Candidatos COMAE</h5>
+                                <p class="card-text text-center">
+                                    Aptos a concorrerem às vagas de conselheiros junto ao <b>Conselho Municipal de Alimentação Escolar - COMAE,</b>
+                                    dia 22/04/2025, às 09h na Secretaria Municipal de Educação.
+                                </p>
+                                <a href="{% static 'assets/dist/docs/Prefeitura_Municipal_de_Canaa_dos_Carajas.pdf' %}" 
+                                class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Visualizar / Baixar Arquivo</a>
+                            </div>
+                        </div>
+                    </div> -->
+
+    
+                    <!-- Notícia 2 -->
+                    <!-- <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/seloUnicef4.png' %}" class="card-img-top" alt="Notícia 2">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Selo Unicef</h5>
+                                <p class="card-text text-center">Canaã dos Carajás recebe Certificação do Selo Unicef Edição
+                                    2021-2024.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-recebe-certificacao-do-selo-unicef-edicao-2021-2024/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div> -->
+    
+                    <!-- Notícia 3 -->
+                    <!-- <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm">
+                            <img src="{% static 'assets/dist/img/flacc2024.png' %}" class="card-img-top" alt="Notícia 3">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">5ª edição do FLACC</h5>
+                                <p class="card-text text-center">5ª edição do FLACC terá como foco a Educação Antirracista.
+                                </p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/5a-edicao-do-flacc-tera-como-foco-a-educacao-antirracista/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <br />
+            <div class="container"> -->
+                <!-- <h2 class="text-center text-primary mb-4">Últimas Notícias</h2> -->
+                <!-- <div class="row"> -->
+    
+                    <!-- Notícia 1 -->
+                    <!-- <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/rematricula.png' %}" class="card-img-top" alt="Notícia 1">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Prazo para Rematrícula</h5>
+                                <p class="card-text text-center">Aberto o prazo para rematrícula na educação infantil e
+                                    ensino fundamental.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/aberto-o-prazo-para-rematricula-na-educacao-infantil-e-ensino-fundamental/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div> -->
+    
+                    <!-- Notícia 2 -->
+                    <!-- <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm h-100">
+                            <img src="{% static 'assets/dist/img/escolarTransporte.png' %}" class="card-img-top"
+                                alt="Notícia 2">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Transporte Universitário</h5>
+                                <p class="card-text text-center">Transporte Universitário: Prefeitura divulga datas para
+                                    recadastro e novos cadastros.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/transporte-universitario-prefeitura-divulga-datas-para-recadastro-e-novos-cadastros/"
+                                    class="btn btn-primary btn-sm d-block mx-auto" target="_blank">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div> -->
+    
+                    <!-- Notícia 3 -->
+                    <!-- <div class="col-md-4 mb-4">
+                        <div class="card shadow-sm">
+                            <img src="{% static 'assets/dist/img/alimentar.png' %}" class="card-img-top" alt="Notícia 3">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">Educação Alimentar</h5>
+                                <p class="card-text text-center">Canaã dos Carajás ganha destaque pela educação alimentar
+                                    nas escolas.</p>
+                                <a href="https://www.canaadoscarajas.pa.gov.br/novo/canaa-dos-carajas-ganha-destaque-pela-educacao-alimentar-nas-escolas/"
+                                    class="btn btn-primary btn-sm d-block mx-auto">Leia Mais</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section> -->
+
+
+
+        <!-- Seção de Notícias -->
+<section id="noticias" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center text-primary mb-4">Fique por Dentro</h2>
+    <div class="row">
+      {% for noticia in noticias %}
+        {% if noticia.publicado or user.is_superuser or user.groups.first.name == "Publicador" %}
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm h-100">
+            <img src="{{ noticia.imagem.url }}" class="card-img-top" alt="{{ noticia.titulo }}">
+            <div class="card-body">
+              <h5 class="card-title text-center">{{ noticia.titulo }}</h5>
+              <p class="card-text text-center">{{ noticia.resumo|default:news.conteudo|truncatechars:150 }}</p>
+              <a href="{% url 'detalhe_noticia' noticia.id %}" class="btn btn-primary btn-sm d-block mx-auto">Leia Mais</a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      {% empty %}
+        <p class="text-center">Nenhuma notícia disponível no momento.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+
+        <!-- FIM Seção de Notícias -->
+
+    <!-- Cards Section 2 -->
+    <div class="container my-5">
+        <div class="row text-center">
+            <!-- Jornal Escolar -->
+            <div class="col-md-4 mt-4">
+                <div class="card p-4 shadow text-center">
+                    <i class="fas fa-newspaper fa-3x text-primary"></i>
+                    <h5 class="mt-3 text-uppercase font-weight-bold">Jornal Escolar</h5>
+                    <p style="text-align: justify;">Fique por dentro das últimas edições e novidades da rede escolar.
+                    </p>
+                    <a href="{% url 'jornal_escolar' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-external-link-alt"></i> Leia Mais
+                    </a>
+                </div>
+            </div>
+
+            <div class="col-md-4 mt-4">
+                <div class="card p-4 shadow text-center">
+                    <i class="fas fa-file-alt fa-3x text-danger"></i>
+                    <h5 class="mt-3 text-uppercase font-weight-bold">Exame de Suplência 2024</h5>
+                    <p style="text-align: justify;">Acompanhe o andamento e as informações sobre o Exame de Suplência
+                        2024.</p>
+                    <a href="https://eja.semedcanaadoscarajas.pa.gov.br/" class="btn btn-danger btn-sm" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Acesse Agora
+                    </a>
+                </div>
+            </div>
+
+            <!-- Repositório -->
+            <div class="col-md-4 mt-4">
+                <div class="card p-4 shadow text-center">
+                    <i class="fas fa-archive fa-3x text-dark"></i>
+                    <h5 class="mt-3 text-uppercase font-weight-bold">Repositório</h5>
+                    <p style="text-align: justify;">Acesse editais, decretos, resoluções e pareceres atualizados.</p>
+                    <a href="https://sistema.semedcanaadoscarajas.pa.gov.br/documentos-public/todos"
+                        class="btn btn-dark btn-sm" target="_blank">
+                        <i class="fas fa-folder-open"></i> Acesse Agora
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- FIM Cards Section 2 -->
+
+    <!-- Galeria de Imagens -->
+    <section id="galeria" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center text-primary mb-4">NEI - Núcleos de Educação Infantil</h2>
+            <div class="row">
+                <!-- Imagem 1 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-1.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 1">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">NEI Nair Gomes de Souza</h5>
+                            <p class="card-text text-center">JARDIM EUROPA</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="100" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem 2 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-2.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 2">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">NEI Zulmiro Frigoto</h5>
+                            <p class="card-text text-center">ESPLANADA</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="100" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem 3 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-3.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 3">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">NEI Nilde Maria dos Santos</h5>
+                            <p class="card-text text-center">NOVA ESPERANÇA</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="100" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem 4 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-4.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 4">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">NEI Marili Terezinha de Souza</h5>
+                            <p class="card-text text-center">RECANTO DOS PÁSSAROS</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="94" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem 5 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-5.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 5">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">Núcleo de Educação Infantil</h5>
+                            <p class="card-text text-center">BAIRRO CIDADE NOVA</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="46" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Imagem 6 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-6.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 6">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">Núcleo de Educação Infantil</h5>
+                            <p class="card-text text-center">BAIRRO MARANHENSES</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="29" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Imagem 7 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-6.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 7">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">EMEB CIDADE NOVA</h5>
+                            <p class="card-text text-center">BAIRRO CIDADE NOVA</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="90" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- Imagem 8 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-6.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 6">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">EMEB BELA VISTA</h5>
+                            <p class="card-text text-center">BAIRRO BELA VISTA</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="72" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Imagem 9 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <img src="{% static 'assets/dist/img/nei-6.jpeg' %}" class="card-img-top" style="cursor: pointer;"
+                            alt="Título da Imagem 6">
+                        <div class="card-body">
+                            <h5 class="card-title text-center">EMEB CHACREAMENTO IMPERIAL</h5>
+                            <p class="card-text text-center">BAIRRO CHACREAMENTO IMPERIAL</p>
+                            <div class="progress" style="height: 25px; margin-top: 15px;">
+                                <div class="progress-bar" role="progressbar" style="width: 0%; transition: width 0.5s;"
+                                    data-final-value="69" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Script Unificado para Progresso -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Seleciona todas as barras de progresso
+            const progressBars = document.querySelectorAll('.progress-bar');
+
+            // Itera sobre cada barra
+            progressBars.forEach((progressBar) => {
+                const finalValue = parseInt(progressBar.getAttribute('data-final-value')); // Lê o valor final
+                let progress = 0; // Inicia o progresso em 0%
+                const interval = setInterval(() => {
+                    if (progress >= finalValue) {
+                        clearInterval(interval); // Para o carregamento ao atingir o valor final
+                    } else {
+                        progress += 5; // Incrementa o progresso
+                        progressBar.style.width = progress + '%'; // Atualiza a largura da barra
+                        progressBar.setAttribute('aria-valuenow', progress); // Atualiza o valor de progresso
+                        progressBar.innerHTML = progress + '%'; // Exibe o valor na barra
+                    }
+                }, 500); // Atualiza a cada 500ms
+            });
+        });
+    </script>
+
+
+    <!-- Contagem de Alunos e Professores -->
+    <section id="student-count" class="py-5 bg-primary text-white">
+        <div class="container">
+            <h2 class="text-center mb-4">Gestão Escolar</h2>
+            <div class="row text-center">
+                <!-- Total de Alunos -->
+                <div class="col-md-4">
+                    <div class="count-box">
+                        <i class="fas fa-user-graduate fa-3x mb-3"></i>
+                        <h3 id="total-alunos" class="display-4" data-target="18500">0</h3>
+                        <p>Total de Alunos</p>
+                    </div>
+                </div>
+                <!-- Total de Escolas -->
+                <div class="col-md-4">
+                    <div class="count-box">
+                        <i class="fas fa-school fa-3x mb-3"></i>
+                        <h3 id="total-escolas" class="display-4" data-target="26">26</h3>
+                        <p>Total de Escolas</p>
+                    </div>
+                </div>
+                <!-- Total de Professores -->
+                <div class="col-md-4">
+                    <div class="count-box">
+                        <i class="fas fa-chalkboard-teacher fa-3x mb-3"></i>
+                        <h3 id="total-professores" class="display-4" data-target="900">0</h3>
+                        <p>Total de Professores</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- FIM Contagem de Alunos e Professores -->
+
+
+    <!-- About Section -->
+    <section id="about" class="bg-light py-5">
+        <div class="container">
+            <h2 class="text-center text-primary mb-4">Planetário de Canaã dos Carajás</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <p style="text-align: justify;">
+                        O Planetário Municipal de Canaã dos Carajás é um marco de inovação e tecnologia no município,
+                        sendo um espaço dedicado à educação, ciência, cultura e turismo. Desde sua inauguração, o
+                        Planetário
+                        tem proporcionado experiências únicas, despertando o interesse pela astronomia e promovendo a
+                        disseminação do conhecimento sobre o universo.
+                    </p>
+                    <p style="text-align: justify;"><strong>Missão:</strong> Oferecer um ambiente de aprendizado
+                        interativo e inovador, que inspire
+                        curiosidade científica, promova o conhecimento
+                        astronômico e fortaleça o vínculo entre ciência, educação e cultura..</p>
+                    <p style="text-align: justify;"><strong>Visão:</strong> Ser reconhecido como um dos principais
+                        centros de popularização da
+                        ciência e da astronomia no Brasil, atraindo visitantes
+                        de todas as idades e consolidando Canaã dos Carajás como referência em inovação educacional.</p>
+                    <p style="text-align: justify;">
+                        <strong>Valores:</strong> O Planetário de Canaã dos Carajás promove educação e ciência como
+                        instrumentos de transformação social, garantindo acessibilidade
+                        para todas as idades e origens. Com foco em inovação, utiliza tecnologia de ponta para
+                        experiências
+                        imersivas e interativas, sempre alinhado à sustentabilidade, respeitando o meio ambiente e
+                        promovendo conscientização ambiental.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <img src="{% static 'assets/dist/img/planetario_banner1.jpeg' %}" alt="Sobre a SEMED"
+                        class="img-fluid rounded">
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- FIM About Section -->
+
+    <!-- Seção de Vídeos -->
+    <section id="videos" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center text-primary mb-4">TV Semed</h2>
+            <p class="text-center mb-5" style="text-align: justify;">Explore os destaques e momentos importantes das
+                iniciativas da SEMED Canaã dos
+                Carajás.</p>
+            <div class="row">
+                <!-- Vídeo 1 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="ratio ratio-16x9">
+                            <!-- Substitua 'rnNeWszM5WY' pelo ID do vídeo correto -->
+                            <iframe src="https://www.youtube.com/embed/rnNeWszM5WY?start=9" title="Vídeo 1"
+                                frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-center">SAÚDE NA ESCOLA</h5>
+                            <p class="card-text text-center">LANÇAMENTO DO PROGRAMA SAÚDE NA ESCOLA E ENTREGA DE
+                                ÓCULOS.</p>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <!-- Vídeo 2 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="ratio ratio-16x9">
+                            <!-- Substitua '-K2AePk_--4' pelo ID do vídeo correto -->
+                            <iframe src="https://www.youtube.com/embed/-K2AePk_--4" title="Vídeo 2" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+
+
+                        <div class="card-body">
+                            <h5 class="card-title text-center">NEI NAIR GOMES DE SOUZA</h5>
+                            <p class="card-text text-center">INAUGURAÇÃO DA NEI NAIR GOMES DE SOUZA.</p>
+                        </div>
+
+
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="ratio ratio-16x9">
+                            <!-- Substitua '3z-tmKC3cyU' pelo ID correto do vídeo -->
+                            <iframe src="https://www.youtube.com/embed/3z-tmKC3cyU" title="Vídeo 3" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen></iframe>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-center">FLACC 2024</h5>
+                            <p class="card-text text-center">5ª edição do Festival Literário e Artístico de Canaã dos
+                                Carajás.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- <h2 class="text-center text-primary mb-4">Nossos Vídeos</h2>
+        <p class="text-center mb-5">Explore os destaques e momentos importantes das iniciativas da SEMED Canaã dos Carajás.</p> -->
+            <div class="row">
+                <!-- Vídeo 1 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="ratio ratio-16x9">
+
+                            <!-- Substitua 'rnNeWszM5WY' pelo ID do vídeo correto -->
+                            <iframe src="https://www.youtube.com/embed/1iNuwbCxBrU" title="Vídeo 1" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen style="width: 100%; height: 230px; border-radius: 10px;">
+                            </iframe>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-center">ALFABETIZA PARÁ</h5>
+                            <p class="card-text text-center">LANÇAMENTO DO PROGRAMA ALFABETIZA PARÁ.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vídeo 2 -->
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="ratio ratio-16x9">
+                            <!-- Substitua '-K2AePk_--4' pelo ID do vídeo correto -->
+                            <iframe src="https://www.youtube.com/embed/FQ51Yn9iQq8" title="Vídeo 2" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                            </iframe>
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-center">ALUNOS DA REDE MUNICIPAL</h5>
+                            <p class="card-text text-center">4 MIL LIVROS ENTREGUES PARA OS ALUNOS DA REDE MUNICIPAL DE
+                                EDUCAÇÃO.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="ratio ratio-16x9">
+                            <!-- Substitua '3z-tmKC3cyU' pelo ID correto do vídeo -->
+                            <iframe src="https://www.youtube.com/embed/O707KWmm5cY" title="Vídeo 3" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowfullscreen>
+                            </iframe>
+
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title text-center">EDUCAÇÃO ESPECIAL</h5>
+                            <p class="card-text text-center">9º EP - VIDA EM MOVIMENTO - EDUCAÇÃO ESPECIAL.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+    <!-- FIM Seção de Vídeos -->
+
+    <!-- Footer -->
+    <footer class="footer-bg py-5">
+        <div class="container">
+            <!-- Linhas principais -->
+            <div class="row">
+                <!-- Destaques -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-primary mb-4">Destaques</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/unifespa.png' %}" alt="Unifesspa" class="me-3"
+                                style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/unifesspa-abre-edital-para-programa-de-permanencia-de-alunos/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Unifesspa abre edital para programa de permanência de alunos</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja.png' %}" alt="EJA curso profissionalizante"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/de-olho-no-mercado-de-trabalho-estudantes-da-eja-farao-curso-profissionalizante/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>De olho no mercado de trabalho: Estudantes da EJA farão curso
+                                            profissionalizante</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/planetario.png' %}" alt="Planetário Canaã dos Carajás"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/planetario-completa-1-ano-com-destaque-para-educacao-e-turismo-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify; color: #ffffff;">
+                                        <strong>Planetário completa 1 ano com destaque para educação e turismo em Canaã
+                                            dos Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted;">27 de novembro de 2024</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-info mb-4">Mais Acessados</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/diretor.png' %}" alt="Certificação para Diretores"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/processo-de-selecao-e-certificacao-para-a-funcao-publica-de-diretor-e-vice-diretor-de-unidade-escolar/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Processo de seleção e certificação para a função pública de Diretor e
+                                            Vice-diretor de unidade escolar</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">18 de outubro de 2023</small>
+                            </div>
+                        </li>
+                        <li class="mb-4 d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/eja_matriculas.png' %}" alt="Matrículas para EJA"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/matriculas-abertas-para-educacao-de-jovens-e-adultos-eja-em-canaa-dos-carajas/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Matrículas abertas para Educação de Jovens e Adultos - EJA em Canaã dos
+                                            Carajás</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">3 de fevereiro de 2022</small>
+                            </div>
+                        </li>
+                        <li class="d-flex align-items-start">
+                            <img src="{% static 'assets/dist/img/exame_suplencia.png' %}" alt="Exame de Suplência"
+                                class="me-3" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
+                            <div>
+                                <a href="https://portal.semedcanaadoscarajas.pa.gov.br/abertas-as-inscricoes-para-exame-de-suplencia-do-ensino-fundamental/"
+                                    class="text-white text-decoration-none" target="_blank">
+                                    <p style="text-align: justify;">
+                                        <strong>Abertas as inscrições para Exame de Suplência do Ensino
+                                            Fundamental</strong>
+                                    </p>
+                                </a>
+                                <small class="d-block text-muted">1 de março de 2023</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Temas Mais Acessados -->
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-uppercase text-success mb-4">Temas Mais Acessados</h5>
+                    <div class="d-flex flex-wrap align-items-baseline">
+                        <span class="badge bg-primary m-1">Educação <span
+                                class="badge bg-light text-dark ms-1">243</span></span>
+                        <span class="badge bg-primary m-1">Destaque <span
+                                class="badge bg-light text-dark ms-1">234</span></span>
+                        <span class="badge bg-primary m-1">Ensino Superior <span
+                                class="badge bg-light text-dark ms-1">58</span></span>
+                        <span class="badge bg-primary m-1">Polo Educacional <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Ensino Infantil <span
+                                class="badge bg-light text-dark ms-1">42</span></span>
+                        <span class="badge bg-primary m-1">Jovens e Adultos <span
+                                class="badge bg-light text-dark ms-1">37</span></span>
+                        <span class="badge bg-primary m-1">Cultura <span
+                                class="badge bg-light text-dark ms-1">36</span></span>
+                        <span class="badge bg-primary m-1">Ensino Integral <span
+                                class="badge bg-light text-dark ms-1">27</span></span>
+                        <span class="badge bg-primary m-1">Governo <span
+                                class="badge bg-light text-dark ms-1">26</span></span>
+                        <span class="badge bg-primary m-1">Esportes <span
+                                class="badge bg-light text-dark ms-1">19</span></span>
+                        <span class="badge bg-primary m-1">Saúde Escolar <span
+                                class="badge bg-light text-dark ms-1">15</span></span>
+                        <span class="badge bg-primary m-1">Inclusão Digital <span
+                                class="badge bg-light text-dark ms-1">12</span></span>
+                    </div>
+                </div>
+            </div>
+            <!-- Linha inferior -->
+            <hr class="border-secondary">
+            <div class="row align-items-center">
+                <!-- Logo -->
+                <div class="col-md-4 mb-4 mb-md-0 d-flex justify-content-center align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 150px; height: 150px; object-fit: contain;">
+                </div>
+
+                <!-- Informações de Contato -->
+                <div class="col-md-4 mb-4 mb-md-0 text-center">
+                    <p style="text-align: justify;">
+                        <strong>Horário de funcionamento:</strong> de 08:00 às 12:00 (atendimento ao público) e das
+                        14:00 às 18:00 (expediente interno).
+                    </p>
+                    <p style="text-align: justify;">
+                        <strong>Contato:</strong> <a href="mailto:assec@semedcanaadoscarajas.pa.gov.br"
+                            class="text-warning text-decoration-none">assec@semedcanaadoscarajas.pa.gov.br</a>
+                    </p>
+                </div>
+                <!-- Redes Sociais -->
+                <div class="col-md-4 text-center text-md-end">
+                    <h5 class="text-uppercase text-info mb-3">Acompanhe Nossas Redes</h5>
+                    <a href="https://www.facebook.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-facebook fa-2x"></i>
+                    </a>
+                    <a href="https://www.instagram.com/semedcanaadoscarajas/" class="text-white me-3" target="_blank"
+                        style="text-decoration: none;">
+                        <i class="fab fa-instagram fa-2x"></i>
+                    </a>
+                    <a href="https://www.youtube.com/channel/UC-_-paASaztXO8yJRLxT32A/" class="text-white me-3"
+                        target="_blank">
+                        <i class="fab fa-youtube fa-2x"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const counters = document.querySelectorAll(".count-box h3");
+            const speed = 300; // Velocidade da animação (quanto menor, mais rápido)
+
+            counters.forEach(counter => {
+                const animate = () => {
+                    const target = +counter.getAttribute("data-target");
+                    const count = +counter.innerText.replace(/\./g, ''); // Remove pontos de milhares
+                    const increment = Math.ceil(target / speed);
+
+                    if (count < target) {
+                        counter.innerText = (count + increment).toLocaleString('pt-BR');
+                        setTimeout(animate, 20); // Tempo entre cada incremento
+                    } else {
+                        counter.innerText = target.toLocaleString('pt-BR'); // Valor final formatado
+                    }
+                };
+
+                animate();
+            });
+        });
+    </script>
+
+<!-- Modal de Anúncio Junino -->
+<div class="modal fade" id="anuncioModal" tabindex="-1" aria-labelledby="anuncioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow-lg">
+            <!-- Cabeçalho -->
+            <div class="modal-header bg-info text-white d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <img src="{% static 'assets/dist/img/logoSite2.png' %}" alt="Logo SEMED"
+                        style="width: 80px; height: 50px;" class="me-3">
+                    <h5 class="modal-title flex-grow-1 text-center mb-0" id="anuncioModalLabel">
+                        Viva São João! 🌽🎉
+                    </h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+
+            <!-- Corpo -->
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <!-- <img src="{% static 'assets/dist/img/festajuninaemed2024.jpg' %}" alt="Festa Junina Banner"
+                        class="img-fluid rounded" style="max-width: 70%; height: auto;"> -->
+                </div>
+
+                <div class="alert alert-info fs-5 border-2 border-info" role="alert" style="text-align: justify;">
+                    <p class="mb-3">
+                        <strong>Junho chegou com alegria!</strong> A SEMED convida todas as escolas para entrarem no clima da <strong>Festa Junina</strong> 🎊
+                    </p>
+                    <p>
+                        Preparem suas bandeirolas, quadrilhas, comidas típicas e apresentações culturais! O mês de junho será recheado de atividades temáticas e interação com toda a comunidade escolar.
+                    </p>
+                    <p>
+                        Envie o cronograma de atividades juninas da sua escola até o dia <strong>10 de junho</strong> e participe da seleção para destaque junino municipal!
+                    </p>
+                    <div class="text-center mt-4">
+                        <a href="{% url 'site_pedagogico' %}" class="btn btn-warning btn-lg" target="_blank">
+                            <i class="fas fa-calendar-check"></i> Enviar Cronograma Junino
+                        </a>
+                    </div>
+                    <p class="mt-4 mb-0">
+                        Vamos celebrar juntos a cultura e a tradição do nosso povo com muita animação e criatividade! 🌽🔥
+                    </p>
+                </div>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="modal-footer bg-light">
+                <p class="text-muted text-center w-100 m-0">
+                    © SEMED Canaã dos Carajás - Valorizando a cultura nordestina nas escolas.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Aguarda 5 segundos e exibe a modal
+            setTimeout(function () {
+                const anuncioModal = new bootstrap.Modal(document.getElementById('anuncioModal'));
+                anuncioModal.show();
+            }, 3000); // 5000 ms = 5 segundos
+        });
+    </script>
+
+    <script>
+        fetch("https://play.google.com/log?format=json", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then(response => {
+                if (!response.ok) {
+                    console.error("Erro na autenticação", response.status);
+                }
+                return response.json();
+            })
+            .catch(err => console.error("Erro na requisição", err));
+
+    </script>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

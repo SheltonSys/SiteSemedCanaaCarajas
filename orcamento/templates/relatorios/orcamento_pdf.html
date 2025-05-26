@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: center; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2 style="text-align: center;">Relatório de Conferência de Itens</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Vencedor</th>
+                <th>Qtd</th>
+                <th>Unitário (R$)</th>
+                <th>Total (R$)</th>
+                <th>Status</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resultados %}
+            <tr>
+                <td>{{ r.item.nome }}</td>
+                <td>{{ r.proponente_vencedor.nome }}</td>
+                <td>{{ r.quantidade }}</td>
+                <td>{{ r.preco_vencedor|floatformat:2 }}</td>
+                <td>{{ r.valor_total|floatformat:2 }}</td>
+                <td>{{ r.status }}</td>
+                <td>{{ r.data_apuracao|date:"d/m/Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

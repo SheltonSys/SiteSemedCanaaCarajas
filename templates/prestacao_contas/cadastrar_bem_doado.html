@@ -22,22 +22,31 @@
 
                     <div class="row">
                         <!-- Escolher Escola -->
-                        <div class="col-md-6">
-                            <label for="escola" class="form-label">Escolha a Escola:</label>
-                            <select id="escola" name="escola" class="form-control" required>
-                                <option value="" selected disabled>Selecione uma escola</option>
-                                {% for escola in escolas %}
-                                    <option value="{{ escola.id }}">{{ escola.nome }}</option>
-                                {% endfor %}
-                            </select>
-                            
-                        </div>
+                        <!-- Campo da Escola -->
+<div class="col-md-6">
+    <label for="escola" class="form-label">Escola:</label>
+    {% if escolas|length == 1 %}
+        <input type="text" class="form-control" value="{{ escolas.0.nome }}" readonly>
+        <input type="hidden" name="escola" value="{{ escolas.0.id }}">
+    {% else %}
+        <select id="escola" name="escola" class="form-control" required>
+            <option value="" selected disabled>Selecione uma escola</option>
+            {% for escola in escolas %}
+                <option value="{{ escola.id }}">{{ escola.nome }}</option>
+            {% endfor %}
+        </select>
+    {% endif %}
+</div>
 
-                        <!-- Nome do Conselho Escolar -->
-                        <div class="col-md-6">
-                            <label for="nome_conselho" class="form-label">Nome do Conselho:</label>
-                            <input type="text" id="nome_conselho" name="nome_conselho" class="form-control" readonly>
-                        </div>
+<!-- Campo do Conselho Escolar -->
+<div class="col-md-6">
+    <label for="nome_conselho" class="form-label">Nome do Conselho:</label>
+    <input type="text" id="nome_conselho" name="nome_conselho"
+           class="form-control"
+           value="{% if escolas|length == 1 %}{{ escolas.0.nome_conselho }}{% endif %}"
+           readonly>
+</div>
+
 
                         <!-- Descrição do Bem -->
                         <div class="col-md-6 mt-3">
@@ -142,6 +151,30 @@
         unit.addEventListener("input", calcularTotal);
     });
 </script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const qtd = document.getElementById("quantidade");
+        const unit = document.getElementById("valor_unitario");
+        const total = document.getElementById("valor_total");
+
+        function calcularTotal() {
+            const quantidade = parseFloat((qtd.value || "0").replace(",", "."));
+            const unitario = parseFloat((unit.value || "0").replace(",", "."));
+
+            if (!isNaN(quantidade) && !isNaN(unitario)) {
+                const soma = quantidade * unitario;
+                total.value = soma.toFixed(2).replace(".", ",");
+            } else {
+                total.value = "";
+            }
+        }
+
+        qtd.addEventListener("input", calcularTotal);
+        unit.addEventListener("input", calcularTotal);
+    });
+</script>
+
 
 
 {% endblock %}

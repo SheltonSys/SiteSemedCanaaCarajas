@@ -14,6 +14,7 @@
             <a href="{% url 'cadastrar_documento' %}" class="btn btn-success">
                 <i class="fas fa-plus"></i> Novo Documento
             </a>
+            <a href="{% url 'pdde' %}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Voltar</a>
         </div>
 
         <div class="card shadow-lg border-0">
@@ -21,39 +22,50 @@
                 <h2 class="h5 mb-0"><i class="fas fa-folder"></i> Documentos</h2>
             </div>
             <div class="card-body bg-light">
-                <table class="table table-striped">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Nome</th>
-                            <th>Descrição</th>
-                            <th>Data de Criação</th>
-                            <th>Arquivo</th>
-                            <th>Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for documento in documentos %}
-                        <tr>
-                            <td>{{ documento.nome }}</td>
-                            <td>{{ documento.descricao|default:"Sem descrição" }}</td>
-                            <td>{{ documento.data_criacao|date:"d/m/Y" }}</td>
-                            <td><a href="{{ documento.arquivo.url }}" class="btn btn-primary btn-sm" target="_blank">Abrir</a></td>
-                            <td>
-                                <a href="#" class="btn btn-warning btn-sm">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
-                                <a href="#" class="btn btn-danger btn-sm">
-                                    <i class="fas fa-trash"></i> Excluir
-                                </a>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="text-center text-muted">Nenhum documento cadastrado ainda.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <table class="table table-bordered table-hover align-middle text-center">
+    <thead class="bg-primary text-white">
+        <tr>
+            <th>Escola</th>
+            <th>Tipo</th>
+            <th>Número</th>
+            <th>Data de Emissão</th>
+            <th>Valor Total (R$)</th>
+            <th>Arquivo</th>
+            <th>Descrição</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for documento in documentos %}
+        <tr>
+            <td>{{ documento.escola.nome }}</td>
+            <td>{{ documento.get_tipo_display }}</td>
+            <td>{{ documento.numero }}</td>
+            <td>{{ documento.data_emissao|date:"d/m/Y" }}</td>
+            <td>R$ {{ documento.valor_total|floatformat:2|default:"0,00" }}</td>
+            <td>
+                {% if documento.arquivo and documento.arquivo.name %}
+                    <a href="{{ documento.arquivo.url }}" class="btn btn-sm btn-success" target="_blank">
+                        <i class="fas fa-download"></i> Baixar
+                    </a>
+                {% else %}
+                    <span class="text-muted">Nenhum</span>
+                {% endif %}
+            </td>
+            <td>{{ documento.descricao|default:"Sem descrição" }}</td>
+            <td>
+                <a href="#" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Editar</a>
+                <a href="#" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Excluir</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="8" class="text-center text-muted">Nenhum documento cadastrado ainda.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
             </div>
         </div>
 

@@ -14,8 +14,35 @@
                 <h2 class="h5 mb-0"><i class="fas fa-box"></i> Informações do Item</h2>
             </div>
             <div class="card-body bg-light">
-                <form method="POST">
+                <form method="POST" id="formCadastro">
                     {% csrf_token %}
+
+                    <div class="row mb-3">
+    <!-- Escola vinculada -->
+    <div class="col-md-6">
+        <label>Escola vinculada:</label>
+        <input type="text" class="form-control" value="{{ request.user.escolas.first.nome }}" readonly>
+    </div>
+
+    <!-- Programas vinculados -->
+    <div class="col-md-6">
+        <label>Programas vinculados:</label>
+        <div class="border rounded bg-white p-2" style="max-height: 150px; overflow-y: auto;">
+            <ul class="list-group list-group-flush">
+                {% for programa in request.user.escolas.first.programas.all %}
+                    <li class="list-group-item px-2 py-1">
+                        <i class="fas fa-check-circle text-success me-1"></i> {{ programa.nome }}
+                    </li>
+                {% empty %}
+                    <li class="list-group-item text-muted px-2 py-1">Nenhum programa vinculado à escola.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
                     <div class="row">
                         <!-- Nome do Item -->
                         <div class="col-md-6">
@@ -28,12 +55,59 @@
                             <label for="unidade_medida">Unidade de Medida:</label>
                             <select id="unidade_medida" name="unidade_medida" class="form-control" required>
                                 <option value="" selected disabled>Selecione...</option>
+
+                                <!-- Unidades básicas -->
                                 <option value="Unidade">Unidade</option>
+                                <option value="Caixa">Caixa</option>
+                                <option value="Pacote">Pacote</option>
+                                <option value="Par">Par</option>
+                                <option value="Kit">Kit</option>
+                                <option value="Bloco">Bloco</option>
+                                <option value="Jogo">Jogo</option>
+                                <option value="Conjunto">Conjunto</option>
+
+                                <!-- Comprimento -->
                                 <option value="Metro">Metro</option>
+                                <option value="Centímetro">Centímetro</option>
+                                <option value="Milímetro">Milímetro</option>
+
+                                <!-- Área -->
+                                <option value="Metro quadrado">Metro quadrado</option>
+                                <option value="Centímetro quadrado">Centímetro quadrado</option>
+
+                                <!-- Volume -->
                                 <option value="Litro">Litro</option>
+                                <option value="Mililitro">Mililitro</option>
+                                <option value="Metro cúbico">Metro cúbico</option>
+
+                                <!-- Massa -->
                                 <option value="Quilograma">Quilograma</option>
+                                <option value="Grama">Grama</option>
+                                <option value="Miligrama">Miligrama</option>
+                                <option value="Tonelada">Tonelada</option>
+
+                                <!-- Tempo -->
+                                <option value="Hora">Hora</option>
+                                <option value="Minuto">Minuto</option>
+                                <option value="Dia">Dia</option>
+                                <option value="Mês">Mês</option>
+                                <option value="Ano">Ano</option>
+
+                                <!-- Outros -->
+                                <option value="Folha">Folha</option>
+                                <option value="Bobina">Bobina</option>
+                                <option value="Lote">Lote</option>
+                                <option value="Volume">Volume</option>
+                                <option value="Envelope">Envelope</option>
+                                <option value="Frasco">Frasco</option>
+                                <option value="Galão">Galão</option>
+                                <option value="Sachê">Sachê</option>
+                                <option value="Ampola">Ampola</option>
+                                <option value="Cartela">Cartela</option>
+                                <option value="Barril">Barril</option>
                             </select>
                         </div>
+
 
                         <!-- Categoria -->
                         <div class="col-md-6">
@@ -45,9 +119,10 @@
                                         <option value="{{ categoria.id }}">{{ categoria.nome }}</option>
                                     {% endfor %}
                                 </select>
-                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalCategoria">
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalCategoria">
                                     <i class="fas fa-plus"></i>
                                 </button>
+
                             </div>
                         </div>
 
@@ -58,9 +133,10 @@
                                 <select id="subcategoria" name="subcategoria" class="form-control" required>
                                     <option value="" selected disabled>Selecione uma categoria primeiro</option>
                                 </select>
-                                <button type="button" class="btn btn-success" data-toggle="modal" data-target="#modalSubcategoria">
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalSubcategoria">
                                     <i class="fas fa-plus"></i>
                                 </button>
+
                             </div>
                         </div>
 
@@ -87,24 +163,23 @@
 </div>
 
 <!-- MODAL PARA CADASTRO DE CATEGORIA -->
-<div class="modal fade" id="modalCategoria" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Cadastrar Nova Categoria</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="novaCategoria" class="form-control" placeholder="Nome da nova categoria">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" onclick="cadastrarCategoria()">Salvar</button>
-            </div>
-        </div>
+<div class="modal fade" id="modalCategoria" tabindex="-1" aria-labelledby="modalCategoriaLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalCategoriaLabel">Cadastrar Nova Categoria</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="novaCategoria" class="form-control" placeholder="Nome da nova categoria">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-success" onclick="cadastrarCategoria()">Salvar</button>
+      </div>
     </div>
+  </div>
 </div>
+
 
 <!-- MODAL PARA CADASTRO DE SUBCATEGORIA -->
 <div class="modal fade" id="modalSubcategoria" tabindex="-1" role="dialog">
@@ -112,7 +187,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">Cadastrar Nova Subcategoria</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="btn-close" aria-label="Fechar" onclick="fecharModal('modalSubcategoria')"></button>
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -139,7 +214,8 @@
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
                 <h5 class="modal-title">Sucesso!</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalConfirmacao')">Fechar</button>
+
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
@@ -154,8 +230,53 @@
     </div>
 </div>
 
-<!-- Script para Atualizar Subcategorias -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
+    // Função universal para fechar modal (sem jQuery)
+    const fecharModal = (modalId) => {
+        const modalEl = document.getElementById(modalId);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.hide();
+
+        // ⚠️ Remove manualmente o backdrop e a classe do body, se não forem limpas
+        setTimeout(() => {
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+        }, 500); // tempo suficiente pro fade-out do Bootstrap
+    };
+
+    
+
+    // Cadastrar nova categoria
+    function cadastrarCategoria() {
+        let nomeCategoria = document.getElementById("novaCategoria").value;
+        if (!nomeCategoria) return;
+
+        fetch('/cadastrar-categoria/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({ nome: nomeCategoria })
+        })
+        .then(response => response.json())
+        .then(data => {
+            let categoriaSelect = document.getElementById("categoria");
+            let option = document.createElement("option");
+            option.value = data.id;
+            option.textContent = data.nome;
+            categoriaSelect.appendChild(option);
+            categoriaSelect.value = data.id;
+
+            document.getElementById("novaCategoria").value = '';
+            fecharModal('modalCategoria');  // ✅ Fecha a modal corretamente
+        });
+    }
+
+    // Atualiza subcategorias dinamicamente
     document.getElementById("categoria").addEventListener("change", function () {
         let categoriaId = this.value;
         let subcategoriaSelect = document.getElementById("subcategoria");
@@ -176,32 +297,10 @@
             .catch(error => console.error("Erro ao carregar subcategorias:", error));
     });
 
-    function cadastrarCategoria() {
-        let nomeCategoria = document.getElementById("novaCategoria").value;
-        if (!nomeCategoria) return;
-
-        fetch('/cadastrar-categoria/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': '{{ csrf_token }}'
-            },
-            body: JSON.stringify({ nome: nomeCategoria })
-        })
-        .then(response => response.json())
-        .then(data => {
-            let categoriaSelect = document.getElementById("categoria");
-            let option = document.createElement("option");
-            option.value = data.id;
-            option.textContent = data.nome;
-            categoriaSelect.appendChild(option);
-            $('#modalCategoria').modal('hide');
-        });
-    }
-
+    // Cadastrar nova subcategoria
     function cadastrarSubcategoria() {
-        let categoriaId = document.getElementById("categoriaParaSubcategoria").value;
-        let nomeSubcategoria = document.getElementById("novaSubcategoria").value;
+        const categoriaId = document.getElementById("categoriaParaSubcategoria").value;
+        const nomeSubcategoria = document.getElementById("novaSubcategoria").value;
         if (!categoriaId || !nomeSubcategoria) return;
 
         fetch('/cadastrar-subcategoria/', {
@@ -214,18 +313,23 @@
         })
         .then(response => response.json())
         .then(data => {
-            $('#modalSubcategoria').modal('hide');
+            document.getElementById("novaSubcategoria").value = '';
+            document.getElementById("categoriaParaSubcategoria").value = '';
+            fecharModal('modalSubcategoria');
+
+            // ✅ Se a categoria do formulário principal for a mesma, atualiza subcategorias
+            const categoriaPrincipal = document.getElementById("categoria");
+            if (categoriaPrincipal.value === categoriaId) {
+                categoriaPrincipal.dispatchEvent(new Event('change'));
+            }
         });
     }
-</script>
 
 
+    // Submete o formulário principal e exibe a modal de confirmação
+    document.getElementById("formCadastro").addEventListener("submit", function (event) {
+        event.preventDefault();
 
-<!-- Script para exibir a modal após cadastro -->
-<script>
-    document.getElementById("formCadastro").addEventListener("submit", function(event) {
-        event.preventDefault(); // Impede o envio padrão do formulário
-        
         let formData = new FormData(this);
 
         fetch("{% url 'cadastrar_item' %}", {
@@ -235,12 +339,17 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                $("#modalConfirmacao").modal("show"); // Exibe a modal de sucesso
-                document.getElementById("formCadastro").reset(); // Limpa o formulário
+                document.getElementById("formCadastro").reset();
+
+                // ✅ Abre a modal corretamente no Bootstrap 5
+                const confirmModalEl = document.getElementById("modalConfirmacao");
+                const confirmModal = new bootstrap.Modal(confirmModalEl);
+                confirmModal.show();
             }
         })
         .catch(error => console.error("Erro ao cadastrar item:", error));
     });
 </script>
+
 
 {% endblock %}

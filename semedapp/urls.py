@@ -14,6 +14,8 @@ from django.conf.urls.static import static
 from .views import logout_view
 from .views import logout_confirm
 from .views import admin_login_view
+from semedapp.views import pdde_dashboard_view
+
 from .views import (
     aluno_matematica_view,
     get_diagnose_data_inic_alunos_matematica,
@@ -81,8 +83,6 @@ from .views import pddereceita_despesa_view
 from .views import get_pagamentos
 from .views import pdde_list
 from .views import get_dados_financeiros
-from .views import lancamento_pagamento
-from .views import get_pagamentos_pdde
 from .views import get_dados_pagamentos_pdde
 from .views import pddelancar_pagamento
 from .views import get_escolas
@@ -102,7 +102,6 @@ from .views import listar_escolas
 from .views import editar_escola_pdde
 from .views import get_programas_vinculados
 from .views import vincular_escola_programa
-from semedapp.views import get_programas_escola
 from semedapp.views import get_programas_por_escola
 from .views import listar_programas_por_escola  # Importa a função correta da view
 from .views import get_dados_receita_despesa_pdde
@@ -115,11 +114,11 @@ from .views import cadastrar_propostas  # Importe a view corretamente
 from .views import apuracao_resultados
 from .views import (
     pesquisa_precos, cadastrar_item, cadastrar_proponente, listar_proponentes,
-    cadastrar_propostas, apuracao_resultado, get_subcategorias, listar_itens,
+    cadastrar_propostas, get_subcategorias, listar_itens,
     gerar_pdf_orcamento, gerar_excel_orcamento, cadastrar_subcategoria, cadastrar_categoria
 )
 
-from .views import apuracao_resultados_view, detalhes_proponente
+from .views import detalhes_proponente
 from .views import cadastrar_documento, cadastrar_bem, cadastrar_representante
 from .views import gerar_prestacao_contas_pdf
 from .views import listar_documentos, cadastrar_documento  # ✅ Importe a função correta
@@ -156,7 +155,8 @@ from .views import (
     pddereceita_despesa, 
     pddelancar_receita, 
     pddelancar_despesa, 
-    pddelancar_pagamento
+    pddelancar_pagamento,
+    sintese_pdde
 )
 
 # app_name = 'contabilidade'
@@ -315,8 +315,8 @@ urlpatterns = [
     path("cadastro_diretoria/", views.cadastro_diretoria, name="cadastro_diretoria"),
     # Listar o Livro Caixa
     path('contabilidade/caixa/', views.listar_livro_caixa, name='listar_livro_caixa'),
-    path('contabilidade/caixa/adicionar/', views.adicionar_escritura_fiscal, name='adicionar_escritura_fiscal'),
-    path('contabilidade/caixa/adicionar/', views.adicionar_escritura_fiscal, name='adicionar_escrituracao'),
+    path('contabilidade/caixa/adicionar/', views.adicionar_livro_caixa, name='adicionar_livro_caixa'),
+
 
     
 
@@ -805,8 +805,7 @@ urlpatterns = [
     path("editar-pagamento/<int:pagamento_id>/", editar_pagamento, name="editar_pagamento"),  # 🔹 Adicionada esta linha
     path("get-dados-financeiros/<int:escola_id>/", get_dados_financeiros, name="get_dados_financeiros"),
 
-    path("pagamento-lancamento/", lancamento_pagamento, name="pagamento_lancamento"),
-    path("get-pagamentos-pdde/<int:escola_id>/", get_pagamentos_pdde, name="get_pagamentos_pdde"),
+
     path("get-dados-pagamentos-pdde/<int:escola_id>/", get_dados_pagamentos_pdde, name="get_dados_pagamentos_pdde"),
     path('lancar-pagamento/', pddelancar_pagamento, name='lancar_pagamento'),
     path("get-escolas/", get_escolas, name="get_escolas"),
@@ -878,7 +877,6 @@ urlpatterns = [
 
     path("vincular-escola-programa/", vincular_escola_programa, name="vincular_escola_programa"),
 
-    # path("get-programas-escola/<int:escola_id>/", listar_programas_por_escola, name="listar_programas_por_escola"),
 
     path("pdde/get-receita-despesa/<int:escola_id>/", views.get_dados_receita_despesa_pdde, name="get_dados_receita_despesa_pdde"),
 
@@ -886,7 +884,6 @@ urlpatterns = [
 
     path("pdde/get-receita/<int:escola_id>/", get_dados_receita, name="get_dados_receita"),
 
-    # path("get-programas-escola/<int:escola_id>/", get_programas_escola, name="get-programas-escola"),
 
     path("get-programas-escola/<int:escola_id>/", get_programas_por_escola, name="get_programas_por_escola"),
 
@@ -905,7 +902,7 @@ urlpatterns = [
     path("listar-proponentes/", views.listar_proponentes, name="listar_proponentes"),  # Adicione esta linha
     path("cadastrar-proposta/", views.cadastrar_propostas, name="cadastrar_propostas"),  # Verifique o nome aqui
     path("cadastrar-proposta/", views.cadastrar_propostas, name="cadastrar_proposta"),  # Certifique-se de que o nome é correto
-    path("apuracao-resultado/", views.apuracao_resultado, name="apuracao_resultado"),
+    path("apuracao-resultados/", views.apuracao_resultados, name="apuracao_resultados"),
     path("get-subcategorias/<int:categoria_id>/", views.get_subcategorias, name="get_subcategorias"),
     path("listar-itens/", views.listar_itens, name="listar_item"),
     path("gerar-pdf-orcamento/", views.gerar_pdf_orcamento, name="gerar_pdf_orcamento"),  # Adicione esta linha
@@ -929,7 +926,7 @@ urlpatterns = [
 
     path('get-escola-dados/<int:escola_id>/', get_escola_dados, name="get_escola_dados"),
 
-    path("documentos/listar/", views.listar_documento, name="listar_documento"),
+ 
     path('documentos/cadastrar/', cadastrar_documento, name="cadastrar_documento"),
 
     path('termo-doacao/cadastrar/', views.cadastrar_termo_doacao, name='cadastrar_termo_doacao'),
@@ -1077,6 +1074,52 @@ urlpatterns = [
 
     path('permissoes/adicionar/<int:user_id>/', views.add_permission_to_user, name='add_permission_to_user'),
 
+    path('trocar-escola/', views.trocar_escola, name='trocar_escola'),
+
+    path('pdde/dashboard/', pdde_dashboard_view, name='dashboard_pdde'),
+
+    path('pdde/', pdde_dashboard_view, name='pdde_dashboard'),
+
+    path('orcamento/pdf/', gerar_pdf_orcamento, name='gerar_pdf_orcamento'),
+
+    path('ajax/get-dirigente/<int:escola_id>/', views.get_dirigente_por_escola, name='get_dirigente_por_escola'),
+
+    path('pdde/sintese/', sintese_pdde, name='sintese_pdde'),
+
+    path("itens/", views.listar_itens, name="listar_item"),
+    path("itens/editar/<int:item_id>/", views.editar_item, name="editar_item"),
+    path("itens/excluir/<int:item_id>/", views.excluir_item, name="excluir_item"),
+    path("banco-curriculos/itens/excluir/<int:item_id>/", views.excluir_item, name="excluir_item"),
+
+    path('get-programas/<int:escola_id>/', get_programas_por_escola, name='get_programas'),
+
+    path("proponentes/", views.listar_proponentes, name="listar_proponentes"),
+    path("proponentes/editar/<int:proponente_id>/", views.editar_proponente, name="editar_proponente"),
+    path("proponentes/excluir/<int:proponente_id>/", views.excluir_proponente, name="excluir_proponente"),
+
+    # urls.py
+
+    path("apuracao-resultado/", views.apuracao_resultados, name="apuracao_resultado"),
+
+    path('pdde-lancar-pagamento/', pddelancar_pagamento, name='pddelancar_pagamento'),
+
+    path('get-receita/<int:escola_id>/<str:programa_nome>/', views.get_receita_detalhada, name='get_receita_detalhada'),
+
+    path('get-pagamentos/<int:escola_id>/', views.get_pagamentos, name='get_pagamentos'),
+
+    path('get-programas/<int:escola_id>/', views.get_programas_por_escola, name='get_programas_por_escola'),
+
+
+    path('dashboard/', views.dashboard_view, name='dashboard'),
+
+
+
+    
+
+
+
+
+    
 
     
 

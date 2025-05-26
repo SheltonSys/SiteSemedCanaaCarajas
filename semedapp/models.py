@@ -161,7 +161,7 @@ class Diretoria(models.Model):
     cep = models.CharField(max_length=10)
     cpf = models.CharField(max_length=25)
     vencimento = models.DateField(null=True, blank=True)
-    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE)
+    escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name='diretores')
     conselho = models.CharField(max_length=191, blank=True, null=True)  # ✅ Aqui que estava faltando
 
     def __str__(self):
@@ -305,6 +305,17 @@ class Escola(models.Model):
         blank=True     # permite campo vazio no formulário
     )
 
+     # Novidade: Coordenador vinculado
+    coordenador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='escolas_unidade'  # 🔹 Nome único para evitar conflitos
+    )
+
+
+
     telefone_coordenador_pedagogico = models.CharField(max_length=15, null=True, blank=True)
     email_coordenador_pedagogico = models.EmailField(null=True, blank=True)
     secretario = models.CharField(max_length=191, null=True, blank=True)
@@ -322,26 +333,50 @@ class Escola(models.Model):
         return self.nome
 # ********************************************************************************************************************************
 
-from django.db import models
-from django.conf import settings  # Corrige a referência ao usuário customizado
+# models.py
 
 class Escolas(models.Model):
-    nome = models.CharField(max_length=191)  # Remova unique=True se estiver
+    nome = models.CharField(max_length=191)
     unidade_educacional = models.CharField(max_length=191, blank=True, null=True)
-    endereco = models.CharField(max_length=191, blank=True, null=True)  # <-- Aqui
-    telefone = models.CharField(max_length=20, blank=True, null=True)   # (opcional também)
-    diretor = models.CharField(max_length=191, blank=True, null=True)   # (opcional também)
-    # 🔹 Correção: referenciar o AUTH_USER_MODEL dinamicamente
+    endereco = models.CharField(max_length=191, blank=True, null=True)
+    telefone = models.CharField(max_length=20, blank=True, null=True)
+    diretor = models.CharField(max_length=191, blank=True, null=True)
+
+    codigo_inep = models.CharField(max_length=12, unique=True, verbose_name='Código INEP', blank=True, null=True)
+    cidade = models.CharField(max_length=100, blank=True, null=True)
+    bairro = models.CharField(max_length=100, blank=True, null=True)
+    uf = models.CharField(
+        max_length=2,
+        choices=[('PA', 'Pará'), ('MA', 'Maranhão'), ('TO', 'Tocantins')],
+        verbose_name='UF',
+        blank=True,
+        null=True
+    )
+    dependencia_administrativa = models.CharField(
+        max_length=50,
+        choices=[
+            ('municipal', 'Municipal'),
+            ('estadual', 'Estadual'),
+            ('privada', 'Privada'),
+        ],
+        verbose_name='Dependência Administrativa',
+        blank=True,
+        null=True
+    )
+    ano = models.PositiveIntegerField(verbose_name="Ano de Referência", blank=True, null=True)
+
     coordenador = models.ForeignKey(
-        settings.AUTH_USER_MODEL,  # Usa o modelo configurado em settings.py
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="escolas_coordenadas"
+        related_name='escolas_geral'  # 🔹 Nome único para evitar conflitos
     )
 
     def __str__(self):
-        return self.nome
+        return f"{self.nome} ({self.codigo_inep or 'sem INEP'})"
+
+
 
 
 # ********************************************************************************************************************************
@@ -2308,22 +2343,25 @@ class CoordenadorEI(models.Model):
         return self.nome_Coordenadora
 ############################################################################################################################
 
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
-from django.db import models
+from django.contrib.auth.models import BaseUserManager
 from django.utils.translation import gettext_lazy as _
 
+from django.contrib.auth.models import BaseUserManager
+
 class CustomUserProfManager(BaseUserManager):
-    """ Gerenciador de usuários personalizados """
-    
-    
     def create_user(self, username, cpf, first_name, last_name, password=None, **extra_fields):
         if not username:
-            raise ValueError(_("O campo de usuário é obrigatório"))
+            raise ValueError("O nome de usuário é obrigatório")
         if not cpf:
-            raise ValueError(_("O CPF é obrigatório"))
+            raise ValueError("O CPF é obrigatório")
 
-        extra_fields.setdefault("is_active", True)
-        user = self.model(username=username, cpf=cpf, first_name=first_name, last_name=last_name, **extra_fields)
+        user = self.model(
+            username=username,
+            cpf=cpf,
+            first_name=first_name,
+            last_name=last_name,
+            **extra_fields
+        )
         user.set_password(password)
         user.save(using=self._db)
         return user
@@ -2331,59 +2369,83 @@ class CustomUserProfManager(BaseUserManager):
     def create_superuser(self, username, cpf, first_name, last_name, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
-
         return self.create_user(username, cpf, first_name, last_name, password, **extra_fields)
+
+    def get_by_natural_key(self, username):
+        return self.get(username=username)
+
+
 ############################################################################################################################
 
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
+from .managers import UserManager
+
 
 class CustomUserProf(AbstractUser):
-    is_coordenador = models.BooleanField(default=False)  # Indica se o usuário é coordenador
-    is_professor = models.BooleanField(default=False)
-    escolas = models.ManyToManyField('Escolas', related_name='professores_customuser', blank=True)
+    # Papéis do usuário
+    is_coordenador = models.BooleanField(default=False, verbose_name="Coordenador")
+    is_professor = models.BooleanField(default=False, verbose_name="Professor")
+
+    # Relações com escolas
     escola = models.ForeignKey(
-        Escolas, 
-        on_delete=models.SET_NULL, 
-        blank=True, 
-        null=True, 
-        related_name='professores'
+        'semedapp.Escolas',  # Certo: string e não objeto
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='usuarios_vinculados',
+        verbose_name="Escola Principal"
     )
+
+
+    escolas = models.ManyToManyField(
+        'semedapp.EscolaPdde',  # nome do modelo referenciado
+        related_name='usuarios',
+        blank=True,
+        verbose_name="Escolas PDDE Vinculadas"
+    )
+
+    # Identificação e contato
     matricula = models.CharField(max_length=15, unique=True, verbose_name="Matrícula")
-    telefone = models.CharField(max_length=15, blank=True, null=True)
-    especializacao = models.CharField(max_length=100, blank=True, null=True)
-    username = models.CharField(max_length=150, unique=True)
-    first_name = models.CharField(max_length=30, blank=True, null=True)
-    last_name = models.CharField(max_length=30, blank=True, null=True)
-    cpf = models.CharField(max_length=25, unique=True)
-    email = models.EmailField(blank=True, null=True)
+    telefone = models.CharField(max_length=15, blank=True, null=True, verbose_name="Telefone")
+    especializacao = models.CharField(max_length=100, blank=True, null=True, verbose_name="Especialização")
+
+    # Credenciais e dados pessoais
+    username = models.CharField(max_length=150, unique=True, verbose_name="Nome de Usuário")
+    cpf = models.CharField(max_length=25, unique=True, verbose_name="CPF")
+    email = models.EmailField(blank=True, null=True, verbose_name="Email")
+    first_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="Nome")
+    last_name = models.CharField(max_length=30, blank=True, null=True, verbose_name="Sobrenome")
+
+    # Estado e controle
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True)
 
+    # Permissões personalizadas
     groups = models.ManyToManyField(
         Group,
         related_name='customuserprof_set',
         blank=True,
-        help_text="Os grupos aos quais este usuário pertence.",
-        verbose_name="grupos"
+        verbose_name="Grupos"
     )
-    
     user_permissions = models.ManyToManyField(
         Permission,
         related_name='customuserprof_permissions',
         blank=True,
-        help_text="Permissões específicas para este usuário.",
-        verbose_name="permissões de usuário"
+        verbose_name="Permissões"
     )
 
-    objects = CustomUserProfManager()
+    # Manager e configurações do AbstractUser
+    objects = UserManager()
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['cpf', 'first_name', 'last_name']
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.username})"
+        return f"{self.first_name or ''} {self.last_name or ''} ({self.username})"
+
+
 ############################################################################################################################
 
 class Permissao(models.Model):
@@ -2739,6 +2801,7 @@ class Programa(models.Model):
         return self.nome
 # ********************************************************************************************************************************
 from django.db import models
+from django.conf import settings  # ✅ Corrigida a importação
 
 class EscolaPdde(models.Model):
     NIVEIS_ENSINO = [
@@ -2749,59 +2812,79 @@ class EscolaPdde(models.Model):
         ("Técnico Profissionalizante", "Técnico Profissionalizante"),
     ]
 
-    # **Identificação**
+    # 📌 Identificação da Escola
     nome = models.CharField(max_length=191)
-    ano = models.IntegerField(default=2024)  # Campo do ano do PDDE
+    ano = models.IntegerField(default=2025)
     status = models.CharField(
         max_length=20,
-        choices=[("aprovado", "Aprovado"), ("pendente", "Pendente"), ("reprovado", "Reprovado")],
+        choices=[
+            ("aprovado", "Aprovado"),
+            ("pendente", "Pendente"),
+            ("reprovado", "Reprovado"),
+        ],
         default="pendente"
     )
     cnpj = models.CharField(max_length=18, unique=True)
     endereco = models.CharField(max_length=191, null=True, blank=True)
-    cep = models.CharField(max_length=9, null=True, blank=True)  # ✅ Adicionado
-    bairro = models.CharField(max_length=191, null=True, blank=True)  # ✅ Adicionado
-    cidade = models.CharField(max_length=191, default="Canaã dos Carajás")  # ✅ Adicionado
+    cep = models.CharField(max_length=9, null=True, blank=True)
+    bairro = models.CharField(max_length=191, null=True, blank=True)
+    cidade = models.CharField(max_length=191, default="Canaã dos Carajás")
     uf = models.CharField(max_length=2, default="PA")
 
-    # 🔹 Adicionando a relação muitos para muitos com Programas
+    # 🔗 Programas vinculados
     programas = models.ManyToManyField('Programa', blank=True, related_name="escolas")
-    
-    # **Dados Administrativos**
+
+    # 📌 Dados Administrativos
     tipo = models.CharField(max_length=50, null=True, blank=True)
     dependencia_administrativa = models.CharField(max_length=50, null=True, blank=True)
     codigo_inep = models.CharField(max_length=10, unique=True)
-    
-    # **Zona da Escola**
+
+    # 🗺️ Localização
     zona = models.CharField(
-        max_length=10, 
-        choices=[("Rural", "Rural"), ("Urbana", "Urbana")], 
+        max_length=10,
+        choices=[("Rural", "Rural"), ("Urbana", "Urbana")],
         default="Urbana"
     )
 
+    # 📁 Documentação
     procuracao = models.FileField(upload_to="procuracoes/", null=True, blank=True)
     validade_procuracao = models.DateField(null=True, blank=True)
 
-
-    # **Nível de Ensino**
+    # 🏫 Níveis de Ensino
     ensino = models.CharField(
-        max_length=191, 
-        null=True, blank=True, 
+        max_length=191,
+        null=True,
+        blank=True,
         help_text="Informe os níveis de ensino disponíveis na escola"
     )
 
-    # **Estrutura**
+    # 🏗️ Estrutura Física
     quantidade_salas = models.IntegerField(default=0)
     quantidade_turmas = models.IntegerField(default=0)
     quantidade_professores = models.IntegerField(default=0)
     quantidade_alunos = models.IntegerField(default=0)
 
-    # **Novo Campo**
-    nome_conselho = models.CharField(max_length=191, null=True, blank=True, help_text="Nome do Conselho Escolar") 
-    
+    # 👥 Conselho Escolar
+    nome_conselho = models.CharField(
+        max_length=191,
+        null=True,
+        blank=True,
+        help_text="Nome do Conselho Escolar"
+    )
+
+    # 👤 Coordenador Responsável
+    coordenador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='escolas_pdde'
+    )
+
 
     def __str__(self):
         return self.nome
+
 # ********************************************************************************************************************************
 
 class SemedAppEscolaPddeProgramas(models.Model):
@@ -3082,16 +3165,26 @@ class Subcategoria(models.Model):
 # ********************************************************************************************************************************
 
 from django.db import models
+from django.contrib.auth import get_user_model
+from semedapp.models import EscolaPdde, Programa, Categoria, Subcategoria
 
 class Item(models.Model):
     nome = models.CharField(max_length=191)
     descricao = models.TextField(blank=True, null=True)
     unidade_medida = models.CharField(max_length=50)
-    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True)
-    subcategoria = models.ForeignKey(Subcategoria, on_delete=models.SET_NULL, null=True)
+
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, related_name="itens")
+    subcategoria = models.ForeignKey(Subcategoria, on_delete=models.SET_NULL, null=True, related_name="itens")
+    usuario = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="itens_cadastrados")
+
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE, null=True, blank=True, related_name="itens")
+    programa = models.ForeignKey(Programa, on_delete=models.SET_NULL, null=True, blank=True, related_name="itens")
 
     def __str__(self):
         return self.nome
+
+
+
 # ********************************************************************************************************************************
 
 from django.db import models
@@ -3121,6 +3214,11 @@ class Proponente(models.Model):
     representante_legal = models.CharField(max_length=191, blank=True, null=True)
     observacoes = models.TextField(blank=True, null=True)
 
+
+    # 👇 Campos novos
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE)
+    programa = models.CharField(max_length=191, blank=True, null=True)
+
     def __str__(self):
         return f"{self.nome} ({self.cpf_cnpj})"
 
@@ -3147,6 +3245,7 @@ class Proposta(models.Model):
 # ********************************************************************************************************************************
 
 from django.db import models
+from .models import Item, Proponente
 
 class ApuracaoResultado(models.Model):
     STATUS_CHOICES = [
@@ -3155,20 +3254,25 @@ class ApuracaoResultado(models.Model):
         ("Revogado", "Revogado"),
     ]
 
-    item = models.ForeignKey(Item, on_delete=models.CASCADE)
-    proponente_vencedor = models.ForeignKey(Proponente, on_delete=models.CASCADE)
-    quantidade = models.PositiveIntegerField(default=1)  # 🔹 Nova coluna
+    item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name="apuracoes")
+    proponente_vencedor = models.ForeignKey(Proponente, on_delete=models.CASCADE, related_name="apuracoes_vencidas")
+    quantidade = models.PositiveIntegerField(default=1)
     preco_vencedor = models.DecimalField(max_digits=10, decimal_places=2)
-    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)  # 🔹 Nova coluna
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
     data_apuracao = models.DateField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pendente")  # 🔹 Status
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pendente")
 
     def save(self, *args, **kwargs):
-        self.valor_total = self.quantidade * self.preco_vencedor  # 🔹 Calcula valor total
+        if self.quantidade and self.preco_vencedor:
+            self.valor_total = self.quantidade * self.preco_vencedor
+        else:
+            self.valor_total = 0
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.item.nome} - {self.proponente_vencedor.nome} ({self.status})"
+
+
 
 
 # ********************************************************************************************************************************
@@ -3276,6 +3380,8 @@ class RepresentanteLegal(models.Model):
     email = models.EmailField(unique=True)  # Confirme se existe
     telefone = models.CharField(max_length=15)  # Confirme se existe
     cargo = models.CharField(max_length=191)
+
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE, related_name="representantes")
 
     def __str__(self):
         return self.nome
@@ -3436,3 +3542,52 @@ class ConselhoMembro(models.Model):
         return f"{self.nome} - {self.cargo}"
 ############################################################################################################################
 
+class Noticia(models.Model):
+    titulo = models.CharField(max_length=200)
+    imagem = models.ImageField(upload_to='noticias/')
+    conteudo = models.TextField()
+    publicado = models.BooleanField(default=False)
+    criado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    criado_em = models.DateTimeField(auto_now_add=True)
+    publicado_em = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.titulo
+
+
+
+class ProgramaEscola(models.Model):
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE)
+    nome = models.CharField(max_length=255)
+    coordenador = models.ForeignKey('semedapp.CustomUserProf', on_delete=models.SET_NULL, null=True, blank=True)
+
+
+    def __str__(self):
+        return f"{self.nome} ({self.escola})"
+    
+
+
+
+from django.db import models
+from .models import EscolaPdde  # ou ajuste conforme a importação no seu projeto
+
+class CertidaoEmitida(models.Model):
+    TIPO_CERTIDAO_CHOICES = [
+        ('regularidade', 'Regularidade'),
+        ('prestacao_contas', 'Prestação de Contas'),
+        ('outro', 'Outro'),
+    ]
+
+    escola = models.ForeignKey(EscolaPdde, on_delete=models.CASCADE, related_name='certidoes')
+    tipo = models.CharField(max_length=100, choices=TIPO_CERTIDAO_CHOICES)
+    descricao = models.TextField(blank=True)
+    data_emissao = models.DateField()
+    arquivo = models.FileField(upload_to='certidoes/', blank=True, null=True)
+
+    class Meta:
+        verbose_name = "Certidão Emitida"
+        verbose_name_plural = "Certidões Emitidas"
+        ordering = ['-data_emissao']
+
+    def __str__(self):
+        return f"{self.get_tipo_display()} - {self.escola.nome} ({self.data_emissao})"

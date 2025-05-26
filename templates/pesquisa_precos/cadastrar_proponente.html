@@ -17,6 +17,18 @@
                 <form method="POST">
                     {% csrf_token %}
                     <div class="row">
+                        <!-- Escola vinculada -->
+                        <div class="col-md-6">
+                            <label for="escola">Escola:</label>
+                            <select id="escola" name="escola" class="form-control" required>
+                                <option value="" selected disabled>Selecione uma escola</option>
+                                {% for escola in escolas %}
+                                <option value="{{ escola.id }}">{{ escola.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
                         <!-- Nome do Proponente -->
                         <div class="col-md-6">
                             <label for="nome">Nome Completo:</label>
@@ -138,4 +150,56 @@
 
     </div>
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const escolaSelect = document.getElementById("escola");
+    const programaSelect = document.getElementById("programa");
+
+    escolaSelect.addEventListener("change", function () {
+        const escolaId = this.value;
+        programaSelect.disabled = true;
+        programaSelect.innerHTML = '<option value="">Carregando...</option>';
+
+        fetch(`/get-programas/${escolaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                programaSelect.innerHTML = '<option value="">-- Nenhum --</option>';
+                programaSelect.innerHTML = '';
+
+                if (data.error) {
+                    programaSelect.innerHTML = `<option value="">Erro: ${data.error}</option>`;
+                    return;
+                }
+
+                if (!data.programas || data.programas.length === 0) {
+                    programaSelect.innerHTML = '<option value="">Nenhum programa vinculado</option>';
+                    return;
+                }
+
+                programaSelect.innerHTML = '<option value="">-- Selecione --</option>';
+                data.programas.forEach(programa => {
+                    const option = document.createElement("option");
+                    option.value = programa.nome;
+                    option.textContent = programa.nome;
+                    programaSelect.appendChild(option);
+                });
+
+                programaSelect.disabled = false;
+            })
+            .catch(error => {
+                console.error("Erro na requisição:", error);
+                programaSelect.innerHTML = '<option value="">Erro ao carregar programas</option>';
+            });
+    });
+});
+</script>
+
+
+
+
+
+
+
 {% endblock %}

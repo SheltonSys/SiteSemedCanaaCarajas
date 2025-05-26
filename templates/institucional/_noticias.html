@@ -1,0 +1,15 @@
+<!-- templates/institucional/_noticias.html -->
+<section id="noticias" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center text-primary mb-4">Fique por Dentro</h2>
+    <div class="row">
+
+      {% for noticia in noticias %}
+        {% include 'components/card_noticia.html' with noticia=noticia %}
+      {% empty %}
+        <p class="text-center">Nenhuma notícia disponível no momento.</p>
+      {% endfor %}
+
+    </div>
+  </div>
+</section>

@@ -1,7 +1,12 @@
 {% extends "base.html" %}
+
+{% load custom_filters %}
+
 {% load static %}
 
 {% block content %}
+
+
 <div class="content-wrapper" style="margin-left: 0; padding: 20px;">
     <div class="container-fluid">
 
@@ -39,15 +44,18 @@
 
             </div>
 
-
-
             <div class="card-body bg-light">
                 <form method="POST" id="form-pdde-receita">
                     {% csrf_token %}
                     <div class="row">
 
-
-
+                        {% if escolas|length == 1 %}
+                        <div class="col-md-3">
+                            <label for="escola-select" class="form-label">Selecionar Escola:</label>
+                            <input type="hidden" id="escola-select" name="escola" value="{{ escolas.0.id }}">
+                            <p class="form-control-plaintext fw-bold">{{ escolas.0.nome }}</p>
+                        </div>
+                        {% else %}
                         <div class="col-md-3">
                             <label for="escola-select">Escolha a Escola:</label>
                             <select id="escola-select" name="escola" class="form-control">
@@ -57,12 +65,10 @@
                                 {% endfor %}
                             </select>
                         </div>
-                        
-
+                        {% endif %}
 
                         <!-- Escolha o Programa -->
-                        <!-- Escolha o Programa -->
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <label for="programa-select">Escolha o Programa:</label>
                             <div class="d-flex">
                                 <select id="programa-select" name="programa" class="form-control me-2">
@@ -75,22 +81,19 @@
                             </div>
                         </div>
 
-
-
-
                         <!-- Período de Execução (Intervalo de Datas) -->
-                        <div class="col-md-2">
-                            <label for="data_inicio">Data Início:</label>
-                            <input type="date" id="data_inicio" name="data_inicio" class="form-control">
-                        </div>
-                        <div class="col-md-2">
-                            <label for="data_fim">Data Fim:</label>
-                            <input type="date" id="data_fim" name="data_fim" class="form-control">
-                        </div>
+<div class="col-md-2">
+    <label for="data_inicio">Data Início:</label>
+    <input type="date" id="data_inicio" name="data_inicio" class="form-control" value="{{ data_inicio|default:'' }}">
+</div>
+<div class="col-md-2">
+    <label for="data_fim">Data Fim:</label>
+    <input type="date" id="data_fim" name="data_fim" class="form-control" value="{{ data_fim|default:'' }}">
+</div>
 
 
                         <!-- Valores Financeiros -->
-                    <div class="row mt-3">
+                    <div class="row mt-4">
                         {% for campo in campos %}
                         <div class="col-md-3">
                             <label for="{{ campo.id }}">{{ campo.label }}</label>
@@ -101,117 +104,123 @@
 
 
 
-                        <div class="row">
-                            <div class="col-md-3">
-                                <label for="saldo_anterior_custeio">08 – Saldo Reprogramado EA (Custeio)</label>
-                                <input type="text" id="saldo_anterior_custeio" name="saldo_anterior_custeio"
-                                    class="form-control">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="saldo_anterior_capital">08 – Saldo Reprogramado EA (Capital)</label>
-                                <input type="text" id="saldo_anterior_capital" name="saldo_anterior_capital"
-                                    class="form-control">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="valor_creditado_custeio">09 – Valor Creditado FNDE EE (Custeio)</label>
-                                <input type="text" id="valor_creditado_custeio" name="valor_creditado_custeio"
-                                    class="form-control">
-                            </div>
+                        <!-- Campos Financeiros Formatados com br_money -->
+<div class="row">
+    <div class="col-md-3">
+        <label for="saldo_anterior_custeio">08 – Saldo Reprogramado EA (Custeio)</label>
+        <input type="text" id="saldo_anterior_custeio" name="saldo_anterior_custeio"
+            class="form-control" value="{{ saldo_anterior_custeio|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="valor_creditado_capital">09 – Valor Creditado FNDE EE (Capital)</label>
-                                <input type="text" id="valor_creditado_capital" name="valor_creditado_capital"
-                                    class="form-control">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="recursos_proprios_custeio">10 – Recursos Próprios (Custeio)</label>
-                                <input type="text" id="recursos_proprios_custeio" name="recursos_proprios_custeio" class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="saldo_anterior_capital">08 – Saldo Reprogramado EA (Capital)</label>
+        <input type="text" id="saldo_anterior_capital" name="saldo_anterior_capital"
+            class="form-control" value="{{ saldo_anterior_capital|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="recursos_proprios_capital">10 – Recursos Próprios (Capital)</label>
-                                <input type="text" id="recursos_proprios_capital" name="recursos_proprios_capital" class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="valor_creditado_custeio">09 – Valor Creditado FNDE EE (Custeio)</label>
+        <input type="text" id="valor_creditado_custeio" name="valor_creditado_custeio"
+            class="form-control" value="{{ valor_creditado_custeio|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="rendimento_aplicacao_custeio">11 – Rendimento Aplicação (Custeio)</label>
-                                <input type="text" id="rendimento_aplicacao_custeio" name="rendimento_aplicacao_custeio"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="valor_creditado_capital">09 – Valor Creditado FNDE EE (Capital)</label>
+        <input type="text" id="valor_creditado_capital" name="valor_creditado_capital"
+            class="form-control" value="{{ valor_creditado_capital|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="rendimento_aplicacao_capital">11 – Rendimento Aplicação (Capital)</label>
-                                <input type="text" id="rendimento_aplicacao_capital" name="rendimento_aplicacao_capital"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="recursos_proprios_custeio">10 – Recursos Próprios (Custeio)</label>
+        <input type="text" id="recursos_proprios_custeio" name="recursos_proprios_custeio"
+            class="form-control" value="{{ recursos_proprios_custeio|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="devolucao_fnde_custeio">12 – Devolução FNDE (Custeio)</label>
-                                <input type="text" id="devolucao_fnde_custeio" name="devolucao_fnde_custeio"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="recursos_proprios_capital">10 – Recursos Próprios (Capital)</label>
+        <input type="text" id="recursos_proprios_capital" name="recursos_proprios_capital"
+            class="form-control" value="{{ recursos_proprios_capital|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="devolucao_fnde_capital">12 – Devolução FNDE (Capital)</label>
-                                <input type="text" id="devolucao_fnde_capital" name="devolucao_fnde_capital"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="rendimento_aplicacao_custeio">11 – Rendimento Aplicação (Custeio)</label>
+        <input type="text" id="rendimento_aplicacao_custeio" name="rendimento_aplicacao_custeio"
+            class="form-control" value="{{ rendimento_aplicacao_custeio|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="valor_total_receita_custeio">13 – Valor Total Receita (Custeio)</label>
-                                <input type="text" id="valor_total_receita_custeio" name="valor_total_receita_custeio"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="rendimento_aplicacao_capital">11 – Rendimento Aplicação (Capital)</label>
+        <input type="text" id="rendimento_aplicacao_capital" name="rendimento_aplicacao_capital"
+            class="form-control" value="{{ rendimento_aplicacao_capital|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="valor_total_receita_capital">13 – Valor Total Receita (Capital)</label>
-                                <input type="text" id="valor_total_receita_capital" name="valor_total_receita_capital"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="devolucao_fnde_custeio">12 – Devolução FNDE (Custeio)</label>
+        <input type="text" id="devolucao_fnde_custeio" name="devolucao_fnde_custeio"
+            class="form-control" value="{{ devolucao_fnde_custeio|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="valor_despesa_realizada_custeio">14 – Valor Despesa Realizada (-)
-                                    (Custeio)</label>
-                                <input type="text" id="valor_despesa_realizada_custeio"
-                                    name="valor_despesa_realizada_custeio" class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="devolucao_fnde_capital">12 – Devolução FNDE (Capital)</label>
+        <input type="text" id="devolucao_fnde_capital" name="devolucao_fnde_capital"
+            class="form-control" value="{{ devolucao_fnde_capital|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="valor_despesa_realizada_capital">14 – Valor Despesa Realizada (-)
-                                    (Capital)</label>
-                                <input type="text" id="valor_despesa_realizada_capital"
-                                    name="valor_despesa_realizada_capital" class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="valor_total_receita_custeio">13 – Valor Total Receita (Custeio)</label>
+        <input type="text" id="valor_total_receita_custeio" name="valor_total_receita_custeio"
+            class="form-control" value="{{ valor_total_receita_custeio|default:0|br_money }}" readonly>
+    </div>
 
-                            <!-- Campo 15 – Saldo Reprogramado ES (Custeio) -->
-                            <div class="col-md-3">
-                                <label for="saldo_reprogramar_custeio">15 – Saldo Reprogramado ES (Custeio)</label>
-                                <input type="text" id="saldo_reprogramar_custeio" name="saldo_reprogramar_custeio" class="form-control" readonly>
-                            </div>
+    <div class="col-md-3">
+        <label for="valor_total_receita_capital">13 – Valor Total Receita (Capital)</label>
+        <input type="text" id="valor_total_receita_capital" name="valor_total_receita_capital"
+            class="form-control" value="{{ valor_total_receita_capital|default:0|br_money }}" readonly>
+    </div>
 
-                            <!-- Campo 15 – Saldo Reprogramado ES (Capital) -->
-                            <div class="col-md-3">
-                                <label for="saldo_reprogramar_capital">15 – Saldo Reprogramado ES (Capital)</label>
-                                <input type="text" id="saldo_reprogramar_capital" name="saldo_reprogramar_capital" class="form-control" readonly>
-                            </div>
+    <div class="col-md-3">
+        <label for="valor_despesa_realizada_custeio">14 – Valor Despesa Realizada (-) (Custeio)</label>
+        <input type="text" id="valor_despesa_realizada_custeio" name="valor_despesa_realizada_custeio"
+            class="form-control" value="{{ valor_despesa_realizada_custeio|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="saldo_devolvido_custeio">16 – Saldo Devolvido (Custeio)</label>
-                                <input type="text" id="saldo_devolvido_custeio" name="saldo_devolvido_custeio"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="valor_despesa_realizada_capital">14 – Valor Despesa Realizada (-) (Capital)</label>
+        <input type="text" id="valor_despesa_realizada_capital" name="valor_despesa_realizada_capital"
+            class="form-control" value="{{ valor_despesa_realizada_capital|default:0|br_money }}">
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="saldo_devolvido_capital">16 – Saldo Devolvido (Capital)</label>
-                                <input type="text" id="saldo_devolvido_capital" name="saldo_devolvido_capital"
-                                    class="form-control">
-                            </div>
+    <div class="col-md-3">
+        <label for="saldo_reprogramar_custeio">15 – Saldo Reprogramado ES (Custeio)</label>
+        <input type="text" id="saldo_reprogramar_custeio" name="saldo_reprogramar_custeio"
+            class="form-control" value="{{ saldo_reprogramar_custeio|default:0|br_money }}" readonly>
+    </div>
 
-                            <div class="col-md-3">
-                                <label for="escolas_atendidas">18 – Nº Escolas Atendidas</label>
-                                <input type="text" id="escolas_atendidas" name="escolas_atendidas" class="form-control">
-                            </div>
-                        </div>
+    <div class="col-md-3">
+        <label for="saldo_reprogramar_capital">15 – Saldo Reprogramado ES (Capital)</label>
+        <input type="text" id="saldo_reprogramar_capital" name="saldo_reprogramar_capital"
+            class="form-control" value="{{ saldo_reprogramar_capital|default:0|br_money }}" readonly>
+    </div>
+
+    <div class="col-md-3">
+        <label for="saldo_devolvido_custeio">16 – Saldo Devolvido (Custeio)</label>
+        <input type="text" id="saldo_devolvido_custeio" name="saldo_devolvido_custeio"
+            class="form-control" value="{{ saldo_devolvido_custeio|default:0|br_money }}">
+    </div>
+
+    <div class="col-md-3">
+        <label for="saldo_devolvido_capital">16 – Saldo Devolvido (Capital)</label>
+        <input type="text" id="saldo_devolvido_capital" name="saldo_devolvido_capital"
+            class="form-control" value="{{ saldo_devolvido_capital|default:0|br_money }}">
+    </div>
+
+    <div class="col-md-3">
+        <label for="escolas_atendidas">18 – Nº Escolas Atendidas</label>
+        <input type="text" id="escolas_atendidas" name="escolas_atendidas"
+            class="form-control" value="{{ escolas_atendidas|default:"1" }}">
+    </div>
+</div>
+
 
 
                         <div class="text-end mt-3">
@@ -322,9 +331,22 @@
     </div>
 </div>
 
+<script>
+    document.getElementById("confirmarLancamento").addEventListener("click", function () {
+    limparFormatacaoCamposFinanceiros();
+    document.getElementById("form-pdde-receita").submit();
+});
 
+function limparFormatacaoCamposFinanceiros() {
+    const camposFinanceiros = document.querySelectorAll("input[type='text']");
+    camposFinanceiros.forEach(campo => {
+        if (campo.value.includes("R$")) {
+            campo.value = campo.value.replace(/R\$\s?/g, "").replace(/\./g, "").replace(",", ".");
+        }
+    });
+}
 
-
+</script>
 
 
 <script>
@@ -578,40 +600,7 @@
 </script>
 
 
-<script>
 
-document.addEventListener("DOMContentLoaded", function () {
-    carregarEscolas();
-
-    function carregarEscolas() {
-        fetch("/listar-escolas/", {  // 🔹 Certifique-se que essa URL existe na sua view
-            method: "GET",
-            headers: { "X-Requested-With": "XMLHttpRequest" }
-        })
-        .then(response => response.json())
-        .then(data => {
-            let selectEscola = document.getElementById("escola-select");
-            selectEscola.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
-
-            if (data.escolas.length > 0) {
-                data.escolas.forEach(escola => {
-                    let option = document.createElement("option");
-                    option.value = escola.id;
-                    option.textContent = escola.nome;
-                    selectEscola.appendChild(option);
-                });
-            } else {
-                let option = document.createElement("option");
-                option.disabled = true;
-                option.textContent = "Nenhuma escola disponível";
-                selectEscola.appendChild(option);
-            }
-        })
-        .catch(error => console.error("Erro ao buscar escolas:", error));
-    }
-});
-
-</script>
 
 
 
@@ -678,7 +667,29 @@ document.addEventListener("DOMContentLoaded", function () {
     
         // Chamada inicial ao carregar a página
         atualizarValores();
-    });
+
+// 🔹 Carrega automaticamente os dados da escola se houver apenas uma
+document.addEventListener("DOMContentLoaded", function () {
+    const escolaSelect = document.getElementById("escola-select");
+
+    if (escolaSelect) {
+        // Se for um input hidden (apenas uma escola), chama direto
+        if (escolaSelect.tagName === "INPUT") {
+            atualizarDados();
+        }
+
+        // Se for um select com uma opção já selecionada, também pode chamar
+        if (escolaSelect.tagName === "SELECT" && escolaSelect.value) {
+            atualizarDados();
+        }
+    }
+});
+
+
+});
+
+
+
     </script>
     
 

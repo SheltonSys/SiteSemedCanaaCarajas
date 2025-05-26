@@ -2,39 +2,111 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <title>Cotação de Preços - PDDE</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        h2, h3 { text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #000; padding: 6px; text-align: center; }
-        .assinatura { margin-top: 40px; }
-        .assinatura div { margin-bottom: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 40px;
+            color: #000;
+        }
+
+        h2, h3 {
+            text-align: center;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        h3 {
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        p {
+            margin: 6px 0;
+        }
+
+        .intro {
+            text-align: justify;
+            margin-top: 20px;
+            line-height: 1.5;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 25px;
+        }
+
+        th {
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+            padding: 8px;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .assinatura {
+            margin-top: 60px;
+            font-size: 12px;
+        }
+
+        .assinatura .campo {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .assinatura strong {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .assinatura .linha {
+            margin-top: 10px;
+            border-top: 1px solid #000;
+            width: 60%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .proponente {
+            white-space: nowrap;
+            text-align: center;
+            margin-top: 40px;
+            font-size: 12px;
+        }
+
     </style>
 </head>
 <body>
+
     <h2>PDDE - PROGRAMA DINHEIRO DIRETO NA ESCOLA</h2>
-    <h3>PESQUISA DE PREÇOS</h3>
-    <br><br><br>
+    <h3>FORMULÁRIO DE COTAÇÃO DE PREÇOS</h3>
 
-    <p><strong>Ao Fornecedor/ Prestador de Serviços :</strong> ___________________________________________________________________</p>
+    <p><strong>Fornecedor / Prestador de Serviços:</strong> _________________________________________________</p>
 
-    <p style="text-align: justify;">
-        Com a finalidade de garantir para a escola bens e serviços de qualidade, com MENOR PREÇO,
-        solicitamos vossa COTAÇÃO DE PREÇOS para fornecimento dos materiais/serviços, abaixo relacionados,
-        com pagamento à vista. Sua proposta pode ser encaminhada a esta escola através de orçamento próprio
-        ou preenchendo a coluna relativa a preços, do presente formulário:
-    </p>
-    
+    <div class="intro">
+        Com o objetivo de assegurar à escola a aquisição de bens e serviços com qualidade e pelo menor preço possível, solicitamos a sua <strong>COTAÇÃO DE PREÇOS</strong> para os itens abaixo relacionados. O pagamento será à vista. A proposta pode ser enviada através de orçamento próprio ou mediante o preenchimento direto deste formulário.
+    </div>
 
     <table>
         <thead>
             <tr>
-                <th>ITEM</th>
-                <th>DESCRIÇÃO PRODUTOS</th>
-                <th>UNID</th>
-                <th>QUANT</th>
-                <th>VALOR UNITÁRIO</th>
-                <th>TOTAL</th>
+                <th>Item</th>
+                <th>Descrição</th>
+                <th>Unidade</th>
+                <th>Quantidade</th>
+                <th>Valor Unitário (R$)</th>
+                <th>Total (R$)</th>
             </tr>
         </thead>
         <tbody>
@@ -44,40 +116,30 @@
                 <td>{{ dado.item.nome }}</td>
                 <td>{{ dado.item.unidade_medida }}</td>
                 <td>{{ dado.quantidade }}</td>
-                <td style="text-align: left;">R$ <!--{{ dado.valor_unitario|floatformat:2 }}--></td> 
-                <td style="text-align: left;">R$ <!--{{ dado.total|floatformat:2 }}--></td>
+                <td style="text-align: right;">{{ dado.valor_unitario|floatformat:2 }}</td>
+                <td style="text-align: right;">{{ dado.total|floatformat:2 }}</td>
             </tr>
             {% endfor %}
         </tbody>
-        
     </table>
+
     <div class="assinatura">
-        <p><strong>DECLARAÇÃO DO PROPONENTE:</strong><br>
-        Proponho os preços acima registrados com prazo de validade da proposta de <strong>30 dias</strong></p>
-    
-        <div class="centro">
-            <strong>CARIMBO IDENTIFICADOR DA EMPRESA, CONTENDO CNPJ:</strong>
+        <p class="proponente">
+            <strong>Declaração do Proponente:</strong> Proponho os preços acima registrados com prazo de validade da proposta de <strong>30 dias</strong>.
+        </p>
+
+
+        <div class="campo">
+            <strong>Carimbo identificador da empresa com CNPJ</strong><br><br><br>
+            <div class="linha"></div>
         </div>
-        <div class="centro">
-            Data: ____/____/_______ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Assinatura: ____________________________________________
+<br>
+        <div class="campo">
+            <strong>Data: ____/____/________</strong><br><br><br>
+            <div class="linha"></div><br>
+            <strong>Assinatura do responsável</strong>
         </div>
     </div>
-    
 
-   <style>
-    .centro {
-    text-align: center;
-}
-
-.assinatura {
-    position: absolute;
-    bottom: 40px;
-    width: 100%;
-    text-align: left;
-}
-
-
-   </style>
-    
 </body>
 </html>

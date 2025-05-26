@@ -23,9 +23,18 @@
 
                         <div class="col-md-6">
                             <label for="escola">Escolha a Escola:</label>
-                            <select id="escola" name="escola" class="form-control" required>
-                                <option value="" selected disabled>Carregando escolas...</option>
-                            </select>
+                            {% if escolas|length == 1 %}
+    <input type="hidden" id="escola" name="escola" value="{{ escolas.0.id }}">
+    <p class="form-control-plaintext fw-bold">{{ escolas.0.nome }}</p>
+{% else %}
+    <select id="escola" name="escola" class="form-control" required>
+        <option value="" selected disabled>Selecione uma escola</option>
+        {% for escola in escolas %}
+            <option value="{{ escola.id }}">{{ escola.nome }}</option>
+        {% endfor %}
+    </select>
+{% endif %}
+
                         </div>
                         
                         <div class="col-md-6">
@@ -181,25 +190,44 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let escolaSelect = document.getElementById("escola");
-        let contaSelect = document.getElementById("conta_bancaria");
+document.addEventListener("DOMContentLoaded", function () {
+    const escolaEl = document.getElementById("escola");
+    const contaSelect = document.getElementById("conta_bancaria");
 
-        // 🔹 Carrega as escolas ao iniciar a página
+    const isSelect = escolaEl && escolaEl.tagName === "SELECT";
+    const escolaId = escolaEl.value;
+
+    // 🔹 Caso seja apenas uma escola (input hidden), carrega contas automaticamente
+    if (!isSelect && escolaId) {
+        fetch(`/get-contas/${escolaId}/`)
+            .then(response => response.json())
+            .then(data => {
+                contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
+                data.contas.forEach(conta => {
+                    contaSelect.innerHTML += `
+                        <option value="${conta.id}">${conta.banco} - Agência: ${conta.agencia} - Conta: ${conta.conta}</option>
+                    `;
+                });
+            })
+            .catch(error => console.error("Erro ao buscar contas bancárias:", error));
+    }
+
+    // 🔹 Caso seja select com múltiplas escolas
+    if (isSelect) {
         fetch("/get-escolas/")
             .then(response => response.json())
             .then(data => {
-                escolaSelect.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
+                escolaEl.innerHTML = '<option value="" selected disabled>Selecione uma escola</option>';
                 data.escolas.forEach(escola => {
-                    escolaSelect.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
+                    escolaEl.innerHTML += `<option value="${escola.id}">${escola.nome}</option>`;
                 });
             })
             .catch(error => console.error("Erro ao buscar escolas:", error));
 
-        // 🔹 Atualiza as contas bancárias quando a escola for selecionada
-        escolaSelect.addEventListener("change", function () {
-            let escolaId = this.value;
+        escolaEl.addEventListener("change", function () {
+            const escolaId = this.value;
 
+            contaSelect.innerHTML = '<option value="" selected disabled>Carregando contas...</option>';
             fetch(`/get-contas/${escolaId}/`)
                 .then(response => response.json())
                 .then(data => {
@@ -212,8 +240,10 @@
                 })
                 .catch(error => console.error("Erro ao buscar contas bancárias:", error));
         });
-    });
+    }
+});
 </script>
+
 
 
 {% endblock %}
