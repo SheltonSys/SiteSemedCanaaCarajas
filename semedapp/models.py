@@ -258,7 +258,7 @@ class Escola(models.Model):
     modalidade_ensino = models.CharField(max_length=191, null=True, blank=True)
     autorizacao = models.CharField(max_length=50, null=True, blank=True)
     protocolo = models.CharField(max_length=50, null=True, blank=True)
-    codigo_inep = models.CharField(max_length=10, null=True, blank=True)
+    codigo_inep = models.CharField(max_length=20, null=True, blank=True)  # exemplo
     cnpj = models.CharField(max_length=18, null=True, blank=True)
     fundacao = models.DateField(null=True, blank=True)
     situacao = models.CharField(max_length=50, null=True, blank=True)
@@ -2188,11 +2188,13 @@ class AtendimentoSOE(models.Model):
 
 class SynapticAtendimento(models.Model):
     nome_unidade_ensino = models.CharField(max_length=191)
+    ano = models.CharField(max_length=4)  # <-- ADICIONE ESTA LINHA
     ano_serie = models.CharField(max_length=191)
     nome_turma = models.CharField(max_length=191)
     classificacao_nome = models.CharField(max_length=191)
     tipo_ocorrencia_nome = models.CharField(max_length=191)
     registro = models.DateTimeField()
+    id_ocorrencia = models.CharField(max_length=20, unique=True, null=True, blank=True)
     status_descricao = models.CharField(max_length=191)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -2381,15 +2383,14 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from .managers import UserManager
 
-
 class CustomUserProf(AbstractUser):
     # Papéis do usuário
     is_coordenador = models.BooleanField(default=False, verbose_name="Coordenador")
     is_professor = models.BooleanField(default=False, verbose_name="Professor")
 
-    # Relações com escolas
+    # Vínculo 1:1 com Escola Principal (Banco de Currículos)
     escola = models.ForeignKey(
-        'semedapp.Escolas',  # Certo: string e não objeto
+        'semedapp.Escolas',
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -2397,10 +2398,20 @@ class CustomUserProf(AbstractUser):
         verbose_name="Escola Principal"
     )
 
+    # Vínculo 1:1 com Escola PDDE (Principal)
+    escola_pdde = models.ForeignKey(
+        'semedapp.EscolaPdde',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='usuarios_pdde_principal',
+        verbose_name="Escola PDDE Vinculada"
+    )
 
+    # Relação com várias escolas PDDE (opcional, para múltiplas permissões)
     escolas = models.ManyToManyField(
-        'semedapp.EscolaPdde',  # nome do modelo referenciado
-        related_name='usuarios',
+        'semedapp.EscolaPdde',
+        related_name='usuarios_pdde_m2m',
         blank=True,
         verbose_name="Escolas PDDE Vinculadas"
     )
@@ -2444,6 +2455,8 @@ class CustomUserProf(AbstractUser):
 
     def __str__(self):
         return f"{self.first_name or ''} {self.last_name or ''} ({self.username})"
+
+
 
 
 ############################################################################################################################
@@ -2663,6 +2676,7 @@ class ModuleModulosPermitidos(models.Model):
 from decimal import Decimal
 from django.db import models
 
+
 class ReceitaDespesa(models.Model):
     TIPO_CHOICES = [
         ("receita", "Receita"),
@@ -2670,34 +2684,35 @@ class ReceitaDespesa(models.Model):
     ]
 
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name="receitadespesa")
+    conta_bancaria = models.ForeignKey('ContaBancaria', on_delete=models.SET_NULL, null=True, blank=True, related_name="receitadespesa")
+
     programa = models.CharField(max_length=191)
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default="receita")
     periodo_execucao = models.IntegerField()
 
-    # 🏦 **Saldos Anteriores**
+    # 🏦 Saldos Anteriores
     saldo_anterior_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     saldo_anterior_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
-    # 📌 **Valores Creditados**
+    # 📌 Valores Creditados
     valor_creditado_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     valor_creditado_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
-    # ✅ **Novos Campos**
     recursos_proprios_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     recursos_proprios_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
-    # 💰 **Rendimento e Devoluções**
     rendimento_aplicacao_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     rendimento_aplicacao_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     devolucao_fnde_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     devolucao_fnde_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
-    # 📌 **Receitas e Despesas**
+    valor_despesa_realizada_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    valor_despesa_realizada_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+
     total_receita = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     total_despesa = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
-    # 📌 **Saldos Reprogramados e Devolvidos**
     saldo_reprogramar_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
     saldo_reprogramar_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
@@ -2705,24 +2720,8 @@ class ReceitaDespesa(models.Model):
     saldo_devolvido_capital = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
     escolas_atendidas = models.IntegerField(default=0)
-
-    # ✅ **Campo para armazenar o saldo disponível**
     saldo_disponivel = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
 
-    ## 🔹 **Propriedades para cálculo dinâmico**
-    @property
-    def saldo_reprogramado_custeio(self):
-        return (self.saldo_anterior_custeio + self.valor_creditado_custeio +
-                self.recursos_proprios_custeio + self.rendimento_aplicacao_custeio -
-                self.devolucao_fnde_custeio - self.total_despesa - self.saldo_devolvido_custeio)
-
-    @property
-    def saldo_reprogramado_capital(self):
-        return (self.saldo_anterior_capital + self.valor_creditado_capital +
-                self.recursos_proprios_capital + self.rendimento_aplicacao_capital -
-                self.devolucao_fnde_capital - self.total_despesa - self.saldo_devolvido_capital)
-
-    ## 🔹 **Cálculo do Saldo Disponível**
     def calcular_saldo_disponivel(self):
         receita_total = (
             self.saldo_anterior_custeio + self.saldo_anterior_capital +
@@ -2730,24 +2729,42 @@ class ReceitaDespesa(models.Model):
             self.recursos_proprios_custeio + self.recursos_proprios_capital +
             self.rendimento_aplicacao_custeio + self.rendimento_aplicacao_capital
         )
+        despesas_total = (
+            self.valor_despesa_realizada_custeio + self.valor_despesa_realizada_capital +
+            self.devolucao_fnde_custeio + self.devolucao_fnde_capital +
+            self.saldo_devolvido_custeio + self.saldo_devolvido_capital
+        )
+        return receita_total - despesas_total
 
-        return receita_total - (self.total_despesa + self.devolucao_fnde_custeio + self.devolucao_fnde_capital +
-                                self.saldo_devolvido_custeio + self.saldo_devolvido_capital)
-
-    ## 🔹 **Salva e recalcula o saldo disponível**
     def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)
-
+        self.total_receita = (
+            self.saldo_anterior_custeio + self.saldo_anterior_capital +
+            self.valor_creditado_custeio + self.valor_creditado_capital +
+            self.recursos_proprios_custeio + self.recursos_proprios_capital +
+            self.rendimento_aplicacao_custeio + self.rendimento_aplicacao_capital
+        )
+        self.total_despesa = (
+            self.valor_despesa_realizada_custeio + self.valor_despesa_realizada_capital +
+            self.devolucao_fnde_custeio + self.devolucao_fnde_capital +
+            self.saldo_devolvido_custeio + self.saldo_devolvido_capital
+        )
         self.saldo_disponivel = self.calcular_saldo_disponivel()
-        super().save(update_fields=["saldo_disponivel"])
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.escola.nome} - {self.programa} ({self.periodo_execucao})"
 
+    class Meta:
+        verbose_name = "Receita e Despesa Consolidada"
+        verbose_name_plural = "Receitas e Despesas Consolidadas"
+
+
+
 # ********************************************************************************************************************************
 
 from django.db import models
+
+
 
 class Receita(models.Model):
     escola = models.ForeignKey('EscolaPdde', on_delete=models.CASCADE, related_name="receitas")
@@ -2755,32 +2772,40 @@ class Receita(models.Model):
     data_inicio = models.DateField()
     data_fim = models.DateField(default="2025-12-31")
 
-    saldo_anterior_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    saldo_anterior_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    valor_creditado_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    valor_creditado_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    conta_bancaria = models.ForeignKey(
+    "semedapp.ContaBancaria",  # ✅ app_name.ModelName
+    on_delete=models.SET_NULL,
+    null=True,
+    blank=True,
+    related_name="receitas"
+    )
+
+    saldo_anterior_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    saldo_anterior_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_creditado_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_creditado_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     # 🔹 Renomeamos para recursos_proprios_custeio e recursos_proprios_capital
-    recursos_proprios_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    recursos_proprios_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    recursos_proprios_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    recursos_proprios_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    rendimento_aplicacao_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    rendimento_aplicacao_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    rendimento_aplicacao_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    rendimento_aplicacao_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    devolucao_fnde_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    devolucao_fnde_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    devolucao_fnde_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    devolucao_fnde_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    saldo_reprogramar_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    saldo_reprogramar_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    saldo_reprogramar_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    saldo_reprogramar_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    saldo_devolvido_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    saldo_devolvido_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    saldo_devolvido_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    saldo_devolvido_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    valor_total_receita_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    valor_total_receita_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    valor_total_receita_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_total_receita_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
-    valor_despesa_realizada_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
-    valor_despesa_realizada_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0.00)
+    valor_despesa_realizada_custeio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    valor_despesa_realizada_capital = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     escolas_atendidas = models.IntegerField(default=1)
 
@@ -2911,16 +2936,20 @@ class EscolaPddeProgramas(models.Model):
         return f"{self.escolapdde.nome} - {self.programa.nome}"
 # ********************************************************************************************************************************
 
-# 🚀 **Pagamentos Efetuados**
+from decimal import Decimal
 from django.db import models
-from django.db.models import F, DecimalField
-from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import F, Sum
+from django.apps import apps
+from django.conf import settings
 
 class Pagamento(models.Model):
     escola = models.ForeignKey("EscolaPdde", on_delete=models.CASCADE)
     programa = models.CharField(max_length=191)
+    conta_bancaria = models.ForeignKey("ContaBancaria", on_delete=models.SET_NULL, null=True, blank=True, related_name="pagamentos")
+
     nome_favorecido = models.CharField(max_length=191)
     cnpj_cpf = models.CharField(max_length=25, blank=True, null=True)
+
     tipo_pagamento = models.CharField(
         max_length=50,
         choices=[("Custeio", "Custeio"), ("Capital", "Capital")]
@@ -2958,63 +2987,118 @@ class Pagamento(models.Model):
     valor = models.DecimalField(max_digits=10, decimal_places=2)
     exercicio = models.IntegerField()
 
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name="Usuário responsável"
+    )
+
     def save(self, *args, **kwargs):
-        """
-        Atualiza os valores de `valor_despesa_realizada_custeio`, `valor_despesa_realizada_capital`
-        e os saldos reprogramados ao salvar um pagamento.
-        """
-        super().save(*args, **kwargs)  # Salva o pagamento primeiro
+        super().save(*args, **kwargs)
 
         try:
-            receita = Receita.objects.get(escola=self.escola, programa=self.programa)
+            Receita = apps.get_model('semedapp', 'Receita')
+            LancamentoBancario = apps.get_model('semedapp', 'LancamentoBancario')
+
+            receitas = Receita.objects.filter(
+                escola=self.escola,
+                programa=self.programa,
+                conta_bancaria=self.conta_bancaria
+            )
 
             if self.tipo_pagamento == "Custeio":
-                # Atualiza a despesa realizada (soma o novo pagamento)
-                Receita.objects.filter(id=receita.id).update(
+                receitas.update(
                     valor_despesa_realizada_custeio=F("valor_despesa_realizada_custeio") + self.valor
                 )
 
-                # Atualiza o saldo reprogramado após salvar a despesa corretamente
-                Receita.objects.filter(id=receita.id).update(
-                    saldo_reprogramar_custeio=(
-                        F("saldo_anterior_custeio") + F("valor_creditado_custeio") + F("recursos_proprios_custeio") 
-                        + F("rendimento_aplicacao_custeio")
-                        - F("devolucao_fnde_custeio") - F("valor_despesa_realizada_custeio") - F("saldo_devolvido_custeio")
-                    )
+                # Recalcular saldo_reprogramar_custeio com base em soma dos valores
+                totais = receitas.aggregate(
+                    saldo_anterior=Sum("saldo_anterior_custeio"),
+                    valor_creditado=Sum("valor_creditado_custeio"),
+                    recursos=Sum("recursos_proprios_custeio"),
+                    rendimento=Sum("rendimento_aplicacao_custeio"),
+                    devolucao=Sum("devolucao_fnde_custeio"),
+                    despesas=Sum("valor_despesa_realizada_custeio"),
+                    devolvido=Sum("saldo_devolvido_custeio"),
                 )
 
-            else:  # Caso seja "Capital"
-                # Atualiza a despesa realizada (soma o novo pagamento)
-                Receita.objects.filter(id=receita.id).update(
+                novo_saldo = (
+                    (totais["saldo_anterior"] or 0)
+                    + (totais["valor_creditado"] or 0)
+                    + (totais["recursos"] or 0)
+                    + (totais["rendimento"] or 0)
+                    - (totais["devolucao"] or 0)
+                    - (totais["despesas"] or 0)
+                    - (totais["devolvido"] or 0)
+                )
+
+                receitas.update(saldo_reprogramar_custeio=novo_saldo)
+
+            else:  # Capital
+                receitas.update(
                     valor_despesa_realizada_capital=F("valor_despesa_realizada_capital") + self.valor
                 )
 
-                # Atualiza o saldo reprogramado após salvar a despesa corretamente
-                Receita.objects.filter(id=receita.id).update(
-                    saldo_reprogramar_capital=(
-                        F("saldo_anterior_capital") + F("valor_creditado_capital") + F("recursos_proprios_capital") 
-                        + F("rendimento_aplicacao_capital")
-                        - F("devolucao_fnde_capital") - F("valor_despesa_realizada_capital") - F("saldo_devolvido_capital")
-                    )
+                totais = receitas.aggregate(
+                    saldo_anterior=Sum("saldo_anterior_capital"),
+                    valor_creditado=Sum("valor_creditado_capital"),
+                    recursos=Sum("recursos_proprios_capital"),
+                    rendimento=Sum("rendimento_aplicacao_capital"),
+                    devolucao=Sum("devolucao_fnde_capital"),
+                    despesas=Sum("valor_despesa_realizada_capital"),
+                    devolvido=Sum("saldo_devolvido_capital"),
                 )
 
-        except ObjectDoesNotExist:
-            print(f"⚠️ Nenhuma Receita encontrada para a Escola {self.escola.nome} e Programa {self.programa}")
+                novo_saldo = (
+                    (totais["saldo_anterior"] or 0)
+                    + (totais["valor_creditado"] or 0)
+                    + (totais["recursos"] or 0)
+                    + (totais["rendimento"] or 0)
+                    - (totais["devolucao"] or 0)
+                    - (totais["despesas"] or 0)
+                    - (totais["devolvido"] or 0)
+                )
+
+                receitas.update(saldo_reprogramar_capital=novo_saldo)
+
+            # Criar lançamento bancário
+            LancamentoBancario.objects.create(
+                data=self.data_pagamento,
+                descricao=f"Pagamento: {self.nome_favorecido}",
+                tipo="debito",
+                valor=self.valor,
+                origem_destino=self.nome_favorecido,
+                comprovante=self.numero_documento_pagamento,
+                categoria="Pagamentos PDDE",
+                conta_bancaria=self.conta_bancaria,
+                escola=self.escola,
+                usuario=self.usuario
+            )
+
+        except Exception as e:
+            print(f"❌ Erro ao atualizar Receita ou lançar débito bancário: {e}")
 
     def __str__(self):
         return f"{self.nome_favorecido} - R$ {self.valor}"
+
+
+
+
 # ********************************************************************************************************************************
 from django.db import models
+from decimal import Decimal
 
 class ContaBancaria(models.Model):
     escola = models.ForeignKey(
-        "EscolaPdde", 
-        on_delete=models.CASCADE, 
+        "EscolaPdde",
+        on_delete=models.CASCADE,
         related_name="contas"
     )
     conselho = models.CharField(
-        max_length=191, 
-        blank=True, 
+        max_length=191,
+        blank=True,
         null=True,
         help_text="Conselho vinculado à escola."
     )
@@ -3023,27 +3107,28 @@ class ContaBancaria(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True,
-        help_text="Programa vinculado à conta bancária."
+        help_text="Programa vinculado à conta bancária (opcional)."
     )
     nome = models.CharField(
-        max_length=100, 
-        help_text="Nome da conta bancária (ex: Conta Principal)",
+        max_length=100,
+        help_text="Nome da conta bancária (ex: Conta Principal)"
     )
     banco = models.CharField(
-        max_length=100, 
+        max_length=100,
         help_text="Nome do banco da conta."
     )
     agencia = models.CharField(
-        max_length=20, 
+        max_length=20,
         help_text="Número da agência bancária."
     )
     conta = models.CharField(
-        max_length=20, 
+        max_length=20,
         help_text="Número da conta bancária."
     )
     saldo = models.DecimalField(
-        max_digits=15, decimal_places=2, 
-        default=0.00, 
+        max_digits=15,
+        decimal_places=2,
+        default=Decimal("0.00"),
         help_text="Saldo atual da conta bancária."
     )
     tipo_conta = models.CharField(
@@ -3056,20 +3141,22 @@ class ContaBancaria(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["escola", "banco", "agencia", "conta"], 
+                fields=["escola", "banco", "agencia", "conta"],
                 name="unique_conta_bancaria_por_escola"
             )
         ]
-        ordering = ["escola", "banco"]
+        ordering = ["escola__nome", "banco"]
 
     def save(self, *args, **kwargs):
-        """Ao salvar a conta, automaticamente adiciona o conselho vinculado à escola."""
-        if self.escola:
+        """Ao salvar a conta, preenche automaticamente o nome do conselho vinculado à escola."""
+        if self.escola and hasattr(self.escola, 'nome_conselho'):
             self.conselho = self.escola.nome_conselho
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.banco} - {self.agencia}/{self.conta} ({self.escola.nome})"
+        return f"{self.banco} - Ag. {self.agencia} / Cc. {self.conta} - {self.nome} ({self.escola.nome})"
+
+
 
 
 # ********************************************************************************************************************************
@@ -3591,3 +3678,93 @@ class CertidaoEmitida(models.Model):
 
     def __str__(self):
         return f"{self.get_tipo_display()} - {self.escola.nome} ({self.data_emissao})"
+
+
+###################################################################################################################################
+###################################################################################################################################
+####################################################PATRIMÔNIO#####################################################################
+###################################################################################################################################
+from django.db import models
+
+class Fornecedor(models.Model):
+    nome = models.CharField(max_length=255)
+    cnpj = models.CharField(max_length=18, unique=True)
+    telefone = models.CharField(max_length=20, blank=True)
+    email = models.EmailField(blank=True)
+    endereco = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.nome
+
+
+class NotaFiscal(models.Model):
+    numero = models.CharField(max_length=50)
+    data_emissao = models.DateField()
+    fornecedor = models.ForeignKey(Fornecedor, on_delete=models.CASCADE)
+    valor_total = models.DecimalField(max_digits=12, decimal_places=2)
+
+    def __str__(self):
+        return f"NF {self.numero} - {self.fornecedor.nome}"
+
+
+class Contrato(models.Model):
+    numero = models.CharField(max_length=50)
+    objeto = models.TextField()
+    fornecedor = models.ForeignKey(Fornecedor, on_delete=models.CASCADE)
+    data_inicio = models.DateField()
+    data_fim = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Contrato {self.numero}"
+
+
+class Localizacao(models.Model):
+    escola_pdde = models.ForeignKey('EscolaPdde', on_delete=models.SET_NULL, null=True, blank=True)
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+
+    def __str__(self):
+        if self.escola_pdde:
+            return f"{self.nome} ({self.escola_pdde.nome})"
+        return self.nome
+
+
+class Patrimonio(models.Model):
+    tombo = models.CharField(max_length=50, unique=True)
+    descricao = models.CharField(max_length=255)
+    data_aquisicao = models.DateField()
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    nota_fiscal = models.ForeignKey(NotaFiscal, on_delete=models.SET_NULL, null=True, blank=True)
+    contrato = models.ForeignKey(Contrato, on_delete=models.SET_NULL, null=True, blank=True)
+    localizacao = models.ForeignKey(Localizacao, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ('ativo', 'Ativo'),
+            ('transferido', 'Transferido'),
+            ('baixado', 'Baixado')
+        ]
+    )
+
+    def __str__(self):
+        return f"{self.tombo} - {self.descricao}"
+
+
+class Movimentacao(models.Model):
+    patrimonio = models.ForeignKey(Patrimonio, on_delete=models.CASCADE)
+    origem = models.ForeignKey(Localizacao, on_delete=models.SET_NULL, null=True, blank=True, related_name='mov_origem')
+    destino = models.ForeignKey(Localizacao, on_delete=models.SET_NULL, null=True, blank=True, related_name='mov_destino')
+    data_movimentacao = models.DateField()
+    responsavel = models.CharField(max_length=100)
+    observacao = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.patrimonio.tombo} → {self.destino.nome if self.destino else 'Desconhecido'} ({self.data_movimentacao})"
+
+
+
+
+###################################################################################################################################
+###################################################################################################################################
+################################fim#################PATRIMÔNIO#####################################################################
+###################################################################################################################################

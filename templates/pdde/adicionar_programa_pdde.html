@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+  <div class="container-fluid">
+    <div class="text-center mb-4">
+      <h1 class="display-4 text-primary fw-bold">Cadastrar Novo Programa - PDDE</h1>
+      <p class="text-muted">Preencha as informações para cadastrar um novo programa.</p>
+    </div>
+
+    {% if messages %}
+    <div class="alert alert-dismissible fade show" role="alert">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="POST">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="nome" class="form-label fw-semibold">Nome do Programa:</label>
+            <input type="text" class="form-control" id="nome" name="nome" placeholder="Ex: PDDE Acessibilidade" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="descricao" class="form-label fw-semibold">Descrição:</label>
+            <textarea class="form-control" id="descricao" name="descricao" rows="3" placeholder="Descreva o objetivo do programa"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="resolucao" class="form-label fw-semibold">Resolução:</label>
+            <input type="text" class="form-control" id="resolucao" name="resolucao" placeholder="Número da Resolução">
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="data_inicio" class="form-label fw-semibold">Data Início:</label>
+              <input type="date" class="form-control" id="data_inicio" name="data_inicio">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="data_fim" class="form-label fw-semibold">Data Fim:</label>
+              <input type="date" class="form-control" id="data_fim" name="data_fim">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Salvar
+          </button>
+          <a href="{% url 'pdde' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Voltar
+          </a>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

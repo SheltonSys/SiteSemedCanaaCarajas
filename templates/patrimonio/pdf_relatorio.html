@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Bens Patrimoniais</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .meta-info {
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 6px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h2>Relatório de Bens Patrimoniais</h2>
+
+    {% if nome_escola %}
+    <p class="meta-info"><strong>Escola:</strong> {{ nome_escola }}</p>
+    {% endif %}
+
+    {% if nome_local %}
+    <p class="meta-info"><strong>Localização:</strong> {{ nome_local }}</p>
+    {% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>Tombo</th>
+                <th>Descrição</th>
+                <th>Escola</th>
+                <th>Localização</th>
+                <th>Data de Aquisição</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bem in bens %}
+            <tr>
+                <td>{{ bem.tombo }}</td>
+                <td>{{ bem.descricao }}</td>
+                <td>{{ bem.localizacao.escola_pdde.nome }}</td>
+                <td>{{ bem.localizacao.nome }}</td>
+                <td>{{ bem.data_aquisicao|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="text-align: center;">Nenhum bem encontrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

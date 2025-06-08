@@ -1,130 +1,160 @@
 {% extends "base.html" %}
 {% load static %}
-
 {% load custom_filters %}
 
 {% block content %}
 <div class="content-wrapper" style="margin-left: 0; padding: 20px;">
   <div class="container-fluid">
 
-    <!-- Cabeçalho -->
     <div class="text-center mb-4">
       <h1 class="display-4 text-primary font-weight-bold">Lançamento de Pagamentos - PDDE</h1>
-      <p class="text-muted">Registre e visualize os pagamentos efetuados pelas escolas no programa PDDE.</p>
+      <h4 class="text-muted">Registre e visualize os pagamentos efetuados pelas escolas no programa PDDE.</h4>
     </div>
 
-<!-- Card para Seleção de Escola, Programa e Exercício -->
-<div class="card shadow-sm border-0 mb-4">
-  <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
-    <i class="fas fa-university me-2"></i>
-    <h5 class="mb-0">Selecionar Escola, Programa e Exercício</h5>
+
+    <!-- <div class="col-12">
+  <div class="card mt-3 shadow-sm border-0">
+    <div class="card-body bg-light text-end">
+      <span class="me-4"><strong>Total Custeio:</strong> <span id="total-custeio">R$ 0,00</span></span>
+      <span class="me-4"><strong>Total Capital:</strong> <span id="total-capital">R$ 0,00</span></span>
+      <span><strong>Total Geral:</strong> <span id="total-geral">R$ 0,00</span></span>
+    </div>
   </div>
-  <div class="card-body bg-light">
-    <form method="get" action="{% url 'pddelancar_pagamento' %}">
-      <div class="row g-3">
-        <div class="col-md-4">
-          <label for="escola-select" class="form-label fw-semibold">Escolha a Escola:</label>
-          <select id="escola-select" name="escola" class="form-select" required onchange="this.form.submit()">
-            <option value="" disabled {% if not escola_selecionada %}selected{% endif %}>Selecione uma escola</option>
-            {% for escola in escolas %}
-              <option value="{{ escola.id }}" {% if escola.id == escola_selecionada.id %}selected{% endif %}>{{ escola.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label for="programa-select" class="form-label fw-semibold">Programa:</label>
-          <select id="programa-select" name="programa" class="form-select" required onchange="this.form.submit()">
-            <option value="" disabled {% if not programa_selecionado %}selected{% endif %}>Selecione um programa</option>
-            {% for programa in programas %}
-              <option value="{{ programa.nome }}" {% if programa.nome == programa_selecionado %}selected{% endif %}>{{ programa.nome }}</option>
-            {% endfor %}
-          </select>
-        </div>
-        <div class="col-md-4">
-          <label class="form-label fw-semibold">Exercício:</label>
-          <input type="text" class="form-control" value="2025" readonly>
-        </div>
-      </div>
-    </form>
+</div> -->
+
+
+
+    <!-- Seleção de Escola e Programa -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-gradient-primary text-white">
+
+
+       <h5><i class="fas fa-university me-2"></i>Selecionar Escola, Programa, Conta e Exercício</h5>
+</div>
+<div class="card-body bg-light">
+  <form method="get" action="{% url 'pddelancar_pagamento' %}">
+  <div class="row g-3">
+    
+    <!-- Escola -->
+    <div class="col-md-3">
+      <label for="escola-select" class="form-label fw-semibold">Escola:</label>
+      <select id="escola-select" name="escola" class="form-select" required onchange="this.form.submit()">
+        <option value="" disabled {% if not escola_selecionada %}selected{% endif %}>Selecione</option>
+        {% for escola in escolas %}
+          <option value="{{ escola.id }}" {% if escola.id == escola_selecionada.id %}selected{% endif %}>{{ escola.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Programa -->
+    <div class="col-md-3">
+      <label for="programa-select" class="form-label fw-semibold">Programa:</label>
+      <select id="programa-select" name="programa" class="form-select" required onchange="this.form.submit()">
+        <option value="" disabled {% if not programa_selecionado %}selected{% endif %}>Selecione</option>
+        {% for programa in programas %}
+          <option value="{{ programa.id }}" {% if programa.id == programa_selecionado.id %}selected{% endif %}>{{ programa.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Conta Bancária (exibida se a escola estiver selecionada) -->
+    {% if contas_bancarias %}
+    <div class="col-md-4">
+      <label for="conta-select" class="form-label fw-semibold">Conta Bancária:</label>
+      <select id="conta-select" name="conta" class="form-select" required onchange="this.form.submit()">
+        <option value="" disabled {% if not conta_selecionada %}selected{% endif %}>Selecione</option>
+        {% for conta in contas_bancarias %}
+          <option value="{{ conta.id }}" {% if conta_selecionada and conta.id == conta_selecionada.id %}selected{% endif %}>
+            {{ conta.banco }} - Ag: {{ conta.agencia }} - Conta: {{ conta.conta }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+
+    <!-- Exercício -->
+    <div class="col-md-2">
+      <label class="form-label fw-semibold">Exercício:</label>
+      <input type="text" class="form-control" value="2025" readonly>
+    </div>
+
   </div>
+</form>
+
+
+
 </div>
 
 
-    <!-- Formulário POST (Cadastro de Pagamento) -->
-    <form method="POST" action="{% url 'pddelancar_pagamento' %}">
-      {% csrf_token %}
-      <input type="hidden" name="escola" value="{{ escola_selecionada.id }}">
-      <input type="hidden" name="programa" value="{{ programa_selecionado }}">
-      <input type="hidden" name="exercicio" value="2025">
+    <!-- Formulário de Lançamento de Pagamento -->
+<form method="POST" action="{% url 'pddelancar_pagamento' %}">
+  {% csrf_token %}
+  <input type="hidden" name="escola" value="{{ escola_selecionada.id }}">
+  <input type="hidden" name="programa" value="{{ programa_selecionado.id }}">
+  <input type="hidden" name="conta_bancaria" value="{{ conta_selecionada.id }}">
+  <input type="hidden" name="exercicio" value="2025">
+
+
 
       <div class="p-4 bg-light rounded shadow">
-        <!-- Informações Financeiras -->
-
         <h4 class="text-primary fw-bold mb-3"><i class="fas fa-file-invoice-dollar"></i> Informações Financeiras</h4>
 
         <div class="row g-4">
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-header bg-primary text-white">
-        <h6 class="mb-0"><i class="fas fa-coins"></i> Saldos - Custeio</h6>
-      </div>
-      <div class="card-body bg-light">
-        <div class="mb-2">
-          <label class="form-label">Saldo Anterior:</label>
-          <input type="text" class="form-control" value="{{ saldo_anterior_custeio|default:0|br_money }}" readonly>
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Valor Creditado FNDE EE:</label>
-          <input type="text" class="form-control" value="{{ valor_creditado_custeio|default:0|br_money }}" readonly>
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Saldo Reprogramado:</label>
-          <input type="text" class="form-control" value="{{ saldo_reprogramar_custeio|default:0|br_money }}" readonly>
-        </div>
-      </div>
-    </div>
-  </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-header bg-primary text-white"><h6><i class="fas fa-coins"></i> Saldos - Custeio</h6></div>
+              <div class="card-body bg-light">
+                <div class="mb-2">
+                  <label class="form-label">Saldo Anterior:</label>
+                  <input type="text" class="form-control" value="{{ saldo_anterior_custeio|default:0|br_money }}" readonly>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Valor Creditado FNDE EE:</label>
+                  <input type="text" class="form-control" value="{{ valor_creditado_custeio|default:0|br_money }}" readonly>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Saldo Reprogramado Custeio:</label>
+                  <input type="text" class="form-control" value="{{ saldo_reprogramar_custeio|default:0|br_money }}" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <div class="col-md-6">
-    <div class="card shadow-sm">
-      <div class="card-header bg-success text-white">
-        <h6 class="mb-0"><i class="fas fa-piggy-bank"></i> Saldos - Capital</h6>
-      </div>
-      <div class="card-body bg-light">
-        <div class="mb-2">
-          <label class="form-label">Saldo Anterior:</label>
-          <input type="text" class="form-control" value="{{ saldo_anterior_capital|default:0|br_money }}" readonly>
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Valor Creditado FNDE EE:</label>
-          <input type="text" class="form-control" value="{{ valor_creditado_capital|default:0|br_money }}" readonly>
-        </div>
-        <div class="mb-2">
-          <label class="form-label">Saldo Reprogramado:</label>
-          <input type="text" class="form-control" value="{{ saldo_reprogramar_capital|default:0|br_money }}" readonly>
-        </div>
-      </div>
-    </div>
-  </div>
+          <div class="col-md-6">
+            <div class="card shadow-sm">
+              <div class="card-header bg-success text-white"><h6><i class="fas fa-piggy-bank"></i> Saldos - Capital</h6></div>
+              <div class="card-body bg-light">
+                <div class="mb-2">
+                  <label class="form-label">Saldo Anterior:</label>
+                  <input type="text" class="form-control" value="{{ saldo_anterior_capital|default:0|br_money }}" readonly>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Valor Creditado FNDE EE:</label>
+                  <input type="text" class="form-control" value="{{ valor_creditado_capital|default:0|br_money }}" readonly>
+                </div>
+                <div class="mb-2">
+                  <label class="form-label">Saldo Reprogramado Capital:</label>
+                  <input type="text" class="form-control" value="{{ saldo_reprogramar_capital|default:0|br_money }}" readonly>
+                </div>
+              </div>
+            </div>
+          </div>
 
-  <!-- Novo Card: Saldo Total (12 colunas) -->
-  <div class="col-12">
-    <div class="card mt-3 shadow-lg border-0">
-      <div class="card-body bg-gradient-success text-white text-center py-3">
-        <h5 class="fw-bold mb-0">
-          <i class="fas fa-wallet"></i> Saldo Total (Custeio + Capital): 
-          {{ saldo_reprogramar_custeio|default:0|add:saldo_reprogramar_capital|br_money }}
-        </h5>
-      </div>
-    </div>
-  </div>
-</div>
+          <div class="col-12">
+            <div class="card mt-3 shadow-lg border-0">
+              <div class="card-body bg-gradient-success text-white text-center py-3">
+                <h5 class="fw-bold mb-0"><i class="fas fa-wallet"></i> Saldo Total: {{ saldo_total|br_money }}</h5>
 
+              </div>
+            </div>
+          </div>
+          
+        </div>
 
         <hr class="my-4">
 
         <!-- Dados do Pagamento -->
-        <h4 class="mb-3 text-primary"><i class="fas fa-money-bill-wave"></i> Pagamento</h4>
+        <h4 class="mb-3 text-primary"><i class="fas fa-money-bill-wave"></i> Dados do Pagamento</h4>
         <div class="row g-3">
           <div class="col-md-4">
             <label for="nome_favorecido" class="form-label">Nome do Favorecido:</label>
@@ -135,7 +165,7 @@
             <input type="text" id="cnpj_cpf" name="cnpj_cpf" class="form-control" required>
           </div>
           <div class="col-md-4">
-            <label for="tipo_pagamento" class="form-label">Natureza Despesa:</label>
+            <label for="tipo_pagamento" class="form-label">Natureza da Despesa:</label>
             <select id="tipo_pagamento" name="tipo_pagamento" class="form-select" required>
               <option value="" disabled selected>Selecione</option>
               <option value="Custeio">Custeio</option>
@@ -143,14 +173,13 @@
             </select>
           </div>
           <div class="col-12">
-            <label for="tipo_bem_servico" class="form-label">Bens e Materiais Adquiridos ou Serviços Contratados:</label>
+            <label for="tipo_bem_servico" class="form-label">Descrição do Bem/Serviço:</label>
             <textarea id="tipo_bem_servico" name="tipo_bem_servico" class="form-control" rows="4" required></textarea>
           </div>
         </div>
 
         <hr class="my-4">
 
-        <!-- Documentação -->
         <h4 class="mb-3 text-primary"><i class="fas fa-file-alt"></i> Documentação</h4>
         <div class="row g-3">
           <div class="col-md-6">
@@ -165,7 +194,7 @@
             </select>
           </div>
           <div class="col-md-3">
-            <label for="numero_documento" class="form-label">Número do Documento:</label>
+            <label for="numero_documento" class="form-label">Nº Documento:</label>
             <input type="text" id="numero_documento" name="numero_documento" class="form-control" required>
           </div>
           <div class="col-md-3">
@@ -176,11 +205,10 @@
 
         <hr class="my-4">
 
-        <!-- Forma de Pagamento -->
         <h4 class="mb-3 text-primary"><i class="fas fa-credit-card"></i> Forma de Pagamento</h4>
         <div class="row g-3">
           <div class="col-md-3">
-            <label for="tipo_pagamento_efetuado" class="form-label">Tipo de Pagamento:</label>
+            <label for="tipo_pagamento_efetuado" class="form-label">Tipo:</label>
             <select id="tipo_pagamento_efetuado" name="tipo_pagamento_efetuado" class="form-select" required>
               <option value="" disabled selected>Selecione</option>
               <option value="Dinheiro">Dinheiro</option>
@@ -193,18 +221,17 @@
             </select>
           </div>
           <div class="col-md-3">
-            <label for="numero_documento_pagamento" class="form-label">Número do Documento:</label>
+            <label for="numero_documento_pagamento" class="form-label">Nº Documento Pagamento:</label>
             <input type="text" id="numero_documento_pagamento" name="numero_documento_pagamento" class="form-control" required>
           </div>
           <div class="col-md-3">
             <label for="data_pagamento" class="form-label">Data do Pagamento:</label>
             <input type="date" id="data_pagamento" name="data_pagamento" class="form-control" required>
           </div>
-  <div class="col-md-3">
-  <label for="valor" class="form-label">Valor (R$):</label>
-  <input type="text" class="form-control" id="valor" name="valor" required>
-</div>
-
+          <div class="col-md-3">
+            <label for="valor" class="form-label">Valor (R$):</label>
+            <input type="text" id="valor" name="valor" class="form-control" required>
+          </div>
         </div>
 
         <div class="text-end mt-4">
@@ -217,6 +244,9 @@
         </div>
       </div>
     </form>
+
+
+
 
     <!-- Tabela de Pagamentos Efetuados -->
     <div class="card shadow-lg border-0 mt-4">
@@ -243,7 +273,7 @@
                 <th>Ações</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody id="tabela-pagamentos">
               {% for pagamento in pagamentos %}
               <tr>
                 <td>{{ forloop.counter }}</td>
@@ -257,7 +287,7 @@
                 <td>{{ pagamento.data_documento|date:"d/m/Y" }}</td>
                 <td>{{ pagamento.numero_documento_pagamento|default:"" }}</td>
                 <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
-                <td>{{ pagamento.valor|default:0|br_money }}</td>
+                <td class="valor-pagamento">{{ pagamento.valor|default:0|br_money }}</td>
                 <td>
                   <a href="{% url 'editar_pagamento' pagamento.id %}" class="btn btn-sm btn-warning">
                     <i class="fas fa-edit"></i> Editar
@@ -270,6 +300,7 @@
               </tr>
               {% endfor %}
             </tbody>
+
           </table>
         </div>
       </div>
@@ -290,39 +321,42 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const valorInput = document.getElementById("valor");
-  const tipoDespesaSelect = document.getElementById("tipo_pagamento");
+  const naturezaDespesaSelect = document.getElementById("tipo_pagamento");
   const btnSubmit = document.querySelector('button[type="submit"]');
 
-  const saldoCusteio = parseFloat("{{ saldo_reprogramar_custeio|default:0|floatformat:2 }}".replace(",", "."));
-  const saldoCapital = parseFloat("{{ saldo_reprogramar_capital|default:0|floatformat:2 }}".replace(",", "."));
+  // 🛠️ Novo formato seguro para parseFloat
+  const saldoCusteio = parseFloat("{{ saldo_reprogramar_custeio|default:'0.00' }}".replace(",", ".")) || 0;
+  const saldoCapital = parseFloat("{{ saldo_reprogramar_capital|default:'0.00' }}".replace(",", ".")) || 0;
 
   function parseValorBR(valor) {
+    if (!valor) return 0;
     return parseFloat(valor.replace(/\./g, "").replace(",", ".")) || 0;
   }
 
-  function validarValor() {
-    let tipoDespesa = tipoDespesaSelect.value;
-    let valorDigitado = parseValorBR(valorInput.value);
+  function formatarValorBR(valor) {
+    return valor.toFixed(2).replace(".", ",");
+  }
 
-    let saldoMinimo = 0;
+  function validarValor() {
+    const tipoDespesa = naturezaDespesaSelect.value;
+    const valorDigitado = parseValorBR(valorInput.value);
+
+    let saldoDisponivel = 0;
 
     if (tipoDespesa === "Custeio") {
-      saldoMinimo = saldoCusteio;
+      saldoDisponivel = saldoCusteio;
     } else if (tipoDespesa === "Capital") {
-      saldoMinimo = saldoCapital;
-    }
-
-    if (saldoMinimo <= 0) {
+      saldoDisponivel = saldoCapital;
+    } else {
+      esconderErro();
       btnSubmit.disabled = true;
-      valorInput.classList.add("is-invalid");
-      mostrarErro(`⚠️ O Saldo Reprogramado (${tipoDespesa}) é negativo ou zerado. Não é possível lançar pagamento.`);
       return;
     }
 
-    if (valorDigitado < saldoMinimo) {
+    if (valorDigitado > saldoDisponivel) {
       btnSubmit.disabled = true;
       valorInput.classList.add("is-invalid");
-      mostrarErro(`⚠️ O valor não pode ser menor que o saldo reprogramado: R$ ${saldoMinimo.toFixed(2).replace(".", ",")}`);
+      mostrarErro(`⚠️ O valor não pode ser maior que o saldo reprogramado para ${tipoDespesa}: R$ ${formatarValorBR(saldoDisponivel)}`);
     } else {
       btnSubmit.disabled = false;
       valorInput.classList.remove("is-invalid");
@@ -331,15 +365,14 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function mostrarErro(mensagem) {
-    if (!document.getElementById("erro-valor")) {
-      const aviso = document.createElement("div");
+    let aviso = document.getElementById("erro-valor");
+    if (!aviso) {
+      aviso = document.createElement("div");
       aviso.id = "erro-valor";
       aviso.className = "text-danger mt-1";
-      aviso.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${mensagem}`;
       valorInput.parentNode.appendChild(aviso);
-    } else {
-      document.getElementById("erro-valor").innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${mensagem}`;
     }
+    aviso.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${mensagem}`;
   }
 
   function esconderErro() {
@@ -347,57 +380,59 @@ document.addEventListener("DOMContentLoaded", function () {
     if (aviso) aviso.remove();
   }
 
-  tipoDespesaSelect.addEventListener("change", validarValor);
+  naturezaDespesaSelect.addEventListener("change", validarValor);
   valorInput.addEventListener("input", validarValor);
 });
 </script>
 
 
 
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    function atualizarTotais() {
-        let totalCusteio = 0;
-        let totalCapital = 0;
+  function atualizarTotais() {
+    let totalCusteio = 0;
+    let totalCapital = 0;
 
-        document.querySelectorAll("#tabela-pagamentos tr").forEach(row => {
-            let tipoDespesa = row.querySelector("td:nth-child(6)")?.textContent?.trim();
-            let valorCelula = row.querySelector(".valor-pagamento")?.textContent;
+    document.querySelectorAll("#tabela-pagamentos tr").forEach(row => {
+      let tipoDespesa = row.querySelector("td:nth-child(6)")?.textContent?.trim();
+      let valorCelula = row.querySelector(".valor-pagamento")?.textContent;
 
-            if (valorCelula !== undefined) {
-                let valor = parseFloat(valorCelula.replace("R$", "").trim().replace(",", ".")) || 0;
+      if (valorCelula !== undefined) {
+        let valor = parseFloat(valorCelula.replace("R$", "").trim().replace(".", "").replace(",", ".")) || 0;
 
-                if (tipoDespesa === "Custeio") {
-                    totalCusteio += valor;
-                } else if (tipoDespesa === "Capital") {
-                    totalCapital += valor;
-                }
-            }
-        });
+        if (tipoDespesa === "Custeio") {
+          totalCusteio += valor;
+        } else if (tipoDespesa === "Capital") {
+          totalCapital += valor;
+        }
+      }
+    });
 
-        let totalGeral = totalCusteio + totalCapital;
+    let totalGeral = totalCusteio + totalCapital;
 
-        document.getElementById("total-custeio").textContent = `R$ ${totalCusteio.toFixed(2).replace(".", ",")}`;
-        document.getElementById("total-capital").textContent = `R$ ${totalCapital.toFixed(2).replace(".", ",")}`;
-        document.getElementById("total-geral").textContent = `R$ ${totalGeral.toFixed(2).replace(".", ",")}`;
-    }
+    document.getElementById("total-custeio").textContent = `R$ ${totalCusteio.toFixed(2).replace(".", ",")}`;
+    document.getElementById("total-capital").textContent = `R$ ${totalCapital.toFixed(2).replace(".", ",")}`;
+    document.getElementById("total-geral").textContent = `R$ ${totalGeral.toFixed(2).replace(".", ",")}`;
+  }
 
-    atualizarTotais();
+  atualizarTotais();
 });
 </script>
 
-
-
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const modalErroElement = document.getElementById("modalErro");
+  const modalErroElement = document.getElementById("modalErro");
+  if (modalErroElement) {
     const modalErro = new bootstrap.Modal(modalErroElement);
     modalErroElement.addEventListener("hidden.bs.modal", function () {
-        window.location.reload();
+      window.location.reload();
     });
+  }
 });
 </script>
+
+
+
 
 
 

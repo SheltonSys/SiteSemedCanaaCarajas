@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Detalhes do Contrato{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="mb-4 text-primary text-center">
+    <i class="fas fa-file-contract me-2"></i> Detalhes do Contrato
+  </h2>
+
+  <div class="card shadow-sm p-4">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Número:</strong> {{ contrato.numero }}</li>
+      <li class="list-group-item"><strong>Objeto:</strong> {{ contrato.objeto }}</li>
+      <li class="list-group-item"><strong>Fornecedor:</strong> {{ contrato.fornecedor.nome }}</li>
+      <li class="list-group-item"><strong>Data Início:</strong> {{ contrato.data_inicio|date:'d/m/Y' }}</li>
+      <li class="list-group-item"><strong>Data Fim:</strong> {{ contrato.data_fim|date:'d/m/Y' }}</li>
+    </ul>
+    <div class="mt-4 text-end">
+      <a href="{% url 'contratos_lista' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

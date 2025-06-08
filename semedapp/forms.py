@@ -708,12 +708,32 @@ class LancamentoBancarioForm(forms.ModelForm):
 # *******************************************************************************************************************
 
 from django import forms
-from .models import ContaBancaria  # Certifique-se de que esse modelo existe em models.py
+from .models import ContaBancaria
 
 class ContaBancariaForm(forms.ModelForm):
     class Meta:
         model = ContaBancaria
-        fields = ['escola', 'banco', 'agencia', 'conta', 'tipo_conta']
+        fields = [
+            'escola',
+            'programa',
+            'nome',
+            'banco',
+            'agencia',
+            'conta',           # ✅ campo que agora será exibido normalmente
+            'saldo',
+            'tipo_conta'
+        ]
+        widgets = {
+            'escola': forms.Select(attrs={'class': 'form-control'}),
+            'programa': forms.Select(attrs={'class': 'form-control'}),
+            'nome': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Conta Principal'}),
+            'banco': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ex: Banco do Brasil'}),
+            'agencia': forms.TextInput(attrs={'class': 'form-control'}),
+            'conta': forms.TextInput(attrs={'class': 'form-control'}),
+            'saldo': forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'}),
+            'tipo_conta': forms.Select(attrs={'class': 'form-control'}),
+        }
+
 # *******************************************************************************************************************
 
 from django import forms

@@ -1,10 +1,6 @@
-
 import os
 from django.contrib.messages import constants as messages
 from pathlib import Path
-
-
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -12,10 +8,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 MAINTENANCE_MODE = False  # Altere para True durante a manutenção
 
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-zrvbu@igm3yi3k&l)8tt3=94!#tgo&1io_#s1=tl^apan#w=$0'
@@ -33,12 +25,9 @@ ALLOWED_HOSTS = [
     "portal.semedcanaadoscarajas.pa.gov.br",
 ]
 
-
 CSRF_TRUSTED_ORIGINS = ["http://10.19.35.214:8000"]
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -49,8 +38,6 @@ INSTALLED_APPS = [
     'semedapp',
     'widget_tweaks',
     'django_otp',
-    # 'django_otp.plugins.otp_totp',
-    # 'django_otp.plugins.otp_static',  # ← ESSENCIAL para o pacote funcionar!
 
 ]
 
@@ -93,6 +80,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'semedapp.context_processors.pdde_status',
             ],
+            'libraries': {
+                'custom_filters': 'semedapp.templatetags.custom_filters',
+            }
         },
     },
 ]

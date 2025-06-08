@@ -148,6 +148,18 @@ from .forms import CurriculoForm, FormacaoForm, ExperienciaForm
 
 from django.contrib.auth import get_user_model
 
+
+from decimal import Decimal, InvalidOperation
+
+def parse_decimal(valor_str):
+    try:
+        return Decimal(valor_str.replace('.', '').replace(',', '.'))
+    except (InvalidOperation, AttributeError):
+        return Decimal('0.00')
+
+
+
+
 User = get_user_model()
 
 class Site1Backend(ModelBackend):
@@ -1147,9 +1159,16 @@ from .models import Diretoria, EscolaPdde
 from datetime import datetime
 
 def conselho_diretoria(request):
-    membros = Diretoria.objects.all().order_by("cargo")
-    escolas = EscolaPdde.objects.all().order_by("nome")
-    conselhos = EscolaPdde.objects.values_list("nome_conselho", flat=True).distinct()
+    # Filtrar as escolas vinculadas ao usuário
+    if request.user.is_superuser:
+        escolas = EscolaPdde.objects.all().order_by("nome")
+        membros = Diretoria.objects.all().order_by("cargo")
+    else:
+        escolas = EscolaPdde.objects.filter(coordenador=request.user).order_by("nome")
+        membros = Diretoria.objects.filter(escola__coordenador=request.user).order_by("cargo")
+
+    # Conselhos (apenas das escolas que o usuário vê)
+    conselhos = escolas.values_list("nome_conselho", flat=True).distinct()
 
     if request.method == "POST":
         try:
@@ -1170,6 +1189,11 @@ def conselho_diretoria(request):
 
             vencimento_date = datetime.strptime(vencimento, "%Y-%m-%d").date()
             escola_obj = get_object_or_404(EscolaPdde, id=escola_id)
+
+            # 🔒 Segurança: Verificar se o usuário tem acesso à escola
+            if not request.user.is_superuser and escola_obj.coordenador != request.user:
+                messages.error(request, "❌ Você não tem permissão para registrar membros nesta escola.")
+                return redirect("conselho_diretoria")
 
             Diretoria.objects.create(
                 nome=nome,
@@ -1399,21 +1423,40 @@ def cadastro_diretoria(request):
 
 # *********************************************************************************************************************
 
+from django.shortcuts import render, get_object_or_404
+from .models import MembroConselho, EscolaPdde
+
 def listar_membros(request):
-    """
-    Exibe a lista de membros do conselho.
-    """
-    membros_data = MembroConselho.objects.all()
-    return render(request, 'contabilidade/conselho/membros.html', {'membros_data': membros_data})
+    user = request.user
+
+    if user.is_superuser:
+        membros = MembroConselho.objects.all().order_by("escola", "nome")
+        escolas = EscolaPdde.objects.all().order_by("nome")
+    else:
+        escolas = EscolaPdde.objects.filter(coordenador=user).order_by("nome")
+        membros = MembroConselho.objects.filter(escola__in=escolas).order_by("escola", "nome")
+
+    return render(request, "contabilidade/conselho/membros.html", {
+        "membros_data": membros,
+        "escolas": escolas,
+    })
+
+
+
+
 # *********************************************************************************************************************
 
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import EscolaPdde, MembroConselho  # Lembre de importar o modelo certo
+
 def cadastrar_membro(request):
-    escolas = EscolaPdde.objects.all().order_by("nome")
+    escolas = EscolaPdde.objects.filter(coordenador=request.user).order_by("nome") if not request.user.is_superuser else EscolaPdde.objects.all().order_by("nome")
 
     if request.method == 'POST':
         try:
             inep = request.POST.get('inep')
-            escola_nome = request.POST.get('escola')
+            escola_id = request.POST.get('escola')
             data_abertura = request.POST.get('data_abertura')
             data_vencimento = request.POST.get('data_vencimento')
             nome = request.POST.get('nome')
@@ -1425,16 +1468,16 @@ def cadastrar_membro(request):
             cep = request.POST.get('cep')
             cpf = request.POST.get('cpf')
 
-            if not all([inep, escola_nome, data_abertura, data_vencimento, nome, funcao, endereco, bairro, telefone, email, cep, cpf]):
+            if not all([inep, escola_id, data_abertura, data_vencimento, nome, funcao, endereco, bairro, telefone, email, cep, cpf]):
                 messages.error(request, "❌ Todos os campos são obrigatórios.")
-                return redirect('conselho_membros')
+                return redirect('listar_membros')
 
-            escola_obj = EscolaPdde.objects.filter(nome=escola_nome).first()
-            conselho_nome = escola_obj.nome_conselho if escola_obj else ""
+            escola_obj = get_object_or_404(EscolaPdde, id=escola_id)
+            conselho_nome = escola_obj.nome_conselho or ""
 
-            novo_membro = MembroConselho.objects.create(
+            MembroConselho.objects.create(
                 inep=inep,
-                escola=escola_nome,
+                escola=escola_obj.nome,
                 conselho=conselho_nome,
                 data_abertura=data_abertura,
                 data_vencimento=data_vencimento,
@@ -1454,11 +1497,11 @@ def cadastrar_membro(request):
         except Exception as e:
             print(f"Erro ao cadastrar membro: {e}")
             messages.error(request, f"❌ Ocorreu um erro ao cadastrar o membro: {e}")
-            return redirect('conselho_membros')
+            return redirect('listar_membros')
 
-    return render(request, "contabilidade/conselho/membros.html", {
-        "escolas": escolas
-    })
+    # 🔥 Se alguém acessar a URL de cadastro diretamente (GET), redireciona para listagem
+    return redirect('listar_membros')
+
 
 
 # *********************************************************************************************************************
@@ -1466,11 +1509,17 @@ def cadastrar_membro(request):
 from .models import MembroConselho
 
 def conselho_membros(request):
-    membros_data = MembroConselho.objects.all().order_by("nome")
-    escolas = EscolaPdde.objects.all().order_by("nome")
-    return render(request, 'contabilidade/conselho/membros.html', {
-        'membros_data': membros_data,
-        'escolas': escolas
+    if request.user.is_superuser:
+        membros = MembroConselho.objects.all().order_by("escola", "nome")
+        escolas = EscolaPdde.objects.all().order_by("nome")
+    else:
+        escolas = EscolaPdde.objects.filter(coordenador=request.user).order_by("nome")
+        nomes_escolas = escolas.values_list("nome", flat=True)
+        membros = MembroConselho.objects.filter(escola__in=nomes_escolas).order_by("escola", "nome")
+
+    return render(request, "contabilidade/conselho/membros.html", {
+        "membros_data": membros,
+        "escolas": escolas,
     })
 # *********************************************************************************************************************
 
@@ -1795,12 +1844,20 @@ def dashboard_dados(request):
     situacao_financeira = 'Neutra'
     situacao_classe = 'text-warning'
 
+    if request.user.is_superuser:
+        total_membros = Membro.objects.count()
+    else:
+        escolas_usuario = Escola.objects.filter(coordenador=request.user)
+        total_membros = Membro.objects.filter(escola__in=escolas_usuario).count()
+
+
+
     context = {
+        'total_membros': total_membros,
         'escolas': escolas,
         'programas': programas,
         'anos': anos,
         'total_escolas': escolas.count(),
-        'total_membros': Membro.objects.count(),
         'total_certidoes': Certidao.objects.count(),
         'receita_total': receita_total,
         'despesa_total': despesa_total,
@@ -1823,7 +1880,7 @@ def dashboard_dados(request):
 # *********************************************************************************************************************
 from django.db.models import Sum, F, FloatField
 from django.shortcuts import render
-from .models import EscolaPdde, Programa, Receita, Certidao, Membro
+from .models import EscolaPdde, Programa, Receita, Certidao, MembroConselho
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 
@@ -1831,31 +1888,23 @@ from django.contrib.auth.decorators import login_required
 def dashboard_view(request):
     user = request.user
 
-    # Escolas vinculadas (EscolaPdde)
+    # 🔹 Escolas do usuário
     escolas = EscolaPdde.objects.all() if user.is_superuser else EscolaPdde.objects.filter(coordenador=user)
 
-    # Filtros GET
+    # 🔹 Filtros de busca
     escola_id = request.GET.get('escola')
     ano = request.GET.get('ano')
     programa = request.GET.get('programa')
 
-    # 🔹 Carregar Programas vinculados dinamicamente à Escola selecionada
+    # 🔹 Programas vinculados
     if escola_id:
-        try:
-            escola_selecionada = EscolaPdde.objects.get(id=escola_id)
-            programas = escola_selecionada.programas.values_list('nome', flat=True).distinct()
-        except EscolaPdde.DoesNotExist:
-            programas = Programa.objects.none()
+        escola_selecionada = EscolaPdde.objects.filter(id=escola_id).first()
+        programas = escola_selecionada.programas.values_list('nome', flat=True).distinct() if escola_selecionada else Programa.objects.none()
     else:
-        # Superuser vê todos os programas, usuário comum vê apenas os vinculados às suas escolas
-        if user.is_superuser:
-            programas = Programa.objects.values_list('nome', flat=True).distinct()
-        else:
-            programas = Programa.objects.filter(escolas__in=escolas).values_list('nome', flat=True).distinct()
+        programas = Programa.objects.values_list('nome', flat=True).distinct() if user.is_superuser else Programa.objects.filter(escolas__in=escolas).values_list('nome', flat=True).distinct()
 
-    # 🔹 Base de receitas (filtro dinâmico)
+    # 🔹 Filtragem das receitas
     receitas = Receita.objects.all()
-
     if escola_id:
         receitas = receitas.filter(escola_id=escola_id)
     if ano:
@@ -1863,7 +1912,13 @@ def dashboard_view(request):
     if programa:
         receitas = receitas.filter(programa=programa)
 
-    # 🔹 Somatórios corretos
+    # 🔹 Membros do Conselho (filtrado por escola se não for superuser)
+    if user.is_superuser:
+        total_membros = MembroConselho.objects.count()
+    else:
+        total_membros = MembroConselho.objects.filter(escola__in=escolas).count()
+
+    # 🔹 Cálculos
     receita_total = receitas.aggregate(
         total=Sum(F('valor_creditado_custeio') + F('valor_creditado_capital'), output_field=FloatField())
     )['total'] or 0
@@ -1874,6 +1929,7 @@ def dashboard_view(request):
 
     saldo_reprogramado = receita_total - despesa_total
     percentual_execucao = (despesa_total / receita_total * 100) if receita_total else 0
+    percentual_nao_executado = 100 - percentual_execucao if receita_total else 100
 
     ultimo_lancamento = receitas.order_by('-data_inicio').first()
     ultimo_lancamento_data = ultimo_lancamento.data_inicio.strftime('%d/%m/%Y') if ultimo_lancamento else '--'
@@ -1895,12 +1951,6 @@ def dashboard_view(request):
     situacao_financeira = 'Positiva' if percentual_execucao >= 100 else 'Negativa' if percentual_execucao <= 30 else 'Neutra'
     situacao_classe = 'text-success' if percentual_execucao >= 100 else 'text-danger' if percentual_execucao <= 30 else 'text-warning'
 
-    # 🔹 Carregar anos distintos disponíveis nas receitas
-    anos = Receita.objects.values_list('data_inicio__year', flat=True).distinct().order_by('-data_inicio__year')
-
-    percentual_nao_executado = 100 - percentual_execucao if percentual_execucao else 100
-
-    # Cálculos individuais
     receita_custeio = receitas.aggregate(total=Sum('valor_creditado_custeio'))['total'] or 0
     receita_capital = receitas.aggregate(total=Sum('valor_creditado_capital'))['total'] or 0
     despesa_custeio = receitas.aggregate(total=Sum('valor_despesa_realizada_custeio'))['total'] or 0
@@ -1908,17 +1958,20 @@ def dashboard_view(request):
     saldo_custeio = receita_custeio - despesa_custeio
     saldo_capital = receita_capital - despesa_capital
 
+    anos = Receita.objects.values_list('data_inicio__year', flat=True).distinct().order_by('-data_inicio__year')
+
     context = {
         'escolas': escolas,
         'programas': programas,
+        'anos': anos,
         'total_escolas': escolas.count(),
-        'total_membros': Membro.objects.count(),
+        'total_membros': total_membros,
         'total_certidoes': Certidao.objects.count(),
         'receita_total': receita_total,
         'despesa_total': despesa_total,
         'saldo_reprogramado': saldo_reprogramado,
         'percentual_execucao': percentual_execucao,
-        'percentual_nao_execucao': percentual_nao_executado,  # <- Novo dado aqui
+        'percentual_nao_execucao': percentual_nao_executado,
         'ultimo_lancamento': ultimo_lancamento_data,
         'recursos_proprios': recursos_proprios,
         'rendimentos_aplicacao': rendimentos_aplicacao,
@@ -1926,17 +1979,18 @@ def dashboard_view(request):
         'escolas_atendidas': escolas_atendidas,
         'situacao_financeira': situacao_financeira,
         'situacao_classe': situacao_classe,
-        # ... outros dados ...
         'receita_custeio': receita_custeio,
         'receita_capital': receita_capital,
         'despesa_custeio': despesa_custeio,
         'despesa_capital': despesa_capital,
         'saldo_custeio': saldo_custeio,
         'saldo_capital': saldo_capital,
-        }
-
+    }
 
     return render(request, 'dashboard/seppec_dashboard.html', context)
+
+
+
 
 
 # *********************************************************************************************************************
@@ -6671,27 +6725,6 @@ def lancamento_conceitos(request):
     return render(request, 'webapp/lancamento_conceitos.html', context)
 ###***********************************************************************************************************************
 
-# from django.templatetags.static import static
-# from django.http import HttpResponse
-# from weasyprint import HTML
-
-# def gerar_pdf(request):
-
-#     cabecalho_superior = request.build_absolute_uri(static('assets/dist/img/cabecalho_superior.png'))
-#     cabecalho_inferior = request.build_absolute_uri(static('assets/dist/img/cabecalho_inferior.png'))
-
-#     context = {
-#         'relatorios': relatorios,
-#         'cabecalho_superior': cabecalho_superior,
-#         'cabecalho_inferior': cabecalho_inferior,
-#     }
-
-#     html_string = render_to_string('webapp/relatorio_pdf.html', context)
-#     response = HttpResponse(content_type='application/pdf')
-#     HTML(string=html_string).write_pdf(response)
-#     return response
-###***********************************************************************************************************************
-
 from django.shortcuts import render
 from .models import SynapticAtendimento
 from django.db.models import Count, Avg, Q
@@ -6746,34 +6779,35 @@ def soe_gestao(request):
 
 ###***********************************************************************************************************************
 
+from django.shortcuts import render
 from django.db.models import Sum
+import json
+
+from .models import SynapticAtendimento, SIGEAtendimento, AutoKeeAtendimento, AtendimentoSOE, OrientadoresAtendimento
 
 def soe_servicos(request):
-    # Consultando os dados de cada tabela, limitando a 10 registros
+    # Consultando os dados de cada tabela (limite de 10 registros para exibição)
     synaptic = SynapticAtendimento.objects.all()[:10]
     sige = SIGEAtendimento.objects.all()[:10]
     autokee = AutoKeeAtendimento.objects.all()[:10]
     orientadores = OrientadoresAtendimento.objects.all()[:10]
     soe = AtendimentoSOE.objects.all()[:10]
 
-    # Debugging: verificar contagem no terminal
-    print(f"Synaptic: {synaptic.count()} registros encontrados.")
-    print(f"SIGE: {sige.count()} registros encontrados.")
-    print(f"AutoKee: {autokee.count()} registros encontrados.")
-    print(f"Orientadores: {orientadores.count()} registros encontrados.")
+    # Contagens gerais
+    total_ocorrencias = (
+        SynapticAtendimento.objects.count() +
+        SIGEAtendimento.objects.count() +
+        AutoKeeAtendimento.objects.count() +
+        OrientadoresAtendimento.objects.count() +
+        AtendimentoSOE.objects.count()
+    )
 
-    # Somatórios gerais de todas as tabelas
-    total_ocorrencias = SynapticAtendimento.objects.count() + SIGEAtendimento.objects.count() + \
-                        AutoKeeAtendimento.objects.count() + OrientadoresAtendimento.objects.count() + \
-                        AtendimentoSOE.objects.count()
-
-    # Exemplo de cálculo de pendentes usando um campo existente em OrientadoresAtendimento
     pendentes_total = (
         SynapticAtendimento.objects.filter(status_descricao="Pendente").count() +
         SIGEAtendimento.objects.filter(status_descricao="Pendente").count() +
         AutoKeeAtendimento.objects.filter(status_descricao="Pendente").count() +
         AtendimentoSOE.objects.filter(status_descricao="Pendente").count() +
-        (OrientadoresAtendimento.objects.aggregate(total=Sum('ameaca'))['total'] or 0)  # Exemplo usando o campo 'ameaca'
+        (OrientadoresAtendimento.objects.aggregate(total=Sum('ameaca'))['total'] or 0)
     )
 
     abertas_total = (
@@ -6781,7 +6815,7 @@ def soe_servicos(request):
         SIGEAtendimento.objects.filter(status_descricao="Aberta").count() +
         AutoKeeAtendimento.objects.filter(status_descricao="Aberta").count() +
         AtendimentoSOE.objects.filter(status_descricao="Aberta").count() +
-        (OrientadoresAtendimento.objects.aggregate(total=Sum('bullying'))['total'] or 0)  # Usando 'bullying' como exemplo
+        (OrientadoresAtendimento.objects.aggregate(total=Sum('bullying'))['total'] or 0)
     )
 
     resolvidas_total = (
@@ -6789,8 +6823,29 @@ def soe_servicos(request):
         SIGEAtendimento.objects.filter(status_descricao="Resolvida").count() +
         AutoKeeAtendimento.objects.filter(status_descricao="Resolvida").count() +
         AtendimentoSOE.objects.filter(status_descricao="Resolvida").count() +
-        (OrientadoresAtendimento.objects.aggregate(total=Sum('uso_alcool_drogas'))['total'] or 0)  # 'uso_alcool_drogas'
+        (OrientadoresAtendimento.objects.aggregate(total=Sum('uso_alcool_drogas'))['total'] or 0)
     )
+
+    # 📊 Dados para o gráfico - Contagem por categorias específicas
+    categorias_orientadores = {
+        'Ameaca': 'ameaca',
+        'Bullying': 'bullying',
+        'Uso de Álcool/Drogas': 'uso_alcool_drogas',
+        'Furtos': 'furtos',
+        'Infrequência': 'infrequencia',
+        'Violência Sexual': 'violencia_sexual'
+    }
+
+    dados_ocorrencias = {}
+
+    for nome_legivel, campo_modelo in categorias_orientadores.items():
+        total = OrientadoresAtendimento.objects.aggregate(total=Sum(campo_modelo))['total'] or 0
+        dados_ocorrencias[nome_legivel] = total
+
+    # Adicione também uma linha geral para os demais sistemas, se quiser (opcional)
+    # Exemplo: dados_ocorrencias['Outros Sistemas'] = SynapticAtendimento.objects.count() + ...
+
+    dados_ocorrencias_json = json.dumps(dados_ocorrencias)
 
     context = {
         'total_ocorrencias': total_ocorrencias,
@@ -6802,9 +6857,13 @@ def soe_servicos(request):
         'autokee': autokee,
         'orientadores': orientadores,
         'soe': soe,
+        'dados_ocorrencias_json': dados_ocorrencias_json,
     }
 
     return render(request, 'webapp/servicos_soe.html', context)
+
+
+
 ###***********************************************************************************************************************
 
 def soe_uploads(request):
@@ -6820,56 +6879,6 @@ from .models import AtendimentoSOE  # Assumindo que o modelo já foi criado
 def servicos_soe(request):
     atendimentos = AtendimentoSOE.objects.all().order_by('-registro')  # Ordenação pela data do registro (mais recente primeiro)
     return render(request, 'webapp/servicos_soe.html', {'atendimentos': atendimentos})
-###***********************************************************************************************************************
-
-# from django.shortcuts import render
-# from semedapp.models import SynapticAtendimento, SIGEAtendimento, AutoKeeAtendimento, OrientadoresAtendimento
-
-# def soe_servicos(request):
-#     # Consultando os dados de cada tabela e limitando a 10 registros
-#     synaptic = SynapticAtendimento.objects.all()[:10]
-#     sige = SIGEAtendimento.objects.all()[:10]
-#     autokee = AutoKeeAtendimento.objects.all()[:10]
-#     orientadores = OrientadoresAtendimento.objects.all()[:10]
-
-#     # Somatórios gerais de todas as tabelas
-#     total_ocorrencias = (
-#         SynapticAtendimento.objects.count() +
-#         SIGEAtendimento.objects.count() +
-#         AutoKeeAtendimento.objects.count() +
-#         OrientadoresAtendimento.objects.count()
-#     )
-#     pendentes_total = (
-#         SynapticAtendimento.objects.filter(status_descricao="Pendente").count() +
-#         SIGEAtendimento.objects.filter(status_descricao="Pendente").count() +
-#         AutoKeeAtendimento.objects.filter(status_descricao="Pendente").count() +
-#         OrientadoresAtendimento.objects.filter(status_descricao="Pendente").count()
-#     )
-#     abertas_total = (
-#         SynapticAtendimento.objects.filter(status_descricao="Aberta").count() +
-#         SIGEAtendimento.objects.filter(status_descricao="Aberta").count() +
-#         AutoKeeAtendimento.objects.filter(status_descricao="Aberta").count() +
-#         OrientadoresAtendimento.objects.filter(status_descricao="Aberta").count()
-#     )
-#     resolvidas_total = (
-#         SynapticAtendimento.objects.filter(status_descricao="Resolvida").count() +
-#         SIGEAtendimento.objects.filter(status_descricao="Resolvida").count() +
-#         AutoKeeAtendimento.objects.filter(status_descricao="Resolvida").count() +
-#         OrientadoresAtendimento.objects.filter(status_descricao="Resolvida").count()
-#     )
-
-#     context = {
-#         'total_ocorrencias': total_ocorrencias,
-#         'pendentes_total': pendentes_total,
-#         'abertas_total': abertas_total,
-#         'resolvidas_total': resolvidas_total,
-#         'synaptic': synaptic,
-#         'sige': sige,
-#         'autokee': autokee,
-#         'orientadores': orientadores,
-#     }
-
-#     return render(request, 'webapp/servicos_soe.html', context)
 ###***********************************************************************************************************************
 
 from django.shortcuts import render
@@ -6974,6 +6983,8 @@ def ocorrencias_synaptic(request):
     classificacao_filtrada = request.GET.get('classificacao')
     status_filtrado = request.GET.get('status')
     unidade_filtrada = request.GET.get('unidade')
+    tipo_filtrado = request.GET.get('tipo')  # Filtro de tipo
+    ano_filtrado = request.GET.get('ano')    # 🆕 Filtro de ano
 
     if classificacao_filtrada:
         registros = registros.filter(classificacao_nome=classificacao_filtrada)
@@ -6981,6 +6992,10 @@ def ocorrencias_synaptic(request):
         registros = registros.filter(status_descricao=status_filtrado)
     if unidade_filtrada:
         registros = registros.filter(nome_unidade_ensino=unidade_filtrada)
+    if tipo_filtrado:
+        registros = registros.filter(tipo_ocorrencia_nome=tipo_filtrado)
+    if ano_filtrado:
+        registros = registros.filter(ano=ano_filtrado)  # 🆕 Filtro pelo campo "ano"
 
     # Paginação (100 registros por página)
     paginator = Paginator(registros, 100)
@@ -6991,6 +7006,8 @@ def ocorrencias_synaptic(request):
     classificacoes_list = SynapticAtendimento.objects.values_list('classificacao_nome', flat=True).distinct()
     status_list = SynapticAtendimento.objects.values_list('status_descricao', flat=True).distinct()
     unidades_list = SynapticAtendimento.objects.values_list('nome_unidade_ensino', flat=True).distinct()
+    tipos_list = SynapticAtendimento.objects.values_list('tipo_ocorrencia_nome', flat=True).distinct()
+    anos_list = SynapticAtendimento.objects.values_list('ano', flat=True).distinct()
 
     # Dados estatísticos para os cards
     total_ocorrencias = registros.count()
@@ -6998,18 +7015,26 @@ def ocorrencias_synaptic(request):
     classificacoes_count = registros.values('classificacao_nome').annotate(count=Count('classificacao_nome'))
     ultimo_registro = registros.order_by('-registro').first()
 
+    tipos_count = registros.values('tipo_ocorrencia_nome').annotate(count=Count('tipo_ocorrencia_nome'))
+
+
     context = {
         'page_obj': page_obj,
         'total_ocorrencias': total_ocorrencias,
         'status_count': status_count,
         'classificacoes_count': classificacoes_count,
+        'tipos_count': tipos_count,
         'ultimo_registro': ultimo_registro.registro if ultimo_registro else None,
         'classificacoes_list': classificacoes_list,
         'status_list': status_list,
         'unidades_list': unidades_list,
+        'tipos_list': tipos_list,
+        'anos_list': anos_list,
     }
 
     return render(request, 'webapp/ocorrencias_synaptic.html', context)
+
+
 ###***********************************************************************************************************************
 
 from django.http import HttpResponse
@@ -7026,6 +7051,8 @@ def ocorrencias_synaptic_pdf(request):
     classificacao_filtrada = request.GET.get('classificacao')
     status_filtrado = request.GET.get('status')
     unidade_filtrada = request.GET.get('unidade')
+    tipo_filtrado = request.GET.get('tipo')
+    ano_filtrado = request.GET.get('ano')  # Filtro de ano incluído
 
     if classificacao_filtrada:
         registros = registros.filter(classificacao_nome=classificacao_filtrada)
@@ -7033,10 +7060,15 @@ def ocorrencias_synaptic_pdf(request):
         registros = registros.filter(status_descricao=status_filtrado)
     if unidade_filtrada:
         registros = registros.filter(nome_unidade_ensino=unidade_filtrada)
+    if tipo_filtrado:
+        registros = registros.filter(tipo_ocorrencia_nome=tipo_filtrado)
+    if ano_filtrado:
+        registros = registros.filter(ano=ano_filtrado)  # Filtro de ano aplicado corretamente
 
     # Dados estatísticos
     total_ocorrencias = registros.count()
 
+    # Contexto para o template
     context = {
         'registros': registros,
         'total_ocorrencias': total_ocorrencias,
@@ -7054,6 +7086,8 @@ def ocorrencias_synaptic_pdf(request):
     if pisa_status.err:
         return HttpResponse('Erro ao gerar PDF', status=500)
     return response
+
+
 ###***********************************************************************************************************************
 
 from django.shortcuts import render
@@ -7826,104 +7860,112 @@ def get_escola_pdde(request, pk):
 
     return JsonResponse(data)
 ###***********************************************************************************************************************
-
 from django.http import JsonResponse
-from django.db.models import Sum, Min, Max
-from .models import Receita, Pagamento
+from decimal import Decimal, ROUND_HALF_UP
+from django.urls import reverse
+from .models import ReceitaDespesa, EscolaPdde, Pagamento
 
-def get_receita_despesa(request, escola_id):
+def formatar_valor_br(valor):
     try:
-        # Busca o primeiro objeto Receita relacionado à escola
-        receita_obj = Receita.objects.filter(escola_id=escola_id).first()
+        valor = Decimal(valor or '0.00').quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return f'{valor:,.2f}'.replace(',', 'X').replace('.', ',').replace('X', '.')
+    except Exception:
+        return '0,00'
 
-        if not receita_obj:
-            return JsonResponse({"erro": "Nenhuma receita encontrada para esta escola."}, status=404)
+def get_resumo_financeiro(request, escola_id):
+    try:
+        escola = EscolaPdde.objects.get(pk=escola_id)
+        ano = 2025
 
-        # Agregados para somar valores financeiros
-        receita = Receita.objects.filter(escola_id=escola_id).aggregate(
-            saldo_anterior_custeio=Sum('saldo_anterior_custeio', default=0),
-            saldo_anterior_capital=Sum('saldo_anterior_capital', default=0),
-            valor_creditado_custeio=Sum('valor_creditado_custeio', default=0),
-            valor_creditado_capital=Sum('valor_creditado_capital', default=0),
-            recursos_proprios_custeio=Sum('recursos_proprios_custeio', default=0),
-            recursos_proprios_capital=Sum('recursos_proprios_capital', default=0),
-            rendimento_aplicacao_custeio=Sum('rendimento_aplicacao_custeio', default=0),
-            rendimento_aplicacao_capital=Sum('rendimento_aplicacao_capital', default=0),
-            devolucao_fnde_custeio=Sum('devolucao_fnde_custeio', default=0),
-            devolucao_fnde_capital=Sum('devolucao_fnde_capital', default=0),
-            saldo_devolvido_custeio=Sum('saldo_devolvido_custeio', default=0),
-            saldo_devolvido_capital=Sum('saldo_devolvido_capital', default=0),
-            valor_despesa_realizada_custeio=Sum('valor_despesa_realizada_custeio', default=0),
-            valor_despesa_realizada_capital=Sum('valor_despesa_realizada_capital', default=0),
-            saldo_reprogramar_custeio=Sum('saldo_reprogramar_custeio', default=0),
-            saldo_reprogramar_capital=Sum('saldo_reprogramar_capital', default=0),
-            data_inicio=Min('data_inicio'),
-            data_fim=Max('data_fim')
-        )
+        dados = ReceitaDespesa.objects.filter(escola=escola, periodo_execucao=ano).order_by("tipo", "id")
 
-        total_pagamentos = Pagamento.objects.filter(escola_id=escola_id).aggregate(
-            total_pagamentos=Sum('valor', default=0)
-        )['total_pagamentos'] or 0
-
-        # Calculando os totais corretamente
-        valor_total_receita_custeio = (
-            receita['saldo_anterior_custeio'] +
-            receita['valor_creditado_custeio'] +
-            receita['recursos_proprios_custeio'] +
-            receita['rendimento_aplicacao_custeio']
-        )
-        valor_total_receita_capital = (
-            receita['saldo_anterior_capital'] +
-            receita['valor_creditado_capital'] +
-            receita['recursos_proprios_capital'] +
-            receita['rendimento_aplicacao_capital']
-        )
-
-        total_receita = valor_total_receita_custeio + valor_total_receita_capital
-        total_despesa = (
-            receita['devolucao_fnde_custeio'] +
-            receita['devolucao_fnde_capital'] +
-            receita['saldo_devolvido_custeio'] +
-            receita['saldo_devolvido_capital'] +
-            total_pagamentos
-        )
-        saldo_reprogramar = total_receita - total_despesa
-
-        data_inicio_formatada = receita['data_inicio'].strftime("%Y-%m-%d") if receita['data_inicio'] else ""
-        data_fim_formatada = receita['data_fim'].strftime("%Y-%m-%d") if receita['data_fim'] else ""
-
-        data = {
-            "data_inicio": data_inicio_formatada,
-            "data_fim": data_fim_formatada,
-            "saldo_anterior_custeio": f"{receita['saldo_anterior_custeio']:.2f}".replace(".", ","),
-            "saldo_anterior_capital": f"{receita['saldo_anterior_capital']:.2f}".replace(".", ","),
-            "valor_creditado_custeio": f"{receita['valor_creditado_custeio']:.2f}".replace(".", ","),
-            "valor_creditado_capital": f"{receita['valor_creditado_capital']:.2f}".replace(".", ","),
-            "recursos_proprios_custeio": f"{receita['recursos_proprios_custeio']:.2f}".replace(".", ","),
-            "recursos_proprios_capital": f"{receita['recursos_proprios_capital']:.2f}".replace(".", ","),
-            "rendimento_aplicacao_custeio": f"{receita['rendimento_aplicacao_custeio']:.2f}".replace(".", ","),
-            "rendimento_aplicacao_capital": f"{receita['rendimento_aplicacao_capital']:.2f}".replace(".", ","),
-            "devolucao_fnde_custeio": f"{receita['devolucao_fnde_custeio']:.2f}".replace(".", ","),
-            "devolucao_fnde_capital": f"{receita['devolucao_fnde_capital']:.2f}".replace(".", ","),
-            "saldo_devolvido_custeio": f"{receita['saldo_devolvido_custeio']:.2f}".replace(".", ","),
-            "saldo_devolvido_capital": f"{receita['saldo_devolvido_capital']:.2f}".replace(".", ","),
-            "valor_total_receita_custeio": f"{valor_total_receita_custeio:.2f}".replace(".", ","),
-            "valor_total_receita_capital": f"{valor_total_receita_capital:.2f}".replace(".", ","),
-            "valor_despesa_realizada_custeio": f"{receita['valor_despesa_realizada_custeio']:.2f}".replace(".", ","),
-            "valor_despesa_realizada_capital": f"{receita['valor_despesa_realizada_capital']:.2f}".replace(".", ","),
-            "saldo_reprogramar_custeio": f"{receita['saldo_reprogramar_custeio']:.2f}".replace(".", ","),
-            "saldo_reprogramar_capital": f"{receita['saldo_reprogramar_capital']:.2f}".replace(".", ","),
-            "total_receita": f"{total_receita:.2f}".replace(".", ","),
-            "total_despesa": f"{total_despesa:.2f}".replace(".", ","),
-            "saldo_reprogramar": f"{saldo_reprogramar:.2f}".replace(".", ","),
-            "escolas_atendidas": receita_obj.escolas_atendidas or 0
+        valores = {
+            "saldo_anterior_custeio": Decimal("0.00"),
+            "saldo_anterior_capital": Decimal("0.00"),
+            "valor_creditado_custeio": Decimal("0.00"),
+            "valor_creditado_capital": Decimal("0.00"),
+            "recursos_proprios_custeio": Decimal("0.00"),
+            "recursos_proprios_capital": Decimal("0.00"),
+            "rendimento_aplicacao_custeio": Decimal("0.00"),
+            "rendimento_aplicacao_capital": Decimal("0.00"),
+            "devolucao_fnde_custeio": Decimal("0.00"),
+            "devolucao_fnde_capital": Decimal("0.00"),
+            "saldo_devolvido_custeio": Decimal("0.00"),
+            "saldo_devolvido_capital": Decimal("0.00"),
+            "valor_despesa_realizada_custeio": Decimal("0.00"),
+            "valor_despesa_realizada_capital": Decimal("0.00"),
+            "escolas_atendidas": 0,
         }
 
-        return JsonResponse(data)
+        for registro in dados:
+            for campo in valores:
+                valor = getattr(registro, campo, Decimal("0.00")) or Decimal("0.00")
+                valores[campo] += valor
+            valores["escolas_atendidas"] += registro.escolas_atendidas or 0
+
+        total_receita_custeio = (
+            valores["saldo_anterior_custeio"] + valores["valor_creditado_custeio"] +
+            valores["recursos_proprios_custeio"] + valores["rendimento_aplicacao_custeio"]
+        )
+        total_receita_capital = (
+            valores["saldo_anterior_capital"] + valores["valor_creditado_capital"] +
+            valores["recursos_proprios_capital"] + valores["rendimento_aplicacao_capital"]
+        )
+        total_receita = total_receita_custeio + total_receita_capital
+
+        total_despesa = (
+            valores["devolucao_fnde_custeio"] + valores["devolucao_fnde_capital"] +
+            valores["saldo_devolvido_custeio"] + valores["saldo_devolvido_capital"] +
+            valores["valor_despesa_realizada_custeio"] + valores["valor_despesa_realizada_capital"]
+        )
+
+        saldo_reprogramar_custeio = (
+            total_receita_custeio - valores["devolucao_fnde_custeio"]
+            - valores["valor_despesa_realizada_custeio"] - valores["saldo_devolvido_custeio"]
+        )
+        saldo_reprogramar_capital = (
+            total_receita_capital - valores["devolucao_fnde_capital"]
+            - valores["valor_despesa_realizada_capital"] - valores["saldo_devolvido_capital"]
+        )
+        receita_liquida = total_receita - total_despesa
+
+        pagamentos = Pagamento.objects.filter(escola=escola, exercicio=ano).order_by("-data_pagamento")
+
+        lista_pagamentos = []
+        for p in pagamentos:
+            lista_pagamentos.append({
+                "nome_favorecido": p.nome_favorecido,
+                "cnpj_cpf": p.cnpj_cpf,
+                "tipo_bem_servico": p.tipo_bem_servico,
+                "origem": p.origem or "FNDE",
+                "tipo_pagamento": p.tipo_pagamento,
+                "tipo_documento": p.tipo_documento,
+                "numero_documento": p.numero_documento,
+                "numero_documento_pagamento": p.numero_documento_pagamento,
+                "data_documento": p.data_documento.strftime("%d/%m/%Y") if p.data_documento else "",
+                "data_pagamento": p.data_pagamento.strftime("%d/%m/%Y") if p.data_pagamento else "",
+                "valor": formatar_valor_br(p.valor),
+                "url_editar": reverse("editar_pagamento", args=[p.id])
+            })
+
+        return JsonResponse({
+            "escolas_atendidas": str(int(valores["escolas_atendidas"])),
+            **{k: formatar_valor_br(v) for k, v in valores.items()},
+            "valor_total_receita_custeio": formatar_valor_br(total_receita_custeio),
+            "valor_total_receita_capital": formatar_valor_br(total_receita_capital),
+            "total_receita": formatar_valor_br(total_receita),
+            "total_despesa": formatar_valor_br(total_despesa),
+            "receita_liquida": formatar_valor_br(receita_liquida),
+            "saldo_reprogramar_custeio": formatar_valor_br(saldo_reprogramar_custeio),
+            "saldo_reprogramar_capital": formatar_valor_br(saldo_reprogramar_capital),
+            "total_custeio": formatar_valor_br(pagamentos.filter(tipo_pagamento="Custeio").aggregate(total=Sum("valor"))["total"] or 0),
+            "total_capital": formatar_valor_br(pagamentos.filter(tipo_pagamento="Capital").aggregate(total=Sum("valor"))["total"] or 0),
+            "total_geral": formatar_valor_br(pagamentos.aggregate(total=Sum("valor"))["total"] or 0),
+            "pagamentos": lista_pagamentos
+        })
 
     except Exception as e:
-        return JsonResponse({"erro": f"Erro ao buscar dados financeiros: {str(e)}"}, status=500)
-
+        return JsonResponse({"erro": f"Erro: {e}"}, status=500)
 
     
 ###***********************************************************************************************************************
@@ -7999,12 +8041,19 @@ def get_pagamentos(request, escola_id):
     try:
         programa = request.GET.get("programa")
         natureza = request.GET.get("natureza")
+        conta_id = request.GET.get("conta_bancaria")
+        exercicio = request.GET.get("exercicio")
 
         pagamentos = Pagamento.objects.filter(escola_id=escola_id)
+
         if programa:
             pagamentos = pagamentos.filter(programa=programa)
         if natureza:
             pagamentos = pagamentos.filter(tipo_pagamento=natureza)
+        if conta_id and conta_id.isdigit():
+            pagamentos = pagamentos.filter(conta_bancaria_id=conta_id)
+        if exercicio and exercicio.isdigit():
+            pagamentos = pagamentos.filter(exercicio=exercicio)
 
         pagamentos = pagamentos.order_by("-data_pagamento")
 
@@ -8035,25 +8084,25 @@ def get_pagamentos(request, escola_id):
 
 ###***********************************************************************************************************************
 
-from django.shortcuts import render
-from .models import EscolaPdde
+# from django.shortcuts import render
+# from .models import EscolaPdde
 
-def pddereceita_despesa_view(request):
-    user = request.user
+# def pddereceita_despesa_view(request):
+#     user = request.user
 
-    if user.is_superuser:
-        escolas = EscolaPdde.objects.all()
-    else:
-        escolas = user.escolas.all()  # Assume que o usuário tem uma relação ManyToMany com EscolaPdde
+#     if user.is_superuser:
+#         escolas = EscolaPdde.objects.all()
+#     else:
+#         escolas = user.escolas.all()  # Assume que o usuário tem uma relação ManyToMany com EscolaPdde
 
-    context = {
-        'escolas': escolas,
-        'programas_vinculados': [],  # ou a lógica que você já tem para carregar se necessário
-        'receita': {},
-        'pagamentos': [],
-    }
+#     context = {
+#         'escolas': escolas,
+#         'programas_vinculados': [],  # ou a lógica que você já tem para carregar se necessário
+#         'receita': {},
+#         'pagamentos': [],
+#     }
 
-    return render(request, 'contabilidade/pddereceitadespesa.html', context)
+#     return render(request, 'contabilidade/pddereceitadespesa.html', context)
 
 ###***********************************************************************************************************************
 
@@ -8065,222 +8114,266 @@ def pdde_list(request):
     return render(request, "seu_template.html", {"pdde_data": pdde_data})
 ###***********************************************************************************************************************
 
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse
+from decimal import Decimal, ROUND_HALF_UP
 from django.db.models import Sum
-from .models import ReceitaDespesa, EscolaPdde, Pagamento, Programa, SemedAppEscolaPddeProgramas
+from django.shortcuts import render, get_object_or_404
+from .models import ReceitaDespesa, Pagamento, EscolaPdde, Programa, SemedAppEscolaPddeProgramas
+
+def formatar_decimal(valor):
+    try:
+        val = Decimal(valor or 0).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        return f"{val:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return "0,00"
 
 def pddereceita_despesa(request, escola_id=None):
     user = request.user
+    escolas = EscolaPdde.objects.all() if user.is_superuser else user.escolas.all()
 
-    # 🔹 Busca apenas as escolas vinculadas ao usuário, ou todas se for superusuário
-    if user.is_superuser:
-        escolas = EscolaPdde.objects.all()
-    else:
-        escolas = user.escolas.all()  # Assumindo que existe `ManyToManyField` chamado `escolas` em `CustomUserProf`
+    if not escola_id:
+        return render(request, "contabilidade/pddereceitadespesa.html", {"escolas": escolas})
 
-    # 🔹 Se for requisição GET sem `escola_id`, renderiza o HTML
-    if request.method == "GET" and not escola_id:
-        return render(request, "contabilidade/demonstrativo_pdde.html", {
-            "escolas": escolas
-        })
+    escola = get_object_or_404(EscolaPdde, id=escola_id)
 
-    # 🔹 Se for requisição com escola_id, retorna dados financeiros em JSON
-    try:
-        escola = get_object_or_404(EscolaPdde, id=escola_id)
+    programas_ids = SemedAppEscolaPddeProgramas.objects.filter(
+        escolapdde_id=escola_id
+    ).values_list("programa_id", flat=True)
 
-        programas_ids = SemedAppEscolaPddeProgramas.objects.filter(
-            escolapdde_id=escola_id).values_list('programa_id', flat=True)
+    programas_vinculados = Programa.objects.filter(
+        id__in=programas_ids
+    ).values_list("nome", flat=True)
 
-        programas_vinculados = Programa.objects.filter(
-            id__in=programas_ids).values_list('nome', flat=True)
+    receita_raw = ReceitaDespesa.objects.filter(escola=escola).aggregate(
+        saldo_anterior_custeio=Sum("saldo_anterior_custeio"),
+        saldo_anterior_capital=Sum("saldo_anterior_capital"),
+        valor_creditado_custeio=Sum("valor_creditado_custeio"),
+        valor_creditado_capital=Sum("valor_creditado_capital"),
+        recursos_proprios_custeio=Sum("recursos_proprios_custeio"),
+        recursos_proprios_capital=Sum("recursos_proprios_capital"),
+        rendimento_aplicacao_custeio=Sum("rendimento_aplicacao_custeio"),
+        rendimento_aplicacao_capital=Sum("rendimento_aplicacao_capital"),
+        devolucao_fnde_custeio=Sum("devolucao_fnde_custeio"),
+        devolucao_fnde_capital=Sum("devolucao_fnde_capital"),
+        saldo_devolvido_custeio=Sum("saldo_devolvido_custeio"),
+        saldo_devolvido_capital=Sum("saldo_devolvido_capital"),
+        valor_despesa_realizada_custeio=Sum("valor_despesa_realizada_custeio"),
+        valor_despesa_realizada_capital=Sum("valor_despesa_realizada_capital"),
+        saldo_reprogramar_custeio=Sum("saldo_reprogramar_custeio"),
+        saldo_reprogramar_capital=Sum("saldo_reprogramar_capital"),
+        escolas_atendidas=Sum("escolas_atendidas"),
+    )
 
-        receita_despesa = ReceitaDespesa.objects.filter(escola=escola).aggregate(
-            saldo_anterior_custeio=Sum("saldo_anterior_custeio", default=0),
-            saldo_anterior_capital=Sum("saldo_anterior_capital", default=0),
-            valor_creditado_custeio=Sum("valor_creditado_custeio", default=0),
-            valor_creditado_capital=Sum("valor_creditado_capital", default=0),
-            recursos_proprios_custeio=Sum("recursos_proprios_custeio", default=0),
-            recursos_proprios_capital=Sum("recursos_proprios_capital", default=0),
-            rendimento_aplicacao_custeio=Sum("rendimento_aplicacao_custeio", default=0),
-            rendimento_aplicacao_capital=Sum("rendimento_aplicacao_capital", default=0),
-            devolucao_fnde_custeio=Sum("devolucao_fnde_custeio", default=0),
-            devolucao_fnde_capital=Sum("devolucao_fnde_capital", default=0),
-            saldo_devolvido_custeio=Sum("saldo_devolvido_custeio", default=0),
-            saldo_devolvido_capital=Sum("saldo_devolvido_capital", default=0),
-            valor_despesa_realizada_custeio=Sum("valor_despesa_realizada_custeio", default=0),
-            valor_despesa_realizada_capital=Sum("valor_despesa_realizada_capital", default=0),
-            saldo_reprogramar_custeio=Sum("saldo_reprogramar_custeio", default=0),
-            saldo_reprogramar_capital=Sum("saldo_reprogramar_capital", default=0),
-            escolas_atendidas=Sum("escolas_atendidas", default=0)
-        )
+    total_receita = sum([
+        receita_raw["saldo_anterior_custeio"] or Decimal("0.00"),
+        receita_raw["saldo_anterior_capital"] or Decimal("0.00"),
+        receita_raw["valor_creditado_custeio"] or Decimal("0.00"),
+        receita_raw["valor_creditado_capital"] or Decimal("0.00"),
+        receita_raw["recursos_proprios_custeio"] or Decimal("0.00"),
+        receita_raw["recursos_proprios_capital"] or Decimal("0.00"),
+        receita_raw["rendimento_aplicacao_custeio"] or Decimal("0.00"),
+        receita_raw["rendimento_aplicacao_capital"] or Decimal("0.00"),
+    ])
 
-        pagamentos = Pagamento.objects.filter(escola=escola).values(
-            "id", "nome_favorecido", "cnpj_cpf", "tipo_pagamento", "tipo_bem_servico",
-            "tipo_documento", "numero_documento", "data_documento", "numero_pagamento",
-            "data_pagamento", "origem", "valor"
-        )
+    total_despesa = sum([
+        receita_raw["devolucao_fnde_custeio"] or Decimal("0.00"),
+        receita_raw["devolucao_fnde_capital"] or Decimal("0.00"),
+        receita_raw["saldo_devolvido_custeio"] or Decimal("0.00"),
+        receita_raw["saldo_devolvido_capital"] or Decimal("0.00"),
+        receita_raw["valor_despesa_realizada_custeio"] or Decimal("0.00"),
+        receita_raw["valor_despesa_realizada_capital"] or Decimal("0.00"),
+    ])
 
-        for pagamento in pagamentos:
-            pagamento["url_editar"] = f"/editar-pagamento/{pagamento['id']}/"
+    receita_liquida = total_receita - total_despesa
 
-        total_receita = sum([
-            receita_despesa["saldo_anterior_custeio"],
-            receita_despesa["saldo_anterior_capital"],
-            receita_despesa["valor_creditado_custeio"],
-            receita_despesa["valor_creditado_capital"],
-            receita_despesa["recursos_proprios_custeio"],
-            receita_despesa["recursos_proprios_capital"],
-            receita_despesa["rendimento_aplicacao_custeio"],
-            receita_despesa["rendimento_aplicacao_capital"]
-        ])
+    # Formatar campos da receita
+    receita_formatada = {k: formatar_decimal(v) for k, v in receita_raw.items()}
+    receita_formatada.update({
+        "total_receita": formatar_decimal(total_receita),
+        "total_despesa": formatar_decimal(total_despesa),
+        "receita_liquida": formatar_decimal(receita_liquida),
+    })
 
-        total_despesa = sum([
-            receita_despesa["devolucao_fnde_custeio"],
-            receita_despesa["devolucao_fnde_capital"],
-            receita_despesa["saldo_devolvido_custeio"],
-            receita_despesa["saldo_devolvido_capital"],
-            receita_despesa["valor_despesa_realizada_custeio"],
-            receita_despesa["valor_despesa_realizada_capital"]
-        ])
+    # Pagamentos consolidados
+    pagamentos = Pagamento.objects.filter(escola=escola)
+    total_custeio = pagamentos.filter(tipo_pagamento="Custeio").aggregate(total=Sum("valor"))["total"] or Decimal("0.00")
+    total_capital = pagamentos.filter(tipo_pagamento="Capital").aggregate(total=Sum("valor"))["total"] or Decimal("0.00")
+    total_geral = total_custeio + total_capital
 
-        saldo_reprogramar = total_receita - total_despesa
-        receita_liquida = total_receita - total_despesa
+    context = {
+        "escolas": escolas,
+        "escola": escola,
+        "programas_vinculados": programas_vinculados,
+        "receita": receita_formatada,
+        "pagamentos": pagamentos,
+        "total_custeio": formatar_decimal(total_custeio),
+        "total_capital": formatar_decimal(total_capital),
+        "total_geral": formatar_decimal(total_geral),
+    }
 
-        data = {
-            "escola": escola.nome,
-            "programas_vinculados": list(programas_vinculados),
-            "saldo_anterior_custeio": str(receita_despesa["saldo_anterior_custeio"]),
-            "saldo_anterior_capital": str(receita_despesa["saldo_anterior_capital"]),
-            "valor_creditado_custeio": str(receita_despesa["valor_creditado_custeio"]),
-            "valor_creditado_capital": str(receita_despesa["valor_creditado_capital"]),
-            "recursos_proprios_custeio": str(receita_despesa["recursos_proprios_custeio"]),
-            "recursos_proprios_capital": str(receita_despesa["recursos_proprios_capital"]),
-            "rendimento_aplicacao_custeio": str(receita_despesa["rendimento_aplicacao_custeio"]),
-            "rendimento_aplicacao_capital": str(receita_despesa["rendimento_aplicacao_capital"]),
-            "devolucao_fnde_custeio": str(receita_despesa["devolucao_fnde_custeio"]),
-            "devolucao_fnde_capital": str(receita_despesa["devolucao_fnde_capital"]),
-            "saldo_devolvido_custeio": str(receita_despesa["saldo_devolvido_custeio"]),
-            "saldo_devolvido_capital": str(receita_despesa["saldo_devolvido_capital"]),
-            "valor_despesa_realizada_custeio": str(receita_despesa["valor_despesa_realizada_custeio"]),
-            "valor_despesa_realizada_capital": str(receita_despesa["valor_despesa_realizada_capital"]),
-            "saldo_reprogramar_custeio": str(receita_despesa["saldo_reprogramar_custeio"]),
-            "saldo_reprogramar_capital": str(receita_despesa["saldo_reprogramar_capital"]),
-            "escolas_atendidas": str(receita_despesa["escolas_atendidas"]),
-            "total_receita": str(total_receita),
-            "total_despesa": str(total_despesa),
-            "saldo_reprogramar": str(saldo_reprogramar),
-            "receita_liquida": str(receita_liquida),
-            "pagamentos": list(pagamentos),
-        }
+    return render(request, "contabilidade/pddereceitadespesa.html", context)
 
-        return JsonResponse(data)
 
-    except Exception as e:
-        return JsonResponse({"erro": f"Erro ao buscar dados financeiros: {str(e)}"}, status=500)
+
+
+
 
 ###***********************************************************************************************************************
 
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import Receita, EscolaPdde, Programa
-
 from decimal import Decimal, InvalidOperation
+from datetime import datetime
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Receita, ReceitaDespesa, EscolaPdde, Programa, ContaBancaria, LancamentoBancario
 
 def parse_decimal(value):
     try:
         if value is None:
             return Decimal("0.00")
-        cleaned = str(value).replace(".", "").replace(",", ".")
-        return Decimal(cleaned).quantize(Decimal("0.01"))
+        return Decimal(str(value).replace(".", "").replace(",", ".")).quantize(Decimal("0.01"))
     except (InvalidOperation, AttributeError):
         return Decimal("0.00")
-
 
 @login_required
 def pddelancar_receita(request):
     user = request.user
+    escolas = EscolaPdde.objects.all().order_by("nome") if user.is_superuser else EscolaPdde.objects.filter(coordenador=user).order_by("nome")
+    escola_selecionada = programas = programa_selecionado = None
+    contas_bancarias = []
+    valores_receita = {}
 
-    # 🔒 Filtra escolas visíveis conforme o perfil
-    if user.is_superuser:
-        escolas = EscolaPdde.objects.all().order_by("nome")
-    else:
-        escolas = EscolaPdde.objects.filter(coordenador=user)
+    escola_id = request.GET.get("escola")
+    programa_id = request.GET.get("programa")
 
-    if request.method == "POST":
+    if escola_id:
+        escola_selecionada = get_object_or_404(EscolaPdde, id=escola_id)
+        programas = escola_selecionada.programas.all().order_by("nome")
+        contas_bancarias = ContaBancaria.objects.filter(escola=escola_selecionada).order_by("banco")
+
+    if programa_id:
+        programa_selecionado = Programa.objects.filter(id=programa_id).first()
+
+    if request.method == "POST" and "confirmarLancamento" in request.POST:
         try:
-            escola_id = request.POST.get("escola")
-            programa_id = request.POST.get("programa")
-
-            if not escola_id or not programa_id:
-                messages.error(request, "Escola e Programa são obrigatórios.")
-                return redirect("pddereceita_despesa")
-
-            escola = get_object_or_404(EscolaPdde, id=escola_id)
-            if not user.is_superuser and escola.coordenador != user:
-                messages.error(request, "Você não tem permissão para lançar receita nesta escola.")
-                return redirect("pddereceita_despesa")
-
-            programa = get_object_or_404(Programa, id=programa_id)
+            escola_id_post = request.POST.get("escola")
+            programa_id_post = request.POST.get("programa")
+            conta_id = request.POST.get("conta_bancaria")
             data_inicio = request.POST.get("data_inicio")
             data_fim = request.POST.get("data_fim") or "2025-12-31"
+            exercicio = datetime.now().year
 
-            # 🧮 Lê e converte todos os valores financeiros com precisão
-            campos_financeiros = [
+            escola = get_object_or_404(EscolaPdde, id=escola_id_post)
+            programa = get_object_or_404(Programa, id=programa_id_post)
+            conta_bancaria = ContaBancaria.objects.filter(id=conta_id).first() if conta_id else None
+
+            campos = [
                 "saldo_anterior_custeio", "saldo_anterior_capital",
                 "valor_creditado_custeio", "valor_creditado_capital",
                 "recursos_proprios_custeio", "recursos_proprios_capital",
                 "rendimento_aplicacao_custeio", "rendimento_aplicacao_capital",
                 "devolucao_fnde_custeio", "devolucao_fnde_capital",
                 "saldo_devolvido_custeio", "saldo_devolvido_capital",
-                "valor_despesa_realizada_custeio", "valor_despesa_realizada_capital",
-                "saldo_reprogramar_custeio", "saldo_reprogramar_capital"
+                "valor_despesa_realizada_custeio", "valor_despesa_realizada_capital"
             ]
-
-            valores = {campo: parse_decimal(request.POST.get(campo, "0")) for campo in campos_financeiros}
-
+            valores = {campo: parse_decimal(request.POST.get(campo, "0")) for campo in campos}
             escolas_atendidas = int(request.POST.get("escolas_atendidas", "1"))
 
-            # 🔹 Calcula os totais
+            if all(v == Decimal("0.00") for v in valores.values()):
+                messages.error(request, "Preencha pelo menos um valor diferente de zero para lançar a receita.")
+                return redirect(f"{request.path}?escola={escola.id}&programa={programa.id}")
+
             valor_total_receita_custeio = (
-                valores["saldo_anterior_custeio"] +
-                valores["valor_creditado_custeio"] +
-                valores["rendimento_aplicacao_custeio"]
-            ).quantize(Decimal("0.01"))
-
+                valores["saldo_anterior_custeio"] + valores["valor_creditado_custeio"] +
+                valores["recursos_proprios_custeio"] + valores["rendimento_aplicacao_custeio"]
+            )
             valor_total_receita_capital = (
-                valores["saldo_anterior_capital"] +
-                valores["valor_creditado_capital"] +
-                valores["rendimento_aplicacao_capital"] +
-                valores["recursos_proprios_capital"]
-            ).quantize(Decimal("0.01"))
-
-            # 🔹 Atualiza ou cria a Receita
-            receita, created = Receita.objects.update_or_create(
-                escola=escola,
-                programa=programa,
-                defaults={
-                    "data_inicio": data_inicio,
-                    "data_fim": data_fim,
-                    **valores,
-                    "valor_total_receita_custeio": valor_total_receita_custeio,
-                    "valor_total_receita_capital": valor_total_receita_capital,
-                    "escolas_atendidas": escolas_atendidas,
-                }
+                valores["saldo_anterior_capital"] + valores["valor_creditado_capital"] +
+                valores["recursos_proprios_capital"] + valores["rendimento_aplicacao_capital"]
             )
 
-            messages.success(request, "Receita lançada com sucesso!")
-            return redirect("pddereceita_despesa")
+            saldo_reprogramar_custeio = (
+                valor_total_receita_custeio -
+                valores["devolucao_fnde_custeio"] -
+                valores["valor_despesa_realizada_custeio"] -
+                valores["saldo_devolvido_custeio"]
+            )
+            saldo_reprogramar_capital = (
+                valor_total_receita_capital -
+                valores["devolucao_fnde_capital"] -
+                valores["valor_despesa_realizada_capital"] -
+                valores["saldo_devolvido_capital"]
+            )
+
+            total_despesa = valores["valor_despesa_realizada_custeio"] + valores["valor_despesa_realizada_capital"]
+            total_receita = valor_total_receita_custeio + valor_total_receita_capital
+            saldo_disponivel = total_receita - total_despesa
+
+            # Verifica se já existe lançamento igual
+            receita_duplicada = Receita.objects.filter(
+                escola=escola,
+                programa=programa,
+                data_inicio=data_inicio,
+                data_fim=data_fim,
+                valor_total_receita_custeio=valor_total_receita_custeio,
+                valor_total_receita_capital=valor_total_receita_capital,
+            ).exists()
+
+            if not receita_duplicada:
+                Receita.objects.create(
+                    escola=escola,
+                    programa=programa,
+                    conta_bancaria=conta_bancaria,
+                    data_inicio=data_inicio,
+                    data_fim=data_fim,
+                    **valores,
+                    saldo_reprogramar_custeio=saldo_reprogramar_custeio,
+                    saldo_reprogramar_capital=saldo_reprogramar_capital,
+                    valor_total_receita_custeio=valor_total_receita_custeio,
+                    valor_total_receita_capital=valor_total_receita_capital,
+                    escolas_atendidas=escolas_atendidas,
+                )
+
+                ReceitaDespesa.objects.create(
+                    escola=escola,
+                    programa=programa.nome,
+                    conta_bancaria=conta_bancaria,
+                    periodo_execucao=exercicio,
+                    tipo="receita",
+                    **valores,
+                    saldo_reprogramar_custeio=saldo_reprogramar_custeio,
+                    saldo_reprogramar_capital=saldo_reprogramar_capital,
+                    total_receita=total_receita,
+                    total_despesa=total_despesa,
+                    saldo_disponivel=saldo_disponivel,
+                    escolas_atendidas=escolas_atendidas
+                )
+
+            if conta_bancaria:
+                LancamentoBancario.objects.create(
+                    escola=escola,
+                    conta_bancaria=conta_bancaria,
+                    usuario=request.user,
+                    data=data_inicio,
+                    descricao="Lançamento de Receita",
+                    tipo="Crédito",
+                    valor=total_receita
+                )
+
+            messages.success(request, "✅ Receita lançada com sucesso!")
+            return redirect(f"{request.path}?escola={escola.id}&programa={programa.id}")
 
         except Exception as e:
-            messages.error(request, f"Erro ao salvar: {str(e)}")
+            messages.error(request, f"❌ Erro ao salvar: {str(e)}")
             return render(request, "erro.html", {"error_message": f"Erro ao salvar: {str(e)}"})
 
-    return render(request, "pdde/lancar_receita.html", {"escolas": escolas})
-
-
+    return render(request, "pdde/lancar_receita.html", {
+        "escolas": escolas,
+        "escola_selecionada": escola_selecionada,
+        "programas": programas,
+        "programa_selecionado": programa_selecionado,
+        "contas_bancarias": contas_bancarias,
+        **valores_receita,
+    })
 
 
 ###***********************************************************************************************************************
@@ -8314,119 +8407,181 @@ def get_saldos_completos(escola_id, programa_nome):
 
 
 from decimal import Decimal
+from django.db.models import Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
 from django.utils.dateparse import parse_date
-from django.db.models import Sum
-from .models import Pagamento, EscolaPdde, Programa, Receita  # Ajuste o nome do modelo de Receita
+from .models import Pagamento, EscolaPdde, Programa, ReceitaDespesa, ContaBancaria, LancamentoBancario
 
 def pddelancar_pagamento(request):
     escolas = EscolaPdde.objects.all().order_by("nome") if request.user.is_superuser else EscolaPdde.objects.filter(coordenador=request.user).order_by("nome")
+
+    escola_selecionada = programa_selecionado = conta_selecionada = None
     programas = Programa.objects.none()
+    contas_bancarias = []
     pagamentos = Pagamento.objects.none()
 
-    # Valores padrão
     saldo_anterior_custeio = saldo_anterior_capital = Decimal("0.00")
-    saldo_reprogramar_custeio = saldo_reprogramar_capital = Decimal("0.00")
     valor_creditado_custeio = valor_creditado_capital = Decimal("0.00")
+    saldo_reprogramar_custeio = saldo_reprogramar_capital = Decimal("0.00")
 
     escola_id = request.GET.get("escola")
-    programa_nome = request.GET.get("programa")
-    escola_selecionada = None
-
     if escola_id:
         escola_selecionada = get_object_or_404(EscolaPdde, id=escola_id)
-        programas = Programa.objects.filter(escolas__id=escola_id).order_by("nome")
+        programas = escola_selecionada.programas.all().order_by("nome")
+        contas_bancarias = ContaBancaria.objects.filter(escola=escola_selecionada).order_by("banco")
 
-        if programas.exists() and not programa_nome:
-            programa_nome = programas.first().nome
+        conta_id = request.GET.get("conta")
+        if conta_id and conta_id.isdigit():
+            conta_selecionada = ContaBancaria.objects.filter(id=conta_id).first()
 
-        if programa_nome:
-            receita = Receita.objects.filter(escola_id=escola_id, programa=programa_nome).first()
-            if receita:
-                saldo_anterior_custeio = receita.saldo_anterior_custeio or Decimal("0.00")
-                saldo_anterior_capital = receita.saldo_anterior_capital or Decimal("0.00")
-                valor_creditado_custeio = receita.valor_creditado_custeio or Decimal("0.00")
-                valor_creditado_capital = receita.valor_creditado_capital or Decimal("0.00")
-                saldo_reprogramar_custeio = receita.saldo_reprogramar_custeio or Decimal("0.00")
-                saldo_reprogramar_capital = receita.saldo_reprogramar_capital or Decimal("0.00")
+        programa_id = request.GET.get("programa")
+        if programa_id:
+            programa_selecionado = Programa.objects.filter(id=programa_id).first()
 
-            pagamentos = Pagamento.objects.filter(escola_id=escola_id, programa=programa_nome).order_by("-data_pagamento")
+        if programa_selecionado:
+            programa_nome = programa_selecionado.nome
+
+            # 🔎 Receita consolidada
+            receita = ReceitaDespesa.objects.filter(
+                escola=escola_selecionada,
+                programa=programa_nome,
+                tipo="receita",
+                periodo_execucao=2025
+            ).aggregate(
+                saldo_anterior_custeio=Sum("saldo_anterior_custeio"),
+                saldo_anterior_capital=Sum("saldo_anterior_capital"),
+                valor_creditado_custeio=Sum("valor_creditado_custeio"),
+                valor_creditado_capital=Sum("valor_creditado_capital"),
+                saldo_reprogramar_custeio=Sum("saldo_reprogramar_custeio"),
+                saldo_reprogramar_capital=Sum("saldo_reprogramar_capital")
+            )
+
+            # 🔎 Despesas realizadas
+            despesa = ReceitaDespesa.objects.filter(
+                escola=escola_selecionada,
+                programa=programa_nome,
+                tipo="despesa",
+                periodo_execucao=2025
+            ).aggregate(
+                valor_despesa_realizada_custeio=Sum("valor_despesa_realizada_custeio"),
+                valor_despesa_realizada_capital=Sum("valor_despesa_realizada_capital")
+            )
+
+            saldo_anterior_custeio = receita["saldo_anterior_custeio"] or Decimal("0.00")
+            saldo_anterior_capital = receita["saldo_anterior_capital"] or Decimal("0.00")
+            valor_creditado_custeio = receita["valor_creditado_custeio"] or Decimal("0.00")
+            valor_creditado_capital = receita["valor_creditado_capital"] or Decimal("0.00")
+
+            saldo_reprogramar_custeio = (receita["saldo_reprogramar_custeio"] or Decimal("0.00")) - (despesa["valor_despesa_realizada_custeio"] or Decimal("0.00"))
+            saldo_reprogramar_capital = (receita["saldo_reprogramar_capital"] or Decimal("0.00")) - (despesa["valor_despesa_realizada_capital"] or Decimal("0.00"))
+
+            # Garante que não exiba valores negativos no saldo reprogramado
+            saldo_reprogramar_custeio = max(saldo_reprogramar_custeio, Decimal("0.00"))
+            saldo_reprogramar_capital = max(saldo_reprogramar_capital, Decimal("0.00"))
+
+            pagamentos = Pagamento.objects.filter(
+                escola=escola_selecionada,
+                programa=programa_nome
+            ).order_by("-data_pagamento")
 
     if request.method == "POST":
         try:
             with transaction.atomic():
                 form_data = {campo: request.POST.get(campo, "").strip() for campo in [
-                    "escola", "programa", "nome_favorecido", "cnpj_cpf", "tipo_pagamento", 
-                    "tipo_bem_servico", "tipo_documento", "numero_documento", 
-                    "tipo_pagamento_efetuado", "numero_documento_pagamento", 
-                    "data_documento", "data_pagamento", "valor", "exercicio"
+                    "escola", "programa", "conta_bancaria", "nome_favorecido", "cnpj_cpf",
+                    "tipo_pagamento", "tipo_bem_servico", "tipo_documento", "numero_documento",
+                    "tipo_pagamento_efetuado", "numero_documento_pagamento", "data_documento",
+                    "data_pagamento", "valor", "exercicio"
                 ]}
 
-                if not all(form_data.values()):
-                    messages.error(request, "⚠️ Todos os campos são obrigatórios.")
-                    return redirect("pddelancar_pagamento")
-
-                escola = EscolaPdde.objects.get(id=form_data["escola"])
-                valor = Decimal(form_data["valor"].replace(".", "").replace(",", ".")) if form_data["valor"] else Decimal("0.00")
+                escola = get_object_or_404(EscolaPdde, id=form_data["escola"])
+                programa = get_object_or_404(Programa, id=form_data["programa"])
+                conta_bancaria = get_object_or_404(ContaBancaria, id=form_data["conta_bancaria"])
+                valor = Decimal(form_data["valor"].replace(".", "").replace(",", "."))
                 tipo_pagamento = form_data["tipo_pagamento"]
                 data_documento = parse_date(form_data["data_documento"])
                 data_pagamento = parse_date(form_data["data_pagamento"])
                 exercicio = int(form_data["exercicio"]) if form_data["exercicio"].isdigit() else 2025
 
-                # Validação: Não permitir pagamento menor que o saldo reprogramado
-                # Validação: Não permitir pagamento menor que o saldo reprogramado (valor absoluto)
-                if tipo_pagamento == "Custeio":
-                    if saldo_reprogramar_custeio <= 0:
-                        messages.error(request, f"❌ Não é possível realizar pagamentos, pois o Saldo Reprogramado para Custeio não é suficiente.")
-                        return redirect("pddelancar_pagamento")
-                    if valor < saldo_reprogramar_custeio:
-                        messages.error(request, f"❌ O valor do pagamento (R$ {valor:.2f}) não pode ser menor que o Saldo Reprogramado (R$ {saldo_reprogramar_custeio:.2f}) para Custeio.")
-                        return redirect("pddelancar_pagamento")
-                elif tipo_pagamento == "Capital":
-                    if saldo_reprogramar_capital <= 0:
-                        messages.error(request, f"❌ Não é possível realizar pagamentos, pois o Saldo Reprogramado para Capital não é suficiente.")
-                        return redirect("pddelancar_pagamento")
-                    if valor < saldo_reprogramar_capital:
-                        messages.error(request, f"❌ O valor do pagamento (R$ {valor:.2f}) não pode ser menor que o Saldo Reprogramado (R$ {saldo_reprogramar_capital:.2f}) para Capital.")
-                        return redirect("pddelancar_pagamento")
-
-                # Salvar o pagamento
                 Pagamento.objects.create(
                     escola=escola,
-                    programa=form_data["programa"],
+                    programa=programa.nome,
+                    conta_bancaria=conta_bancaria,
                     nome_favorecido=form_data["nome_favorecido"],
                     cnpj_cpf=form_data["cnpj_cpf"],
                     tipo_pagamento=tipo_pagamento,
                     tipo_bem_servico=form_data["tipo_bem_servico"],
                     tipo_documento=form_data["tipo_documento"],
                     numero_documento=form_data["numero_documento"],
-                    data_documento=data_documento,
                     tipo_pagamento_efetuado=form_data["tipo_pagamento_efetuado"],
                     numero_documento_pagamento=form_data["numero_documento_pagamento"],
+                    data_documento=data_documento,
                     data_pagamento=data_pagamento,
                     valor=valor,
+                    origem="FNDE",
                     exercicio=exercicio,
+                    usuario=request.user
                 )
 
-                messages.success(request, "✅ Pagamento lançado com sucesso!")
-                return redirect("pddelancar_pagamento")
+                receita_total = ReceitaDespesa.objects.filter(
+                    escola=escola,
+                    programa=programa.nome,
+                    periodo_execucao=exercicio,
+                    tipo="receita"
+                ).aggregate(total=Sum("total_receita"))["total"] or Decimal("0.00")
 
-        except EscolaPdde.DoesNotExist:
-            messages.error(request, "❌ Escola não encontrada.")
+                obj, created = ReceitaDespesa.objects.get_or_create(
+                    escola=escola,
+                    programa=programa.nome,
+                    conta_bancaria=conta_bancaria,
+                    periodo_execucao=exercicio,
+                    tipo="despesa",
+                    defaults={
+                        "valor_despesa_realizada_custeio": valor if tipo_pagamento == "Custeio" else Decimal("0.00"),
+                        "valor_despesa_realizada_capital": valor if tipo_pagamento == "Capital" else Decimal("0.00"),
+                        "total_despesa": valor,
+                        "saldo_disponivel": receita_total - valor
+                    }
+                )
+
+                if not created:
+                    if tipo_pagamento == "Custeio":
+                        obj.valor_despesa_realizada_custeio += valor
+                    elif tipo_pagamento == "Capital":
+                        obj.valor_despesa_realizada_capital += valor
+
+                    obj.total_despesa = (
+                        (obj.valor_despesa_realizada_custeio or Decimal("0.00")) +
+                        (obj.valor_despesa_realizada_capital or Decimal("0.00"))
+                    )
+                    obj.saldo_disponivel = receita_total - obj.total_despesa
+                    obj.save()
+
+                LancamentoBancario.objects.create(
+                    escola=escola,
+                    conta_bancaria=conta_bancaria,
+                    usuario=request.user,
+                    data=data_pagamento,
+                    descricao="Lançamento de Pagamento",
+                    tipo="Débito",
+                    valor=valor
+                )
+
+                messages.success(request, "✅ Pagamento lançado e consolidado com sucesso!")
+                return redirect(f"{request.path}?escola={escola.id}&programa={programa.id}&conta={conta_bancaria.id}")
+
         except Exception as e:
             messages.error(request, f"❌ Erro ao lançar pagamento: {e}")
-
-    total_custeio = pagamentos.filter(tipo_pagamento="Custeio").aggregate(total=Sum("valor"))["total"] or Decimal("0.00")
-    total_capital = pagamentos.filter(tipo_pagamento="Capital").aggregate(total=Sum("valor"))["total"] or Decimal("0.00")
-    total_geral = total_custeio + total_capital
 
     context = {
         "escolas": escolas,
         "escola_selecionada": escola_selecionada,
         "programas": programas,
-        "programa_selecionado": programa_nome,
+        "programa_selecionado": programa_selecionado,
+        "contas_bancarias": contas_bancarias,
+        "conta_selecionada": conta_selecionada,
         "pagamentos": pagamentos,
         "saldo_anterior_custeio": saldo_anterior_custeio,
         "saldo_anterior_capital": saldo_anterior_capital,
@@ -8434,12 +8589,14 @@ def pddelancar_pagamento(request):
         "valor_creditado_capital": valor_creditado_capital,
         "saldo_reprogramar_custeio": saldo_reprogramar_custeio,
         "saldo_reprogramar_capital": saldo_reprogramar_capital,
-        "total_custeio": total_custeio,
-        "total_capital": total_capital,
-        "total_geral": total_geral,
+        "total_custeio": pagamentos.filter(tipo_pagamento="Custeio").aggregate(total=Sum("valor"))["total"] or Decimal("0.00"),
+        "total_capital": pagamentos.filter(tipo_pagamento="Capital").aggregate(total=Sum("valor"))["total"] or Decimal("0.00"),
+        "total_geral": pagamentos.aggregate(total=Sum("valor"))["total"] or Decimal("0.00"),
+        "saldo_total": saldo_reprogramar_custeio + saldo_reprogramar_capital,
     }
 
     return render(request, "pdde/lancar_pagamento.html", context)
+
 
 
 
@@ -8501,43 +8658,36 @@ def get_saldos_reprogramados(escola_id, programa_nome):
 ###***********************************************************************************************************************
 
 from django.http import JsonResponse
-from decimal import Decimal
-from django.db.models import Sum
-from .models import ReceitaDespesa, EscolaPdde, Programa, Pagamento
+from .models import Receita, Programa
 
-def get_dados_financeiros(request, escola_id, programa_nome):
+def get_dados_financeiros(request, escola_id, programa_id):
     try:
-        # Verifica se a escola existe
-        escola = EscolaPdde.objects.get(id=escola_id)
+        programa_obj = Programa.objects.get(id=programa_id)  # Buscamos o objeto Programa pelo ID
+        programa_nome = programa_obj.nome  # Pegamos o nome do Programa
+        receita = Receita.objects.filter(escola_id=escola_id, programa=programa_nome).first()  # Buscamos pela string no campo `programa`
 
-        # Busca a última ReceitaDespesa para a escola e programa (não soma, só pega os valores reais)
-        receita = ReceitaDespesa.objects.filter(escola=escola, programa=programa_nome).last()
-
-        if not receita:
-            return JsonResponse({
-                "saldo_anterior_custeio": "0.00",
-                "saldo_anterior_capital": "0.00",
-                "valor_creditado_custeio": "0.00",
-                "valor_creditado_capital": "0.00",
-                "saldo_reprogramar_custeio": "0.00",
-                "saldo_reprogramar_capital": "0.00",
-            })
-
-        data = {
-            "saldo_anterior_custeio": f"{receita.saldo_anterior_custeio or Decimal('0.00'):.2f}",
-            "saldo_anterior_capital": f"{receita.saldo_anterior_capital or Decimal('0.00'):.2f}",
-            "valor_creditado_custeio": f"{receita.valor_creditado_custeio or Decimal('0.00'):.2f}",
-            "valor_creditado_capital": f"{receita.valor_creditado_capital or Decimal('0.00'):.2f}",
-            "saldo_reprogramar_custeio": f"{receita.saldo_reprogramar_custeio or Decimal('0.00'):.2f}",
-            "saldo_reprogramar_capital": f"{receita.saldo_reprogramar_capital or Decimal('0.00'):.2f}",
-        }
-
+        if receita:
+            data = {
+                "saldo_anterior_custeio": str(receita.saldo_anterior_custeio or 0),
+                "saldo_anterior_capital": str(receita.saldo_anterior_capital or 0),
+                "valor_creditado_custeio": str(receita.valor_creditado_custeio or 0),
+                "valor_creditado_capital": str(receita.valor_creditado_capital or 0),
+                "saldo_reprogramar_custeio": str(receita.saldo_reprogramar_custeio or 0),
+                "saldo_reprogramar_capital": str(receita.saldo_reprogramar_capital or 0),
+            }
+        else:
+            data = {chave: "0.00" for chave in [
+                "saldo_anterior_custeio", "saldo_anterior_capital",
+                "valor_creditado_custeio", "valor_creditado_capital",
+                "saldo_reprogramar_custeio", "saldo_reprogramar_capital"
+            ]}
         return JsonResponse(data)
-
-    except EscolaPdde.DoesNotExist:
-        return JsonResponse({"erro": "Escola não encontrada."}, status=404)
     except Exception as e:
-        return JsonResponse({"erro": f"Erro ao buscar dados: {str(e)}"}, status=500)
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+
+
 
 
 ###***********************************************************************************************************************
@@ -9410,24 +9560,36 @@ def api_conferencia(request):
 
 from django.http import JsonResponse
 from django.db.models import Sum
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404
 from .models import EscolaPdde, ContaBancaria, LancamentoBancario
 
+@login_required
 def api_extrato(request):
     """Retorna os lançamentos bancários filtrados por escola e conta bancária."""
     escola_id = request.GET.get("escola")
     conta_id = request.GET.get("conta")
 
     if not escola_id or not conta_id:
-        return JsonResponse({"error": "Parâmetros inválidos."}, status=400)
+        return JsonResponse({"erro": "Parâmetros 'escola' e 'conta' são obrigatórios."}, status=400)
 
-    extratos = LancamentoBancario.objects.filter(escola_id=escola_id, conta_bancaria_id=conta_id).order_by("-data")
+    try:
+        escola = get_object_or_404(EscolaPdde, id=escola_id)
+        conta = get_object_or_404(ContaBancaria, id=conta_id)
+    except Exception:
+        return JsonResponse({"erro": "Escola ou conta bancária não encontrada."}, status=404)
+
+    extratos = LancamentoBancario.objects.filter(
+        escola=escola,
+        conta_bancaria=conta
+    ).order_by("data")  # ou "-data" para ordem decrescente
 
     extrato_list = [
         {
             "data": extrato.data.strftime("%d/%m/%Y"),
             "descricao": extrato.descricao,
-            "escola": extrato.escola.nome if extrato.escola else "N/A",
-            "conta_bancaria": f"{extrato.conta_bancaria.banco} - Ag: {extrato.conta_bancaria.agencia} - Conta: {extrato.conta_bancaria.conta}" if extrato.conta_bancaria else "N/A",
+            "escola": escola.nome,
+            "conta_bancaria": f"{conta.banco} - Ag: {conta.agencia} - Conta: {conta.conta}",
             "tipo": extrato.tipo,
             "valor": float(extrato.valor),
         }
@@ -9435,6 +9597,35 @@ def api_extrato(request):
     ]
 
     return JsonResponse({"extratos": extrato_list})
+
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import ContaBancaria, EscolaPdde
+
+@login_required
+def api_contas_bancarias(request, escola_id):
+    """Retorna as contas bancárias vinculadas a uma escola."""
+    try:
+        escola = EscolaPdde.objects.get(id=escola_id)
+    except EscolaPdde.DoesNotExist:
+        return JsonResponse({"erro": "Escola não encontrada."}, status=404)
+
+    contas = ContaBancaria.objects.filter(escola=escola).order_by("banco", "agencia")
+
+    contas_data = [
+        {
+            "id": conta.id,
+            "banco": conta.banco,
+            "agencia": conta.agencia,
+            "conta": conta.conta
+        }
+        for conta in contas
+    ]
+
+    return JsonResponse({"contas": contas_data})
+
+
 ###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect
@@ -9681,9 +9872,6 @@ def vincular_escola_programa(request):
 #         return JsonResponse({"error": "Escola não encontrada"}, status=404)
 ###***********************************************************************************************************************
 
-from django.http import JsonResponse
-from .models import Programa, EscolaPdde
-
 def get_programas_por_escola(request, escola_id):
     try:
         programas = Programa.objects.filter(escolas__id=escola_id).values('id', 'nome')
@@ -9693,31 +9881,27 @@ def get_programas_por_escola(request, escola_id):
 
 
 
+
 ###***********************************************************************************************************************
 
 from django.http import JsonResponse
 from .models import EscolaPdde, SemedAppEscolaPddeProgramas, Programa
 
 def listar_programas_por_escola(request, escola_id):
-    """
-    Retorna os programas cadastrados para uma determinada escola na tabela `semedapp_escolapdde`.
-    """
     try:
-        # Verifica se a escola realmente existe
         escola = EscolaPdde.objects.filter(id=escola_id).first()
         if not escola:
             return JsonResponse({"erro": "Escola não encontrada."}, status=404)
 
-        # Obtém os IDs dos programas vinculados à escola
         programas_ids = SemedAppEscolaPddeProgramas.objects.filter(escolapdde=escola).values_list("programa", flat=True).distinct()
 
-        # Obtém os nomes dos programas correspondentes
-        programas_nomes = list(Programa.objects.filter(id__in=programas_ids).values_list("nome", flat=True))
-
-        return JsonResponse({"programas": programas_nomes})
+        programas = Programa.objects.filter(id__in=programas_ids).values("id", "nome")
+        return JsonResponse({"programas": list(programas)})
 
     except Exception as e:
         return JsonResponse({"erro": f"Erro ao buscar programas: {str(e)}"}, status=500)
+
+
 ###***********************************************************************************************************************
 
 from django.http import JsonResponse
@@ -9764,63 +9948,63 @@ def get_dados_receita_despesa_pdde(request, escola_id):
 ###***********************************************************************************************************************    
 
 from django.http import JsonResponse
-from .models import Receita
+from django.db.models import Sum
 from decimal import Decimal
+from semedapp.models import ReceitaDespesa
+
+def formatar_br(valor):
+    try:
+        valor = Decimal(valor or 0).quantize(Decimal("0.01"))
+        return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+    except:
+        return "0,00"
 
 def get_dados_receita(request, escola_id):
-    """
-    Retorna os dados financeiros da escola selecionada para o PDDE, 
-    focando apenas nas receitas.
-    """
     try:
-        # 🔹 Busca a receita associada à escola
-        receita = Receita.objects.filter(escola_id=escola_id).first()
+        dados = ReceitaDespesa.objects.filter(
+            escola_id=escola_id,
+            periodo_execucao=2025,
+            tipo="receita"
+        ).aggregate(
+            saldo_anterior_custeio=Sum("saldo_anterior_custeio"),
+            saldo_anterior_capital=Sum("saldo_anterior_capital"),
+            valor_creditado_custeio=Sum("valor_creditado_custeio"),
+            valor_creditado_capital=Sum("valor_creditado_capital"),
+            recursos_proprios_custeio=Sum("recursos_proprios_custeio"),
+            recursos_proprios_capital=Sum("recursos_proprios_capital"),
+            rendimento_aplicacao_custeio=Sum("rendimento_aplicacao_custeio"),
+            rendimento_aplicacao_capital=Sum("rendimento_aplicacao_capital"),
+            devolucao_fnde_custeio=Sum("devolucao_fnde_custeio"),
+            devolucao_fnde_capital=Sum("devolucao_fnde_capital"),
+            saldo_devolvido_custeio=Sum("saldo_devolvido_custeio"),
+            saldo_devolvido_capital=Sum("saldo_devolvido_capital"),
+            valor_despesa_realizada_custeio=Sum("valor_despesa_realizada_custeio"),
+            valor_despesa_realizada_capital=Sum("valor_despesa_realizada_capital"),
+            saldo_reprogramar_custeio=Sum("saldo_reprogramar_custeio"),
+            saldo_reprogramar_capital=Sum("saldo_reprogramar_capital"),
+            escolas_atendidas=Sum("escolas_atendidas"),
+            total_receita=Sum("total_receita"),
+            total_despesa=Sum("total_despesa"),
+            saldo_disponivel=Sum("saldo_disponivel"),
+        )
 
-        # 🔹 Se não houver registros, retorna valores padrão (evita erro 404)
-        if not receita:
+        if not any(dados.values()):
             return JsonResponse({
                 "escola_id": escola_id,
-                "erro": "Nenhuma receita encontrada para essa escola",
-                "saldo_anterior_custeio": "0.00",
-                "saldo_anterior_capital": "0.00",
-                "valor_creditado_custeio": "0.00",
-                "valor_creditado_capital": "0.00",
-                "rendimento_aplicacao_custeio": "0.00",
-                "rendimento_aplicacao_capital": "0.00",
-                "valor_total_receita_custeio": "0.00",
-                "valor_total_receita_capital": "0.00",
-                "saldo_reprogramar_custeio": "0.00",
-                "saldo_reprogramar_capital": "0.00",
-                "saldo_devolvido_custeio": "0.00",
-                "saldo_devolvido_capital": "0.00",
-                "escolas_atendidas": 0
-            })
+                "erro": "Nenhuma receita encontrada para essa escola.",
+                **{campo: "0,00" for campo in dados.keys()}
+            }, status=404)
 
-        # 🔹 Retorna os dados da receita encontrada
-        data = {
-            "escola_id": receita.escola.id,
-            "programa": receita.programa,
-            "data_inicio": receita.data_inicio.strftime("%Y-%m-%d"),
-            "data_fim": receita.data_fim.strftime("%Y-%m-%d"),
-            "saldo_anterior_custeio": f"{receita.saldo_anterior_custeio:.2f}",
-            "saldo_anterior_capital": f"{receita.saldo_anterior_capital:.2f}",
-            "valor_creditado_custeio": f"{receita.valor_creditado_custeio:.2f}",
-            "valor_creditado_capital": f"{receita.valor_creditado_capital:.2f}",
-            "rendimento_aplicacao_custeio": f"{receita.rendimento_aplicacao_custeio:.2f}",
-            "rendimento_aplicacao_capital": f"{receita.rendimento_aplicacao_capital:.2f}",
-            "valor_total_receita_custeio": f"{receita.valor_total_receita_custeio:.2f}",
-            "valor_total_receita_capital": f"{receita.valor_total_receita_capital:.2f}",
-            "saldo_reprogramar_custeio": f"{receita.saldo_reprogramar_custeio:.2f}",
-            "saldo_reprogramar_capital": f"{receita.saldo_reprogramar_capital:.2f}",
-            "saldo_devolvido_custeio": f"{receita.saldo_devolvido_custeio:.2f}",
-            "saldo_devolvido_capital": f"{receita.saldo_devolvido_capital:.2f}",
-            "escolas_atendidas": receita.escolas_atendidas
+        resposta = {
+            "escola_id": escola_id,
+            **{campo: formatar_br(valor) for campo, valor in dados.items()}
         }
 
-        return JsonResponse(data)
+        return JsonResponse(resposta)
 
     except Exception as e:
         return JsonResponse({"erro": f"Erro ao buscar dados de receita: {str(e)}"}, status=500)
+
 ###***********************************************************************************************************************
 
 from django.http import JsonResponse
@@ -10032,8 +10216,9 @@ def pesquisa_precos(request):
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.db.models import Q
 from .models import Item, Categoria, Subcategoria
-from semedapp.models import EscolaPdde  # ou ajuste conforme o local
+from semedapp.models import EscolaPdde, Programa  # ✅ Inclui Programa
 
 @login_required
 def cadastrar_item(request):
@@ -10048,17 +10233,22 @@ def cadastrar_item(request):
             Q(coordenador=user) | Q(id__in=user.escolas.values_list('id', flat=True))
         ).distinct()
 
+    # programas = Programa.objects.all()  # ✅ Carrega programas para o select
+
     if request.method == "POST":
         nome = request.POST.get("nome")
         descricao = request.POST.get("descricao")
         unidade_medida = request.POST.get("unidade_medida")
         categoria_id = request.POST.get("categoria")
         subcategoria_id = request.POST.get("subcategoria")
+        escola_id = request.POST.get("escola")
+        programa_id = request.POST.get("programa")  # ✅ Programa opcional
 
         try:
             categoria = Categoria.objects.get(id=categoria_id)
             subcategoria = Subcategoria.objects.get(id=subcategoria_id)
-            escola = escolas_vinculadas.first()
+            escola = EscolaPdde.objects.get(id=escola_id)
+            programa = Programa.objects.get(id=programa_id) if programa_id else None
 
             if nome and unidade_medida and categoria and subcategoria and escola:
                 Item.objects.create(
@@ -10068,20 +10258,23 @@ def cadastrar_item(request):
                     categoria=categoria,
                     subcategoria=subcategoria,
                     escola=escola,
-                    usuario=user  # ✅ necessário para filtragem posterior
+                    programa=programa,
+                    usuario=user
                 )
                 return JsonResponse({"success": True})
 
             return JsonResponse({"success": False, "error": "Campos obrigatórios ausentes."})
 
-        except (Categoria.DoesNotExist, Subcategoria.DoesNotExist):
-            return JsonResponse({"success": False, "error": "Categoria ou Subcategoria inválida."})
-
+        except (Categoria.DoesNotExist, Subcategoria.DoesNotExist, EscolaPdde.DoesNotExist, Programa.DoesNotExist):
+            return JsonResponse({"success": False, "error": "Categoria, Subcategoria, Escola ou Programa inválido."})
 
     # GET padrão
     return render(request, "pesquisa_precos/cadastrar_item.html", {
-        "categorias": categorias
+        "categorias": categorias,
+        "escolas_vinculadas": escolas_vinculadas,
+        # "programas": programas,  # ✅ Passa programas para o template
     })
+
 
 
 ###***********************************************************************************************************************
@@ -13478,6 +13671,7 @@ def relatorio_saida_matematica_view(request):
             return response
     finally:
         os.remove(path)
+###***********************************************************************************************************************
 
 from django.http import JsonResponse
 
@@ -13502,13 +13696,10 @@ def get_sintese_dinamica(request):
     )
 
     return JsonResponse(dados)
-
-
+###***********************************************************************************************************************
 
 def sintese_pdde_view(request):
     return render(request, 'pdde/sintese_pdde.html')
-
-
 
 ###***********************************************************************************************************************
 ###*************************AUTENTICAÇÃO DOIS FATORES ********************************************************************
@@ -13555,8 +13746,7 @@ def login_ajax_view(request):
         else:
             cache.set(cache_key, fails + 1, timeout=900)  # 15 minutos
             return JsonResponse({'status': 'erro', 'mensagem': 'Usuário ou senha inválido.'})
-
-
+###***********************************************************************************************************************
 
 User = get_user_model()
 
@@ -13595,9 +13785,11 @@ class RecuperarSenhaView(auth_views.PasswordResetView):
     email_template_name = 'senha/email.html'
     subject_template_name = 'senha/assunto.txt'
     success_url = '/senha/email-enviado/'
+###***********************************************************************************************************************
 
 class EmailEnviadoView(auth_views.PasswordResetDoneView):
     template_name = 'senha/enviado.html'
+###***********************************************************************************************************************
 
 class ResetarSenhaView(PasswordResetConfirmView):
     template_name = 'senha/resetar.html'
@@ -13607,9 +13799,11 @@ class ResetarSenhaView(PasswordResetConfirmView):
         if request.user.is_authenticated:
             logout(request)  # Destroi a sessão ativa, se existir
         return super().dispatch(request, *args, **kwargs)
+###***********************************************************************************************************************
 
 class ConcluidoView(auth_views.PasswordResetCompleteView):
     template_name = 'senha/concluido.html'
+###***********************************************************************************************************************
 
 def recuperar_senha_ajax(request):
     if request.method == 'POST':
@@ -13657,6 +13851,7 @@ def recuperar_senha_ajax(request):
             return JsonResponse({'success': False, 'error': f'Erro interno: {str(e)}'})
 
     return JsonResponse({'success': False, 'error': 'Método inválido.'})
+###***********************************************************************************************************************
 
 from django.contrib.auth.tokens import default_token_generator
 from django.views.generic import FormView
@@ -13692,7 +13887,7 @@ class ResetarSenhaCandidatoView(FormView):
     def form_valid(self, form):
         form.save()
         return super().form_valid(form)
-
+###***********************************************************************************************************************
 from django.views.generic import TemplateView
 
 class ConcluidoSenhaCandidatoView(TemplateView):
@@ -13775,8 +13970,7 @@ def portal_view(request):
     return render(request, 'institucional/index.html', {
         'noticias': noticias
     })
-
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
@@ -13791,8 +13985,7 @@ def escola_pdde_dashboard(request):
 
     escola = request.user.escola
     return render(request, 'pdde/escola_dashboard.html', {'escola': escola})
-
-
+###***********************************************************************************************************************
 
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -13813,10 +14006,8 @@ def trocar_escola(request):
         form = TrocarEscolaForm(initial={'nova_escola': request.user.escola})
 
     return render(request, 'pdde/trocar_escola.html', {'form': form})
-
+###***********************************************************************************************************************
     
-
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -13843,7 +14034,7 @@ def pdde_dashboard_view(request):
     }
 
     return render(request, 'contabilidade/pdde.html', context)
-
+###***********************************************************************************************************************
 
 from django.shortcuts import render
 from .models import EscolaPdde
@@ -13859,7 +14050,7 @@ def demonstrativo_pdde_view(request):
     return render(request, 'contabilidade/demonstrativo_pdde.html', {
         'escolas': escolas,
     })
-
+###***********************************************************************************************************************
 
 from .models import EscolaPdde
 
@@ -13870,9 +14061,7 @@ def extrato_bancario(request):
         escolas = EscolaPdde.objects.filter(coordenador=request.user)
 
     return render(request, "conciliacao/conciliacao_extrato.html", {"escolas": escolas})
-
-
-
+###***********************************************************************************************************************
 
 from django.http import JsonResponse
 from .models import Diretoria
@@ -13886,3 +14075,435 @@ def get_dirigente_por_escola(request, escola_id):
             return JsonResponse({"nome_dirigente": ""})  # vazio, para limpar campo se não houver
     except Exception as e:
         return JsonResponse({"erro": str(e)}, status=500)
+###***********************************************************************************************************************
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Programa
+from django.utils.dateparse import parse_date
+
+def adicionar_programa_pdde(request):
+    if request.method == "POST":
+        nome = request.POST.get("nome", "").strip()
+        descricao = request.POST.get("descricao", "").strip()
+        resolucao = request.POST.get("resolucao", "").strip()
+        data_inicio = parse_date(request.POST.get("data_inicio", ""))
+        data_fim = parse_date(request.POST.get("data_fim", ""))
+
+        if not nome:
+            messages.error(request, "⚠️ O nome do programa é obrigatório.")
+            return redirect("adicionar_programa_pdde")
+        
+        programa = Programa.objects.create(
+            nome=nome,
+            descricao=descricao,
+            resolucao=resolucao,
+            data_inicio=data_inicio,
+            data_fim=data_fim
+        )
+
+        messages.success(request, f"✅ Programa '{nome}' cadastrado com sucesso!")
+        return redirect("adicionar_programa_pdde")
+
+    return render(request, "pdde/adicionar_programa_pdde.html")
+
+################################################################################################################################
+################################################################################################################################
+##################################################PATRIMÔNIO####################################################################
+################################################################################################################################
+
+from .models import Fornecedor
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Fornecedor, NotaFiscal, Contrato, Localizacao, Patrimonio
+from django.views.decorators.csrf import csrf_exempt
+from .models import Contrato, Fornecedor
+from django.http import HttpResponseRedirect
+from .models import Localizacao, EscolaPdde
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+
+@csrf_exempt
+def fornecedores_lista(request):
+    if request.method == 'POST':
+        nome = request.POST.get('nome')
+        cnpj = request.POST.get('cnpj')
+        telefone = request.POST.get('telefone')
+        email = request.POST.get('email')
+        endereco = request.POST.get('endereco')
+
+        Fornecedor.objects.create(
+            nome=nome,
+            cnpj=cnpj,
+            telefone=telefone,
+            email=email,
+            endereco=endereco
+        )
+
+        # Armazena uma flag de sucesso na sessão
+        request.session['sucesso'] = True
+        return redirect('fornecedores_lista')
+
+    # Recupera e remove a flag de sucesso da sessão
+    sucesso = request.session.pop('sucesso', False)
+
+    fornecedores = Fornecedor.objects.all()
+    return render(request, 'patrimonio/fornecedor_lista.html', {
+        'fornecedores': fornecedores,
+        'sucesso': sucesso
+    })
+###***********************************************************************************************************************
+
+# Visualizar
+def fornecedor_detalhe(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+    return render(request, 'patrimonio/fornecedor_detalhe.html', {'fornecedor': fornecedor})
+###***********************************************************************************************************************
+
+# Editar
+def fornecedor_editar(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+
+    if request.method == 'POST':
+        fornecedor.nome = request.POST.get('nome')
+        fornecedor.cnpj = request.POST.get('cnpj')
+        fornecedor.telefone = request.POST.get('telefone')
+        fornecedor.email = request.POST.get('email')
+        fornecedor.endereco = request.POST.get('endereco')
+        fornecedor.save()
+        return redirect('fornecedores_lista')
+
+    return render(request, 'patrimonio/fornecedor_editar.html', {'fornecedor': fornecedor})
+###***********************************************************************************************************************
+
+# Excluir
+def fornecedor_excluir(request, id):
+    fornecedor = get_object_or_404(Fornecedor, id=id)
+    fornecedor.delete()
+    return redirect('fornecedores_lista')
+###***********************************************************************************************************************
+
+# NOTA FISCAL
+@csrf_exempt
+def notas_fiscais_lista(request):
+    if request.method == 'POST':
+        NotaFiscal.objects.create(
+            numero=request.POST.get('numero'),
+            data_emissao=request.POST.get('data_emissao'),
+            valor_total=request.POST.get('valor_total'),
+            fornecedor_id=request.POST.get('fornecedor_id')
+        )
+        request.session['sucesso'] = True
+        return redirect('notas_fiscais_lista')
+
+    sucesso = request.session.pop('sucesso', False)
+    notas = NotaFiscal.objects.all()
+    fornecedores = Fornecedor.objects.all()
+    return render(request, 'patrimonio/nf_lista.html', {
+        'notas': notas,
+        'fornecedores': fornecedores,
+        'sucesso': sucesso
+    })
+###***********************************************************************************************************************
+
+def nota_detalhe(request, id):
+    nota = get_object_or_404(NotaFiscal, id=id)
+    return render(request, 'patrimonio/nf_detalhe.html', {'nota': nota})
+###***********************************************************************************************************************
+
+def notas_lista(request):
+    notas = NotaFiscal.objects.all()
+    return render(request, 'patrimonio/nf_lista.html', {'notas': notas})
+###***********************************************************************************************************************
+
+@csrf_exempt
+def nota_editar(request, id):
+    nota = get_object_or_404(NotaFiscal, id=id)
+    if request.method == 'POST':
+        nota.numero = request.POST.get('numero')
+        nota.data_emissao = request.POST.get('data_emissao')
+        nota.valor_total = request.POST.get('valor_total')
+        nota.fornecedor_id = request.POST.get('fornecedor_id')
+        nota.save()
+        request.session['sucesso'] = True
+        return redirect('notas_fiscais_lista')
+
+    fornecedores = Fornecedor.objects.all()
+    return render(request, 'patrimonio/nf_editar.html', {
+        'nota': nota,
+        'fornecedores': fornecedores
+    })
+###***********************************************************************************************************************
+
+def nota_excluir(request, id):
+    nota = get_object_or_404(NotaFiscal, id=id)
+    nota.delete()
+    request.session['sucesso'] = True
+    return redirect('notas_fiscais_lista')
+###***********************************************************************************************************************
+
+# CONTRATO
+@csrf_exempt
+def contratos_lista(request):
+    if request.method == 'POST':
+        numero = request.POST.get('numero')
+        objeto = request.POST.get('objeto')
+        data_inicio = request.POST.get('data_inicio')
+        data_fim = request.POST.get('data_fim') or None
+        fornecedor_id = request.POST.get('fornecedor_id')
+
+        # Criação do contrato
+        Contrato.objects.create(
+            numero=numero,
+            objeto=objeto,
+            data_inicio=data_inicio,
+            data_fim=data_fim,
+            fornecedor_id=fornecedor_id
+        )
+
+        # Usa o sistema de mensagens do Django
+        messages.success(request, 'Contrato cadastrado com sucesso!')
+        return redirect('contratos_lista')  # Use o nome correto da URL
+
+    contratos = Contrato.objects.all()
+    fornecedores = Fornecedor.objects.all()
+
+    return render(request, 'patrimonio/contrato_lista.html', {
+        'contratos': contratos,
+        'fornecedores': fornecedores
+    })
+###***********************************************************************************************************************
+
+def contrato_detalhe(request, pk):
+    contrato = get_object_or_404(Contrato, pk=pk)
+    return render(request, 'patrimonio/contrato_detalhe.html', {'contrato': contrato})
+###***********************************************************************************************************************
+
+def contrato_editar(request, pk):
+    contrato = get_object_or_404(Contrato, pk=pk)
+    fornecedores = Fornecedor.objects.all()
+
+    if request.method == 'POST':
+        contrato.numero = request.POST.get('numero')
+        contrato.objeto = request.POST.get('objeto')
+        contrato.data_inicio = request.POST.get('data_inicio')
+        contrato.data_fim = request.POST.get('data_fim') or None
+        contrato.fornecedor_id = request.POST.get('fornecedor_id')
+        contrato.save()
+        return redirect('contratos_lista')
+
+    return render(request, 'patrimonio/contrato_editar.html', {
+        'contrato': contrato,
+        'fornecedores': fornecedores
+    })
+###***********************************************************************************************************************
+
+def contrato_excluir(request, pk):
+    contrato = get_object_or_404(Contrato, pk=pk)
+    contrato.delete()
+    return redirect('contratos_lista')
+###***********************************************************************************************************************
+
+# LOCALIZACAO
+# LISTA E CADASTRA LOCALIZAÇÃO
+@login_required
+def localizacoes_lista(request):
+    user = request.user
+
+    # Cadastrar nova localização
+    if request.method == 'POST':
+        Localizacao.objects.create(
+            escola_pdde_id=request.POST.get('escola_id'),  # campo correto no model
+            nome=request.POST.get('nome'),
+            descricao=request.POST.get('descricao')
+        )
+        return redirect('/banco-curriculos/localizacoes/?sucesso=1')
+
+    # Lista escolas e localizações conforme o perfil
+    if user.is_superuser:
+        escolas = EscolaPdde.objects.all().order_by('nome')
+        locais = Localizacao.objects.select_related('escola_pdde').all().order_by('escola_pdde__nome', 'nome')
+    else:
+        escolas = EscolaPdde.objects.filter(coordenador=user).order_by('nome')
+        locais = Localizacao.objects.filter(escola_pdde__in=escolas).order_by('escola_pdde__nome', 'nome')
+
+    sucesso = request.GET.get('sucesso') == '1'
+
+    return render(request, 'patrimonio/localizacao_lista.html', {
+        'locais': locais,
+        'escolas': escolas,
+        'sucesso': sucesso
+    })
+###***********************************************************************************************************************
+
+# DETALHE
+def localizacao_detalhe(request, id):
+    local = get_object_or_404(Localizacao, id=id)
+    return render(request, 'patrimonio/localizacao_detalhe.html', {'local': local})
+###***********************************************************************************************************************
+
+# EDITAR
+def localizacao_editar(request, id):
+    local = get_object_or_404(Localizacao, id=id)
+    escolas = EscolaPdde.objects.all()
+
+    if request.method == 'POST':
+        local.escola_pdde_id = request.POST.get('escola_id')  # corrigido
+        local.nome = request.POST.get('nome')
+        local.descricao = request.POST.get('descricao')
+        local.save()
+        messages.success(request, 'Localização atualizada com sucesso!')
+        return redirect('localizacoes_lista')
+
+    return render(request, 'patrimonio/localizacao_editar.html', {'local': local, 'escolas': escolas})
+###***********************************************************************************************************************
+
+# EXCLUIR
+def localizacao_excluir(request, id):
+    local = get_object_or_404(Localizacao, id=id)
+    local.delete()
+    messages.success(request, 'Localização excluída com sucesso!')
+    return redirect('localizacoes_lista')
+###***********************************************************************************************************************
+
+# PATRIMÔNIO
+@csrf_exempt
+def patrimonio_lista(request):  # <-- nome da view agora é 'patrimonio_lista'
+    if request.method == 'POST':
+        Patrimonio.objects.create(
+            tombo=request.POST.get('tombo'),
+            descricao=request.POST.get('descricao'),
+            data_aquisicao=request.POST.get('data_aquisicao'),
+            valor=request.POST.get('valor'),
+            nota_fiscal_id=request.POST.get('nota_fiscal_id') or None,
+            contrato_id=request.POST.get('contrato_id') or None,
+            localizacao_id=request.POST.get('localizacao_id'),
+            status=request.POST.get('status')
+        )
+        return redirect('patrimonio_lista')  # correto agora
+
+    patrimonios = Patrimonio.objects.all()
+    notas = NotaFiscal.objects.all()
+    contratos = Contrato.objects.all()
+    locais = Localizacao.objects.all()
+    return render(request, 'patrimonio/patrimonio_lista.html', {
+        'patrimonios': patrimonios,
+        'notas': notas,
+        'contratos': contratos,
+        'locais': locais
+    })
+###***********************************************************************************************************************
+
+def patrimonio_detalhe(request, id):
+    patrimonio = get_object_or_404(Patrimonio, id=id)
+    return render(request, 'patrimonio/patrimonio_detalhe.html', {'p': patrimonio})
+###***********************************************************************************************************************
+
+def patrimonio_editar(request, id):
+    patrimonio = get_object_or_404(Patrimonio, id=id)
+    if request.method == 'POST':
+        patrimonio.tombo = request.POST.get('tombo')
+        patrimonio.descricao = request.POST.get('descricao')
+        patrimonio.data_aquisicao = request.POST.get('data_aquisicao')
+        patrimonio.valor = request.POST.get('valor')
+        patrimonio.nota_fiscal_id = request.POST.get('nota_fiscal_id') or None
+        patrimonio.contrato_id = request.POST.get('contrato_id') or None
+        patrimonio.localizacao_id = request.POST.get('localizacao_id')
+        patrimonio.status = request.POST.get('status')
+        patrimonio.save()
+        messages.success(request, 'Bem patrimonial atualizado com sucesso!')
+        return redirect('patrimonio_lista')
+
+    notas = NotaFiscal.objects.all()
+    contratos = Contrato.objects.all()
+    locais = Localizacao.objects.all()
+
+    return render(request, 'patrimonio/patrimonio_editar.html', {
+        'p': patrimonio,
+        'notas': notas,
+        'contratos': contratos,
+        'locais': locais,
+    })
+###***********************************************************************************************************************
+
+def patrimonio_excluir(request, id):
+    patrimonio = get_object_or_404(Patrimonio, id=id)
+    patrimonio.delete()
+    messages.success(request, 'Bem patrimonial excluído com sucesso!')
+    return redirect('patrimonio_lista')
+###***********************************************************************************************************************
+
+# views.py
+from django.db.models import Count, Sum
+from .models import Patrimonio, Movimentacao, Localizacao
+
+def dashboard_patrimonio(request):
+    total_bens = Patrimonio.objects.count()
+    bens_por_local = Localizacao.objects.annotate(qtd=Count('patrimonio')).order_by('-qtd')
+    total_movimentacoes = Movimentacao.objects.count()
+
+    return render(request, 'patrimonio/dashboard.html', {
+        'total_bens': total_bens,
+        'bens_por_local': bens_por_local,
+        'total_movimentacoes': total_movimentacoes
+    })
+###***********************************************************************************************************************
+
+from django.shortcuts import render
+from .models import Patrimonio, Localizacao, EscolaPdde
+from weasyprint import HTML
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+
+def relatorios_patrimonio(request):
+    local_id = request.GET.get('local')
+    escola_id = request.GET.get('escola')
+    exportar = request.GET.get('exportar')
+
+    bens = Patrimonio.objects.select_related("localizacao", "nota_fiscal", "contrato", "localizacao__escola_pdde")
+    locais = Localizacao.objects.all()
+    escolas = EscolaPdde.objects.all()
+
+    nome_local = None
+    nome_escola = None
+
+    if local_id and local_id.isdigit():
+        bens = bens.filter(localizacao_id=int(local_id))
+        try:
+            nome_local = Localizacao.objects.get(id=local_id).nome
+        except Localizacao.DoesNotExist:
+            nome_local = "Desconhecida"
+
+    if escola_id and escola_id.isdigit():
+        bens = bens.filter(localizacao__escola_pdde_id=int(escola_id))
+        try:
+            nome_escola = EscolaPdde.objects.get(id=escola_id).nome
+        except EscolaPdde.DoesNotExist:
+            nome_escola = "Desconhecida"
+
+    if exportar == 'pdf':
+        html_string = render_to_string("patrimonio/pdf_relatorio.html", {
+            "bens": bens,
+            "nome_local": nome_local,
+            "nome_escola": nome_escola,
+        })
+        html = HTML(string=html_string)
+        result = html.write_pdf()
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = 'inline; filename="relatorio_patrimonio.pdf"'
+        response.write(result)
+        return response
+
+    return render(request, "patrimonio/relatorios.html", {
+        "bens": bens,
+        "locais": locais,
+        "escolas": escolas,
+        "local_id": int(local_id) if local_id and local_id.isdigit() else None,
+        "escola_id": int(escola_id) if escola_id and escola_id.isdigit() else None,
+        "nome_local": nome_local,
+        "nome_escola": nome_escola,
+    })
+
+################################################################################################################################
+####################################################FIM#########################################################################
+##################################################PATRIMÔNIO####################################################################
+################################################################################################################################

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Editar Patrimônio{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="mb-4 text-warning text-center">
+    <i class="fas fa-edit me-2"></i> Editar Bem Patrimonial
+  </h2>
+
+  <form method="post" class="card p-4 shadow-sm mb-4">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-3">
+        <input type="text" name="tombo" value="{{ p.tombo }}" class="form-control" required placeholder="Tombo">
+      </div>
+      <div class="col-md-9">
+        <input type="text" name="descricao" value="{{ p.descricao }}" class="form-control" required placeholder="Descrição do Bem">
+      </div>
+
+      <div class="col-md-3">
+        <input type="date" name="data_aquisicao" value="{{ p.data_aquisicao|date:'Y-m-d' }}" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <input type="number" step="0.01" name="valor" value="{{ p.valor }}" class="form-control" required placeholder="Valor (R$)">
+      </div>
+
+      <div class="col-md-3">
+        <select name="nota_fiscal_id" class="form-control">
+          <option value="">-- Nota Fiscal --</option>
+          {% for nf in notas %}
+          <option value="{{ nf.id }}" {% if p.nota_fiscal_id == nf.id %}selected{% endif %}>NF {{ nf.numero }} - {{ nf.fornecedor.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select name="contrato_id" class="form-control">
+          <option value="">-- Contrato --</option>
+          {% for c in contratos %}
+          <option value="{{ c.id }}" {% if p.contrato_id == c.id %}selected{% endif %}>Contrato {{ c.numero }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-6">
+        <select name="localizacao_id" class="form-control" required>
+          <option value="">-- Localização --</option>
+          {% for l in locais %}
+          <option value="{{ l.id }}" {% if p.localizacao_id == l.id %}selected{% endif %}>{{ l.escola }} - {{ l.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3">
+        <select name="status" class="form-control" required>
+          <option value="ativo" {% if p.status == 'ativo' %}selected{% endif %}>Ativo</option>
+          <option value="transferido" {% if p.status == 'transferido' %}selected{% endif %}>Transferido</option>
+          <option value="baixado" {% if p.status == 'baixado' %}selected{% endif %}>Baixado</option>
+        </select>
+      </div>
+
+      <div class="col-md-3 d-grid">
+        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+      </div>
+    </div>
+  </form>
+
+  <div class="text-end">
+    <a href="{% url 'patrimonio_lista' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+</div>
+{% endblock %}

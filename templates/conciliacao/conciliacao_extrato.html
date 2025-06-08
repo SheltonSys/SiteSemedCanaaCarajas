@@ -10,10 +10,8 @@
             <h1 class="display-4 text-primary font-weight-bold">📄 Extrato Bancário</h1>
             <p class="text-muted">Visualize os lançamentos bancários registrados no sistema.</p>
         </div>
-
         <!-- <p>DEBUG ESCOLAS: {{ escolas|length }}</p> -->
-
-
+         
         <!-- Formulário de Seleção -->
         <div class="card shadow-lg border-0">
             <div class="card-header bg-gradient-primary text-white">
@@ -82,7 +80,15 @@
                         <tbody id="tabela-extrato">
                             <tr><td colspan="6" class="text-center text-muted">Selecione uma escola e conta para visualizar os extratos.</td></tr>
                         </tbody>
+                        <tfoot>
+                            <tr class="bg-light fw-bold">
+                                <td colspan="5" class="text-end">💰 <strong>Saldo Final:</strong></td>
+                                <td id="saldo-final" class="text-end text-primary fw-bold">R$ 0,00</td>
+                            </tr>
+                        </tfoot>
                     </table>
+
+
                 </div>
             </div>
         </div>
@@ -97,14 +103,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const escolaEl = document.getElementById("escola");
     const contaSelect = document.getElementById("conta_bancaria");
 
-    const isEscolaUnica = escolaEl.tagName === "INPUT";
+    const isEscolaUnica = escolaEl && escolaEl.tagName === "INPUT";
 
     function carregarContas(escolaId) {
+        if (!escolaId) return;
+
+        contaSelect.innerHTML = `<option selected disabled>Carregando contas...</option>`;
+
         fetch(`/api/contas/${escolaId}/`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao buscar contas.");
+                }
+                return response.json();
+            })
             .then(data => {
                 contaSelect.innerHTML = '<option value="" selected disabled>Selecione uma conta</option>';
-                const contasSet = new Set(); // evita duplicatas
+                const contasSet = new Set();
                 data.contas.forEach(conta => {
                     const chave = `${conta.banco}|${conta.agencia}|${conta.conta}`;
                     if (!contasSet.has(chave)) {
@@ -112,6 +127,10 @@ document.addEventListener("DOMContentLoaded", function () {
                         contaSelect.innerHTML += `<option value="${conta.id}">${conta.banco} - Ag: ${conta.agencia} - Conta: ${conta.conta}</option>`;
                     }
                 });
+
+                if (data.contas.length === 0) {
+                    contaSelect.innerHTML = `<option value="" disabled selected>Nenhuma conta disponível</option>`;
+                }
             })
             .catch(error => {
                 console.error("Erro ao carregar contas bancárias:", error);
@@ -119,11 +138,93 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     }
 
-    // 🚀 Se for uma escola única, já carrega as contas
-    if (isEscolaUnica) {
+    function buscarExtrato(escolaId, contaId) {
+        tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Carregando extrato...</td></tr>`;
+
+        fetch(`/api/extrato/?escola=${encodeURIComponent(escolaId)}&conta=${encodeURIComponent(contaId)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Erro ao buscar extrato.");
+                }
+                return response.json();
+            })
+            .then(data => {
+                tabelaExtrato.innerHTML = "";
+
+                let totalCreditos = 0;
+                let totalDebitos = 0;
+
+                if (data.extratos && data.extratos.length > 0) {
+                    data.extratos.forEach(extrato => {
+                        const valor = typeof extrato.valor === "string"
+                        ? parseFloat(
+                            extrato.valor
+                                .replace(/\./g, '')
+                                .replace(',', '.')
+                                .replace(/[^\d.-]/g, '')
+                        ) || 0
+                        : parseFloat(extrato.valor) || 0;
+
+
+
+                        if (extrato.tipo === 'Crédito') {
+                            totalCreditos += valor;
+                        } else if (extrato.tipo === 'Débito') {
+                            totalDebitos += valor;
+                        }
+
+                        const valorFormatado = valor.toLocaleString('pt-BR', {
+                            style: 'currency',
+                            currency: 'BRL'
+                        });
+
+                        tabelaExtrato.innerHTML += `
+                            <tr>
+                                <td>${extrato.data}</td>
+                                <td>${extrato.descricao}</td>
+                                <td>${extrato.escola}</td>
+                                <td>${extrato.conta_bancaria}</td>
+                                <td>${extrato.tipo}</td>
+                                <td class="text-end">${valorFormatado}</td>
+                            </tr>
+                        `;
+                    });
+
+                    const saldo = totalCreditos - totalDebitos;
+                    const saldoFormatado = saldo.toLocaleString('pt-BR', {
+                        style: 'currency',
+                        currency: 'BRL'
+                    });
+
+                    const saldoEl = document.getElementById("saldo-final");
+                    saldoEl.textContent = saldoFormatado;
+                    saldoEl.classList.remove("text-danger", "text-success");
+
+                    if (saldo > 0) {
+                        saldoEl.classList.add("text-success");
+                    } else if (saldo < 0) {
+                        saldoEl.classList.add("text-danger");
+                    }
+
+                } else {
+                    tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhum extrato encontrado.</td></tr>`;
+                    document.getElementById("saldo-final").textContent = "R$ 0,00";
+                }
+            })
+
+            .catch(error => {
+                console.error("Erro ao buscar extratos:", error);
+                tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erro ao carregar os dados.</td></tr>`;
+            });
+    }
+
+    // 🚀 Carregamento automático das contas se houver apenas uma escola
+    if (isEscolaUnica && escolaEl.value) {
         carregarContas(escolaEl.value);
-    } else {
-        // Carrega as contas ao mudar a escola
+    }
+
+    // 🔄 Evento de troca da escola
+    if (!isEscolaUnica && escolaEl) {
         escolaEl.addEventListener("change", function () {
             if (this.value) {
                 carregarContas(this.value);
@@ -139,41 +240,15 @@ document.addEventListener("DOMContentLoaded", function () {
         const contaId = contaSelect.value;
 
         if (!escolaId || !contaId) {
-            alert("Selecione uma escola e uma conta para continuar.");
+            alert("Selecione uma escola e uma conta bancária.");
             return;
         }
 
-        tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Carregando...</td></tr>`;
-
-        fetch(`/api/extrato/?escola=${encodeURIComponent(escolaId)}&conta=${encodeURIComponent(contaId)}`)
-            .then(response => response.json())
-            .then(data => {
-                tabelaExtrato.innerHTML = "";
-
-                if (data.extratos.length > 0) {
-                    data.extratos.forEach(extrato => {
-                        let row = `
-                        <tr>
-                            <td>${extrato.data}</td>
-                            <td>${extrato.descricao}</td>
-                            <td>${extrato.escola}</td>
-                            <td>${extrato.conta_bancaria}</td>
-                            <td>${extrato.tipo}</td>
-                            <td class="text-end">R$ ${parseFloat(extrato.valor).toFixed(2).replace('.', ',')}</td>
-                        </tr>`;
-                        tabelaExtrato.innerHTML += row;
-                    });
-                } else {
-                    tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Nenhum extrato encontrado.</td></tr>`;
-                }
-            })
-            .catch(error => {
-                console.error("Erro ao buscar extratos:", error);
-                tabelaExtrato.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Erro ao carregar os dados.</td></tr>`;
-            });
+        buscarExtrato(escolaId, contaId);
     });
 });
 </script>
+
 
 
 

@@ -4,16 +4,85 @@
     <meta charset="UTF-8">
     <title>Relatório de Ocorrências Synaptic</title>
     <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #f4f4f4; }
-        h2 { text-align: center; color: #333; }
-        .status-resolvida { background-color: #28a745; color: white; padding: 5px; border-radius: 3px; }
-        .status-pendente { background-color: #ffc107; color: black; padding: 5px; border-radius: 3px; }
-        .status-em-analise { background-color: #dc3545; color: white; padding: 5px; border-radius: 3px; }
-        .status-outros { background-color: #6c757d; color: white; padding: 5px; border-radius: 3px; }
-    </style>
+    body {
+        font-family: Arial, sans-serif;
+        font-size: 11px;
+        color: #333;
+        margin: 0;
+        padding: 0;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        table-layout: fixed;
+    }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        text-align: left;
+        vertical-align: top;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+        font-size: 11px;
+        color: #333;
+    }
+
+    /* Ajuste das larguras fixas para manter as colunas corretas */
+    th:nth-child(1), td:nth-child(1) { width: 150px; }  /* Unidade */
+    th:nth-child(2), td:nth-child(2) { width: 60px; }   /* Ano */
+    th:nth-child(3), td:nth-child(3) { width: 100px; }  /* Turma */
+    th:nth-child(4), td:nth-child(4) { width: 90px; }   /* Classificação */
+    th:nth-child(5), td:nth-child(5) { width: 120px; }  /* Tipo */
+    th:nth-child(6), td:nth-child(6) { width: 110px; }  /* Data */
+    th:nth-child(7), td:nth-child(7) { width: 80px; }   /* Status */
+
+    h2 {
+        text-align: center;
+        font-size: 16px;
+        color: #333;
+        margin-top: 10px;
+    }
+    p {
+        text-align: center;
+        margin: 5px 0 15px 0;
+        font-size: 12px;
+    }
+
+    .status-resolvida {
+        background-color: #28a745;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 10px;
+    }
+    .status-pendente {
+        background-color: #ffc107;
+        color: black;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 10px;
+    }
+    .status-em-analise {
+        background-color: #dc3545;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 10px;
+    }
+    .status-outros {
+        background-color: #6c757d;
+        color: white;
+        padding: 2px 5px;
+        border-radius: 3px;
+        font-size: 10px;
+    }
+</style>
+
 </head>
 <body>
     <h2>📊 Relatório de Ocorrências Synaptic</h2>
@@ -22,12 +91,12 @@
     <table>
         <thead>
             <tr>
-                <th>Unidade de Ensino</th>
-                <th>Ano/Série</th>
+                <th>Escola</th>
+                <th>Ano</th>
                 <th>Turma</th>
                 <th>Classificação</th>
                 <th>Tipo</th>
-                <th>Data do Registro</th>
+                <th>Registro</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -35,7 +104,7 @@
             {% for registro in registros %}
             <tr>
                 <td>{{ registro.nome_unidade_ensino }}</td>
-                <td>{{ registro.ano_serie }}</td>
+                <td>{{ registro.ano }}</td>
                 <td>{{ registro.nome_turma }}</td>
                 <td>{{ registro.classificacao_nome }}</td>
                 <td>{{ registro.tipo_ocorrencia_nome }}</td>

@@ -4,17 +4,46 @@
 
 {% load static %}
 
+
 {% block content %}
+
+
 
 
 <div class="content-wrapper" style="margin-left: 0; padding: 20px;">
     <div class="container-fluid">
 
         <!-- Cabeçalho -->
-        <div class="text-center mb-4">
-            <h1 class="display-4 text-primary font-weight-bold">Lançar Receita - PDDE</h1>
-            <p class="text-muted">Registre os valores de receita de uma escola no programa PDDE.</p>
-        </div>
+        <div class="text-center mb-4" style="
+  background-color: #f0f4f8;
+  padding: 20px;
+  border-radius: 10px;
+  border: 1px solid #dbe2ea;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+">
+  <h1 class="display-4" style="
+    font-weight: 600;
+    font-size: 4rem;
+    color: #0d6efd;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  ">
+    <i class="fas fa-chart-line" style="color: #198754;"></i> 
+    Lançar Receita - PDDE
+  </h1>
+
+  <p class="text-muted" style="
+    color: #6c757d;
+    font-size: 2rem;
+    margin: 0;
+  ">Registre os valores de receita de uma escola no programa PDDE.</p>
+</div>
+
 
         <!-- Alertas -->
         {% if messages %}
@@ -44,54 +73,68 @@
 
             </div>
 
-            <div class="card-body bg-light">
-                <form method="POST" id="form-pdde-receita">
-                    {% csrf_token %}
-                    <div class="row">
-
-                        {% if escolas|length == 1 %}
-                        <div class="col-md-3">
-                            <label for="escola-select" class="form-label">Selecionar Escola:</label>
-                            <input type="hidden" id="escola-select" name="escola" value="{{ escolas.0.id }}">
-                            <p class="form-control-plaintext fw-bold">{{ escolas.0.nome }}</p>
-                        </div>
-                        {% else %}
-                        <div class="col-md-3">
-                            <label for="escola-select">Escolha a Escola:</label>
-                            <select id="escola-select" name="escola" class="form-control">
-                                <option value="" selected disabled>Selecione uma escola</option>
-                                {% for escola in escolas %}
-                                <option value="{{ escola.id }}">{{ escola.nome }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        {% endif %}
-
-                        <!-- Escolha o Programa -->
-                        <div class="col-md-4">
-                            <label for="programa-select">Escolha o Programa:</label>
-                            <div class="d-flex">
-                                <select id="programa-select" name="programa" class="form-control me-2">
-                                    <option value="" selected disabled>Selecione um programa</option>
-                                </select>
-                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                    data-bs-target="#modalCadastrarPrograma">
-                                    <i class="fas fa-plus"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Período de Execução (Intervalo de Datas) -->
-<div class="col-md-2">
-    <label for="data_inicio">Data Início:</label>
-    <input type="date" id="data_inicio" name="data_inicio" class="form-control" value="{{ data_inicio|default:'' }}">
-</div>
-<div class="col-md-2">
-    <label for="data_fim">Data Fim:</label>
-    <input type="date" id="data_fim" name="data_fim" class="form-control" value="{{ data_fim|default:'' }}">
-</div>
+        <div class="card-body bg-light">
+            <form method="POST" id="form-pdde-receita">
+            {% csrf_token %}
+            <input type="hidden" name="escola" value="{{ escola_selecionada.id }}">
+            <input type="hidden" name="programa" value="{{ programa_selecionado.id }}">
+            <input type="hidden" name="conta_bancaria" id="conta_bancaria_hidden" value="{{ conta_selecionada.id }}">
 
 
+            <div class="row g-3 align-items-end">
+                
+                <div class="col-md-3">
+                <label for="escola-select" class="form-label fw-semibold">Escolha a Escola:</label>
+                <select id="escola-select" class="form-select" onchange="window.location.href='?escola=' + this.value">
+                    <option value="" disabled {% if not escola_selecionada %}selected{% endif %}>Selecione uma escola</option>
+                    {% for escola in escolas %}
+                    <option value="{{ escola.id }}" {% if escola.id == escola_selecionada.id %}selected{% endif %}>{{ escola.nome }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+
+                <div class="col-md-3">
+                <label for="programa-select" class="form-label fw-semibold">Escolha o Programa:</label>
+                <select id="programa-select" class="form-select" onchange="window.location.href='?escola={{ escola_selecionada.id }}&programa=' + this.value">
+                    <option value="" disabled {% if not programa_selecionado %}selected{% endif %}>Selecione um programa</option>
+                    {% for programa in programas %}
+                    <option value="{{ programa.id }}" {% if programa.id == programa_selecionado.id %}selected{% endif %}>{{ programa.nome }}</option>
+                    {% endfor %}
+                </select>
+                </div>
+
+                <div class="col-md-2">
+                <label class="form-label fw-semibold">Exercício:</label>
+                <input type="text" class="form-control" value="2025" readonly>
+                </div>
+
+                <div class="col-md-2">
+                <label for="data_inicio" class="form-label fw-semibold">Data Início:</label>
+                <input type="date" id="data_inicio" name="data_inicio" class="form-control" value="{{ data_inicio|default:'' }}">
+                </div>
+
+                <div class="col-md-2">
+                <label for="data_fim" class="form-label fw-semibold">Data Fim:</label>
+                <input type="date" id="data_fim" name="data_fim" class="form-control" value="{{ data_fim|default:'' }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="conta_bancaria">Conta Bancária</label>
+                    <select name="conta_bancaria_visivel" id="conta_bancaria" class="form-control" required>
+                        <option value="">Selecione...</option>
+                        {% for conta in contas_bancarias %}
+                            <option value="{{ conta.id }}" {% if conta.id == conta_selecionada.id %}selected{% endif %}>
+                                {{ conta.banco }} - {{ conta.agencia }}/{{ conta.conta }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                </div>
+
+        </div>
+
+<!-- Campos financeiros continuam aqui -->
+  
                         <!-- Valores Financeiros -->
                     <div class="row mt-4">
                         {% for campo in campos %}
@@ -104,7 +147,7 @@
 
 
 
-                        <!-- Campos Financeiros Formatados com br_money -->
+<!-- Campos Financeiros Formatados com br_money -->
 <div class="row">
     <div class="col-md-3">
         <label for="saldo_anterior_custeio">08 – Saldo Reprogramado EA (Custeio)</label>
@@ -224,10 +267,10 @@
 
 
                         <div class="text-end mt-3">
-                            <button type="button" class="btn btn-success shadow-sm" data-toggle="modal"
-                                data-target="#confirmacaoModal">
-                                <i class="fas fa-save"></i> Lançar Receita
-                            </button>
+                            <button type="submit" name="confirmarLancamento" class="btn btn-success">
+    <i class="fas fa-check"></i> Confirmar Lançamento
+</button>
+
                             <a href="{% url 'pdde' %}" class="btn btn-secondary shadow-sm">
                                 <i class="fas fa-arrow-left"></i> Voltar
                             </a>
@@ -276,11 +319,6 @@
     </div>
 </div>
 
-<!-- Modal de Cadastro de Programa -->
-<!-- Botão para abrir o modal -->
-<!-- <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalCadastrarPrograma">
-    <i class="fas fa-plus"></i> Novo Programa
-</button> -->
 
 <!-- Modal de Cadastro de Programa -->
 <div class="modal fade" id="modalCadastrarPrograma" tabindex="-1" aria-labelledby="modalCadastrarProgramaLabel"
@@ -331,367 +369,89 @@
     </div>
 </div>
 
-<script>
-    document.getElementById("confirmarLancamento").addEventListener("click", function () {
-    limparFormatacaoCamposFinanceiros();
-    document.getElementById("form-pdde-receita").submit();
-});
-
-function limparFormatacaoCamposFinanceiros() {
-    const camposFinanceiros = document.querySelectorAll("input[type='text']");
-    camposFinanceiros.forEach(campo => {
-        if (campo.value.includes("R$")) {
-            campo.value = campo.value.replace(/R\$\s?/g, "").replace(/\./g, "").replace(",", ".");
-        }
-    });
-}
-
-</script>
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("escola-select").addEventListener("change", atualizarDados);
-        document.getElementById("zerar-valores-check").addEventListener("change", function () {
-            if (this.checked) {
-                zerarCampos();
-            } else {
-                atualizarDados();
-            }
-        });
-
-        // Lista de campos de RECEITA e DESPESA
-        const camposReceita = [
-            "saldo_anterior_custeio", "saldo_anterior_capital",
-            "valor_creditado_custeio", "valor_creditado_capital",
-            "recursos_proprios", "rendimento_aplicacao_custeio",
-            "rendimento_aplicacao_capital"
-        ];
-
-        const camposDespesa = [
-            "devolucao_fnde_custeio", "devolucao_fnde_capital",
-            "saldo_devolvido_custeio", "saldo_devolvido_capital"
-        ];
-
-        // 🔹 ATUALIZA OS DADOS AO SELECIONAR UMA ESCOLA 🔹
-        function atualizarDados() {
-            let escolaId = document.getElementById("escola-select").value;
-
-            if (escolaId) {
-                fetch(`/get-dados-financeiros/${escolaId}/`)
-                    .then(response => response.json())
-                    .then(data => {
-                        let valores = {
-                            "data_inicio": "",
-                            "data_fim": "",
-                            "saldo_anterior_custeio": "0,00",
-                            "saldo_anterior_capital": "0,00",
-                            "valor_creditado_custeio": "0,00",
-                            "valor_creditado_capital": "0,00",
-                            "recursos_proprios_custeio": "0,00",
-                            "recursos_proprios_capital": "0,00",
-                            "rendimento_aplicacao_custeio": "0,00",
-                            "rendimento_aplicacao_capital": "0,00",
-                            "devolucao_fnde_custeio": "0,00",
-                            "devolucao_fnde_capital": "0,00",
-                            "saldo_devolvido_custeio": "0,00",
-                            "saldo_devolvido_capital": "0,00",
-                            "valor_despesa_realizada_custeio": "0,00",
-                            "valor_despesa_realizada_capital": "0,00",
-                            "saldo_reprogramar_custeio": "0,00",
-                            "saldo_reprogramar_capital": "0,00",
-                            "escolas_atendidas": "1"
-                        };
-
-                        Object.keys(valores).forEach(key => {
-                            let campo = document.getElementById(key);
-                            if (campo) {
-                                campo.value = data[key] || valores[key];
-                            }
-                        });
-
-                        atualizarReceita(); // Recalcula os valores da receita após atualizar os dados
-                    })
-                    .catch(error => {
-                        console.error("Erro ao buscar os dados financeiros:", error);
-                        alert("Erro ao carregar os dados da escola.");
-                    });
-            }
-        }
-
-        // 🔹 ZERAR TODOS OS CAMPOS 🔹
-        function zerarCampos() {
-            let campos = [
-                ...camposReceita, ...camposDespesa,
-                "valor_despesa_realizada_custeio", "valor_despesa_realizada_capital",
-                "saldo_reprogramar_custeio", "saldo_reprogramar_capital",
-                "escolas_atendidas"
-            ];
-
-            campos.forEach(campo => {
-                let campoElement = document.getElementById(campo);
-                if (campoElement) {
-                    campoElement.value = "0,00";
-                }
-            });
-
-            document.getElementById("escolas_atendidas").value = "0";
-
-            atualizarReceita();
-        }
-
-        // 🔹 CÁLCULO DA RECEITA 🔹
-        function atualizarReceita() {
-            let totalReceitaCusteio = 0;
-            let totalReceitaCapital = 0;
-
-            function getValor(campoId) {
-                let campo = document.getElementById(campoId);
-                return campo ? parseFloat(campo.value.replace(",", ".")) || 0 : 0;
-            }
-
-            // 🔹 Somatório dos valores de CUSTEIO 🔹
-            totalReceitaCusteio += getValor("saldo_anterior_custeio");
-            totalReceitaCusteio += getValor("valor_creditado_custeio");
-            totalReceitaCusteio += getValor("rendimento_aplicacao_custeio");
-
-            // 🔹 Somatório dos valores de CAPITAL 🔹
-            totalReceitaCapital += getValor("saldo_anterior_capital");
-            totalReceitaCapital += getValor("valor_creditado_capital");
-            totalReceitaCapital += getValor("rendimento_aplicacao_capital");
-            totalReceitaCapital += getValor("recursos_proprios"); // 🔹 Apenas para capital
-
-            // 🔹 Atualiza os campos do total de receita 🔹
-            let campoCusteio = document.getElementById("valor_total_receita_custeio");
-            let campoCapital = document.getElementById("valor_total_receita_capital");
-
-            if (campoCusteio) campoCusteio.value = totalReceitaCusteio.toFixed(2).replace(".", ",");
-            if (campoCapital) campoCapital.value = totalReceitaCapital.toFixed(2).replace(".", ",");
-        }
-
-        // 🔹 EVENTO PARA ATUALIZAR A RECEITA 🔹
-        [...camposReceita, ...camposDespesa].forEach(id => {
-            let campoElement = document.getElementById(id);
-            if (campoElement) {
-                campoElement.addEventListener("input", atualizarReceita);
-            }
-        });
-
-        // 🔹 CHAMA A FUNÇÃO PARA ATUALIZAR NO CARREGAMENTO 🔹
-        atualizarReceita();
-    });
-</script>
-
-
-
-
-
-<script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Seleciona o botão de confirmação e o formulário
-            document.getElementById("confirmarLancamento").addEventListener("click", function () {
-                document.getElementById("form-pdde-receita").submit();
-            });
-        });
-</script>
-
-
-<script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let dataInicio = document.getElementById("data_inicio");
-            let dataFim = document.getElementById("data_fim");
-
-            dataInicio.addEventListener("change", function () {
-                // Definir a data mínima da data de fim para evitar intervalos inválidos
-                dataFim.min = dataInicio.value;
-            });
-
-            dataFim.addEventListener("change", function () {
-                // Verificar se a data de fim não é anterior à data de início
-                if (dataFim.value < dataInicio.value) {
-                    alert("A data final não pode ser anterior à data inicial.");
-                    dataFim.value = "";
-                }
-            });
-        });
-
-</script>
-
-
-<script>
-        document.getElementById("btnSalvarPrograma").addEventListener("click", function () {
-            let nome = document.getElementById("programa-nome").value;
-            let descricao = document.getElementById("programa-descricao").value;
-            let resolucao = document.getElementById("programa-resolucao").value;
-            let data_inicio = document.getElementById("programa-data-inicio").value;
-            let data_fim = document.getElementById("programa-data-fim").value;
-
-            if (!nome || !data_inicio || !data_fim) {
-                alert("Preencha todos os campos obrigatórios!");
-                return;
-            }
-
-            let formData = {
-                nome: nome,
-                descricao: descricao,
-                resolucao: resolucao,
-                data_inicio: data_inicio,
-                data_fim: data_fim
-            };
-
-            fetch("/cadastrar-programa/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": document.querySelector("[name=csrfmiddlewaretoken]").value
-                },
-                body: JSON.stringify(formData)
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Programa cadastrado com sucesso!");
-                        location.reload();
-                    } else {
-                        alert("Erro ao cadastrar: " + data.error);
-                    }
-                })
-                .catch(error => console.error("Erro na requisição:", error));
-        });
-
-
-        document.addEventListener("DOMContentLoaded", function () {
-            atualizarProgramas();  // Carregar os programas ao abrir a página
-
-            // Atualiza os programas no select
-            function atualizarProgramas() {
-                fetch("/listar-programas/", {
-                    method: "GET",
-                    headers: { "X-Requested-With": "XMLHttpRequest" }  // Indica que é um request AJAX
-                })
-                    .then(response => response.json())
-                    .then(data => {
-                        let selectPrograma = document.getElementById("programa-select");
-                        selectPrograma.innerHTML = '<option value="" selected disabled>Selecione um programa</option>';
-
-                        if (data.programas.length > 0) {
-                            data.programas.forEach(programa => {
-                                let option = document.createElement("option");
-                                option.value = programa.id;
-                                option.textContent = programa.nome;
-                                selectPrograma.appendChild(option);
-                            });
-                        } else {
-                            let option = document.createElement("option");
-                            option.disabled = true;
-                            option.textContent = "Nenhum programa disponível";
-                            selectPrograma.appendChild(option);
-                        }
-                    })
-                    .catch(error => console.error("Erro ao buscar programas:", error));
-            }
-
-            // Atualiza a lista de programas após cadastrar um novo
-            document.getElementById("btnSalvarPrograma").addEventListener("click", function () {
-                setTimeout(atualizarProgramas, 1000);  // Aguarda 1 segundo antes de atualizar
-            });
-        });
-
-</script>
-
-
-
-
-
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        // Lista de campos de Custeio e Capital
-        const camposCusteio = [
-            "saldo_anterior_custeio", "valor_creditado_custeio", "recursos_proprios_custeio",
-            "rendimento_aplicacao_custeio", "devolucao_fnde_custeio", 
-            "valor_despesa_realizada_custeio", "saldo_devolvido_custeio"
-        ];
-    
-        const camposCapital = [
-            "saldo_anterior_capital", "valor_creditado_capital", "recursos_proprios_capital",
-            "rendimento_aplicacao_capital", "devolucao_fnde_capital", 
-            "valor_despesa_realizada_capital", "saldo_devolvido_capital"
-        ];
-    
-        // Função para converter valores para número
-        function getValor(id) {
-            let campo = document.getElementById(id);
-            return campo ? parseFloat(campo.value.replace(",", ".")) || 0 : 0;
-        }
-    
-        // Função para atualizar os saldos reprogramados e receitas totais
-        function atualizarValores() {
-            // Cálculo do saldo reprogramado de Custeio
-            let saldoReprogramarCusteio = 
-                getValor("saldo_anterior_custeio") + getValor("valor_creditado_custeio") +
-                getValor("recursos_proprios_custeio") + getValor("rendimento_aplicacao_custeio") - 
-                getValor("devolucao_fnde_custeio") - getValor("valor_despesa_realizada_custeio") - 
-                getValor("saldo_devolvido_custeio");
-    
-            // Cálculo do saldo reprogramado de Capital
-            let saldoReprogramarCapital = 
-                getValor("saldo_anterior_capital") + getValor("valor_creditado_capital") +
-                getValor("recursos_proprios_capital") + getValor("rendimento_aplicacao_capital") - 
-                getValor("devolucao_fnde_capital") - getValor("valor_despesa_realizada_capital") - 
-                getValor("saldo_devolvido_capital");
-    
-            // Cálculo do total de receita (Custeio e Capital)
-            let totalReceitaCusteio = 
-                getValor("saldo_anterior_custeio") + getValor("valor_creditado_custeio") + 
-                getValor("recursos_proprios_custeio") + getValor("rendimento_aplicacao_custeio");
-    
-            let totalReceitaCapital = 
-                getValor("saldo_anterior_capital") + getValor("valor_creditado_capital") + 
-                getValor("recursos_proprios_capital") + getValor("rendimento_aplicacao_capital");
-    
-            // Atualiza os valores nos campos HTML
-            document.getElementById("saldo_reprogramar_custeio").value = saldoReprogramarCusteio.toFixed(2).replace(".", ",");
-            document.getElementById("saldo_reprogramar_capital").value = saldoReprogramarCapital.toFixed(2).replace(".", ",");
-            document.getElementById("valor_total_receita_custeio").value = totalReceitaCusteio.toFixed(2).replace(".", ",");
-            document.getElementById("valor_total_receita_capital").value = totalReceitaCapital.toFixed(2).replace(".", ",");
-        }
-    
-        // Adiciona evento para recalcular quando um campo for alterado
-        [...camposCusteio, ...camposCapital].forEach(id => {
-            let campo = document.getElementById(id);
-            if (campo) {
-                campo.addEventListener("input", atualizarValores);
-            }
-        });
-    
-        // Chamada inicial ao carregar a página
-        atualizarValores();
-
-// 🔹 Carrega automaticamente os dados da escola se houver apenas uma
-document.addEventListener("DOMContentLoaded", function () {
-    const escolaSelect = document.getElementById("escola-select");
-
-    if (escolaSelect) {
-        // Se for um input hidden (apenas uma escola), chama direto
-        if (escolaSelect.tagName === "INPUT") {
-            atualizarDados();
-        }
-
-        // Se for um select com uma opção já selecionada, também pode chamar
-        if (escolaSelect.tagName === "SELECT" && escolaSelect.value) {
-            atualizarDados();
-        }
+  document.addEventListener("DOMContentLoaded", function () {
+    const selectConta = document.getElementById("conta_bancaria");
+    const hiddenConta = document.getElementById("conta_bancaria_hidden");
+    if (selectConta && hiddenConta) {
+      selectConta.addEventListener("change", () => {
+        hiddenConta.value = selectConta.value;
+      });
     }
+  });
+</script>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  // Função para parsear valores BR para float
+  function parseBR(valor) {
+    if (!valor) return 0;
+    return parseFloat(valor.replace(/\./g, "").replace(",", ".")) || 0;
+  }
+
+  // Função para formatar número para moeda BR
+  function formatBR(valor) {
+    return valor.toFixed(2).replace(".", ",");
+  }
+
+  // Função de cálculo geral
+  function atualizarTotais() {
+    const campos = {
+      saldo_anterior_custeio: parseBR(document.getElementById("saldo_anterior_custeio").value),
+      saldo_anterior_capital: parseBR(document.getElementById("saldo_anterior_capital").value),
+      valor_creditado_custeio: parseBR(document.getElementById("valor_creditado_custeio").value),
+      valor_creditado_capital: parseBR(document.getElementById("valor_creditado_capital").value),
+      recursos_proprios_custeio: parseBR(document.getElementById("recursos_proprios_custeio").value),
+      recursos_proprios_capital: parseBR(document.getElementById("recursos_proprios_capital").value),
+      rendimento_aplicacao_custeio: parseBR(document.getElementById("rendimento_aplicacao_custeio").value),
+      rendimento_aplicacao_capital: parseBR(document.getElementById("rendimento_aplicacao_capital").value),
+      devolucao_fnde_custeio: parseBR(document.getElementById("devolucao_fnde_custeio").value),
+      devolucao_fnde_capital: parseBR(document.getElementById("devolucao_fnde_capital").value),
+      saldo_devolvido_custeio: parseBR(document.getElementById("saldo_devolvido_custeio").value),
+      saldo_devolvido_capital: parseBR(document.getElementById("saldo_devolvido_capital").value),
+      valor_despesa_realizada_custeio: parseBR(document.getElementById("valor_despesa_realizada_custeio").value),
+      valor_despesa_realizada_capital: parseBR(document.getElementById("valor_despesa_realizada_capital").value)
+    };
+
+    // Cálculos
+    const saldoReprogramarCusteio = 
+      campos.saldo_anterior_custeio + campos.valor_creditado_custeio + campos.recursos_proprios_custeio + campos.rendimento_aplicacao_custeio 
+      - campos.devolucao_fnde_custeio - campos.valor_despesa_realizada_custeio - campos.saldo_devolvido_custeio;
+
+    const saldoReprogramarCapital = 
+      campos.saldo_anterior_capital + campos.valor_creditado_capital + campos.recursos_proprios_capital + campos.rendimento_aplicacao_capital 
+      - campos.devolucao_fnde_capital - campos.valor_despesa_realizada_capital - campos.saldo_devolvido_capital;
+
+    const totalReceitaCusteio = 
+      campos.saldo_anterior_custeio + campos.valor_creditado_custeio + campos.recursos_proprios_custeio + campos.rendimento_aplicacao_custeio;
+
+    const totalReceitaCapital = 
+      campos.saldo_anterior_capital + campos.valor_creditado_capital + campos.recursos_proprios_capital + campos.rendimento_aplicacao_capital;
+
+    // Atualiza os campos no formulário
+    document.getElementById("saldo_reprogramar_custeio").value = formatBR(saldoReprogramarCusteio);
+    document.getElementById("saldo_reprogramar_capital").value = formatBR(saldoReprogramarCapital);
+    document.getElementById("valor_total_receita_custeio").value = formatBR(totalReceitaCusteio);
+    document.getElementById("valor_total_receita_capital").value = formatBR(totalReceitaCapital);
+  }
+
+  // Aplica evento para todos os inputs relevantes
+  const inputs = document.querySelectorAll("#form-pdde-receita input[type='text']");
+  inputs.forEach(input => {
+    input.addEventListener("input", atualizarTotais);
+  });
+
+  // Rodar a primeira vez para preencher inicial
+  atualizarTotais();
 });
+</script>
 
-
-});
-
-
-
-    </script>
-    
 
 
 

@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Editar Fornecedor{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="text-warning text-center mb-4">
+    <i class="fas fa-edit me-2"></i> Editar Fornecedor
+  </h2>
+
+  <form method="post" class="card p-4 shadow-sm w-100">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-4">
+        <input type="text" name="nome" value="{{ fornecedor.nome }}" class="form-control" placeholder="Nome" required>
+      </div>
+      <div class="col-md-4">
+        <input type="text" name="cnpj" value="{{ fornecedor.cnpj }}" class="form-control" placeholder="CNPJ" required>
+      </div>
+      <div class="col-md-4">
+        <input type="text" name="telefone" value="{{ fornecedor.telefone }}" class="form-control" placeholder="Telefone">
+      </div>
+      <div class="col-md-6">
+        <input type="email" name="email" value="{{ fornecedor.email }}" class="form-control" placeholder="Email">
+      </div>
+      <div class="col-md-6">
+        <input type="text" name="endereco" value="{{ fornecedor.endereco }}" class="form-control" placeholder="Endereço">
+      </div>
+    </div>
+
+    <div class="text-end mt-4">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Salvar Alterações
+      </button>
+      <a href="{% url 'fornecedores_lista' %}" class="btn btn-secondary">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

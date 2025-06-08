@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Relatórios de Patrimônio{% endblock %}
+
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+  <div class="container-fluid">
+
+    <!-- Cabeçalho -->
+    <div class="text-center mb-4">
+      <h2 class="text-primary fw-bold">Relatórios Dinâmicos - Patrimônio</h2>
+      <h3 class="text-muted">Filtre e analise os bens patrimoniais por escola e localização</h3>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm border-0 mb-4">
+      <div class="card-header bg-gradient-primary text-white">
+        <i class="fas fa-filter me-2"></i> Filtros
+      </div>
+      <div class="card-body">
+        <form method="get" class="row g-3 align-items-end">
+  <div class="col-md-5">
+    <label for="escola" class="form-label">Escola</label>
+    <select name="escola" id="escola" class="form-select">
+      <option value="">-- Todas --</option>
+      {% for escola in escolas %}
+        <option value="{{ escola.id }}" {% if escola_id == escola.id %}selected{% endif %}>
+          {{ escola.nome }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-5">
+    <label for="local" class="form-label">Localização</label>
+    <select name="local" id="local" class="form-select">
+      <option value="">-- Todas --</option>
+      {% for loc in locais %}
+        <option value="{{ loc.id }}" {% if local_id == loc.id %}selected{% endif %}>
+          {{ loc.nome }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="col-md-1">
+    <button type="submit" class="btn btn-primary w-100">
+      <i class="fas fa-search me-1"></i> Filtrar
+    </button>
+  </div>
+  <div class="col-md-1">
+    <a href="?{% if escola_id %}escola={{ escola_id }}&{% endif %}{% if local_id %}local={{ local_id }}&{% endif %}exportar=pdf" target="_blank" class="btn btn-danger w-100">
+      <i class="fas fa-file-pdf me-1"></i>
+    </a>
+  </div>
+</form>
+
+      </div>
+    </div>
+
+    <!-- Tabela -->
+    <div class="card shadow-sm border-0">
+      <div class="card-header bg-gradient-primary text-white">
+        <i class="fas fa-boxes me-2"></i> Lista de Bens Patrimoniais
+      </div>
+      <div class="card-body bg-light">
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+  <thead class="table-primary text-center">
+    <tr>
+      <th>Tombo</th>
+      <th>Descrição</th>
+      <th>Localização</th>
+      <th>Data de Aquisição</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for bem in bens %}
+    <tr>
+      <td>{{ bem.tombo }}</td>
+      <td>{{ bem.descricao }}</td>
+      <td>{{ bem.localizacao.nome }}</td>
+      <td>{{ bem.data_aquisicao|date:"d/m/Y" }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" class="text-center text-muted">Nenhum bem encontrado.</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

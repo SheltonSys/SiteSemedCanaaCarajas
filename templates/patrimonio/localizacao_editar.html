@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Editar Localização{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="text-warning text-center mb-4">
+    <i class="fas fa-edit me-2"></i> Editar Localização
+  </h2>
+
+  <form method="post" class="card p-4 shadow-sm w-100">
+    {% csrf_token %}
+    <div class="row g-3">
+      <div class="col-md-4">
+        <select name="escola_id" class="form-control" required>
+          <option value="">-- Selecione a Escola --</option>
+          {% for escola in escolas %}
+            <option value="{{ escola.id }}" {% if local.escola.id == escola.id %}selected{% endif %}>
+              {{ escola.nome }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-4">
+        <input type="text" name="nome" value="{{ local.nome }}" class="form-control" placeholder="Nome da Localização" required>
+      </div>
+      <div class="col-md-4">
+        <input type="text" name="descricao" value="{{ local.descricao }}" class="form-control" placeholder="Descrição (opcional)">
+      </div>
+    </div>
+
+    <div class="text-end mt-4">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save me-1"></i> Salvar Alterações
+      </button>
+      <a href="{% url 'localizacoes_lista' %}" class="btn btn-secondary">
+        Cancelar
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

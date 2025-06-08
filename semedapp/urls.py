@@ -35,6 +35,14 @@ from .views import (
     conciliacao_conferencia,
     conciliacao_relatorios,
 )
+
+from .views import (
+    fornecedores_lista,
+    fornecedor_detalhe,
+    fornecedor_editar,
+    fornecedor_excluir,
+)
+
 from .views import habilidades_matematica_view
 from .views import habilidades_pesquisa_view
 from semedapp.views import dashboard_transporte
@@ -78,8 +86,9 @@ from .views import EscolaPddeListView, EscolaPddeCreateView, EscolaPddeDeleteVie
 from .views import get_escola_pdde
 from .views import get_escola_pdde_modal
 from .views import EscolaPddeModalView
-from .views import get_escola_pdde, get_receita_despesa
-from .views import pddereceita_despesa_view
+from .views import get_escola_pdde
+
+# from .views import pddereceita_despesa_view
 from .views import get_pagamentos
 from .views import pdde_list
 from .views import get_dados_financeiros
@@ -134,7 +143,12 @@ from .views import exportar_pptx_saida_rede
 from .views import gerar_pdf_relatorio_geral
 from .views import relatorio_saida_matematica_view
 
+from semedapp.views import api_contas_bancarias
+
 from .views import recuperar_senha_ajax  # ou from .views_senha import recuperar_senha_ajax
+
+from semedapp.views import get_resumo_financeiro
+
 
 from semedapp.views import login_ajax_view, verifica_2fa_ajax  # ← Adicionado aqui
 from .views import (
@@ -789,11 +803,11 @@ urlpatterns = [
     path("banco-curriculos/escolas/", EscolaPddeListView.as_view(), name="listar_escolas"),
     path('get-escola-modal/<int:pk>/', get_escola_pdde_modal, name='get_escola_pdde_modal'),
     path("contabilidade/pdde/", EscolaPddeModalView.as_view(), name="escola_modal"),
-    path("pddereceita-despesa/", pddereceita_despesa_view, name="pddereceita_despesa"),
+    # path("pddereceita-despesa/", pddereceita_despesa_view, name="pddereceita_despesa"),
     path("get-escola-pdde/<int:pk>/", get_escola_pdde, name="get_escola_pdde"),
 
     path("get-escola-pdde/<int:escola_id>/", get_escola_pdde, name="get_escola_pdde"),
-    path("get-receita-despesa/<int:escola_id>/", get_receita_despesa, name="get_receita_despesa"),
+    # path("get-receita-despesa/<int:escola_id>/", get_receita_despesa, name="get_receita_despesa"),
     path("get-pagamentos/", get_pagamentos, name="get_pagamentos"),
     path("get-pagamentos/<int:escola_id>/", get_pagamentos, name="get_pagamentos"),
     path("pdde-list/", pdde_list, name="pdde_list"),
@@ -803,7 +817,7 @@ urlpatterns = [
     path("pdde-lancar-despesa/", pddelancar_despesa, name="pddelancar_despesa"),
     path("pdde-lancar-pagamento/", pddelancar_pagamento, name="pddelancar_pagamento"),
     path("editar-pagamento/<int:pagamento_id>/", editar_pagamento, name="editar_pagamento"),  # 🔹 Adicionada esta linha
-    path("get-dados-financeiros/<int:escola_id>/", get_dados_financeiros, name="get_dados_financeiros"),
+    # path("get-dados-financeiros/<int:escola_id>/", get_dados_financeiros, name="get_dados_financeiros"),
 
 
     path("get-dados-pagamentos-pdde/<int:escola_id>/", get_dados_pagamentos_pdde, name="get_dados_pagamentos_pdde"),
@@ -1111,6 +1125,72 @@ urlpatterns = [
 
 
     path('dashboard/', views.dashboard_view, name='dashboard'),
+
+    path('get-dados-financeiros/<int:escola_id>/<int:programa_id>/', views.get_dados_financeiros, name='get_dados_financeiros'),
+
+
+    # path('get-dados-financeiros/<int:escola_id>/<str:programa_nome>/', views.get_dados_financeiros, name='get_dados_financeiros'),
+
+
+    path("adicionar-programa-pdde/", views.adicionar_programa_pdde, name="adicionar_programa_pdde"),
+
+
+
+    path('patrimonios/', views.patrimonio_lista, name='patrimonio_lista'),
+    path('patrimonios/<int:id>/', views.patrimonio_detalhe, name='patrimonio_detalhe'),
+    path('patrimonios/<int:id>/editar/', views.patrimonio_editar, name='patrimonio_editar'),
+    path('patrimonios/<int:id>/excluir/', views.patrimonio_excluir, name='patrimonio_excluir'),
+   
+
+    path('localizacoes/', views.localizacoes_lista, name='localizacoes_lista'),
+    path('localizacoes/<int:id>/', views.localizacao_detalhe, name='localizacao_detalhe'),
+    path('localizacoes/<int:id>/editar/', views.localizacao_editar, name='localizacao_editar'),
+    path('localizacoes/<int:id>/excluir/', views.localizacao_excluir, name='localizacao_excluir'),
+    
+
+    path('contratos/', views.contratos_lista, name='contratos_lista'),
+    path('contratos/<int:pk>/', views.contrato_detalhe, name='contrato_detalhe'),
+    path('contratos/<int:pk>/editar/', views.contrato_editar, name='contrato_editar'),
+    path('contratos/<int:pk>/excluir/', views.contrato_excluir, name='contrato_excluir'),
+
+    path('notas-fiscais/', views.notas_fiscais_lista, name='notas_fiscais_lista'),
+    path('notas-fiscais/<int:id>/', views.nota_detalhe, name='nota_detalhe'),
+    path('notas-fiscais/<int:id>/editar/', views.nota_editar, name='nota_editar'),
+    path('notas-fiscais/<int:pk>/excluir/', views.nota_excluir, name='nota_excluir'),
+    path('notas-fiscais/', views.notas_lista, name='notas_lista'),
+
+    path('fornecedores/', views.fornecedores_lista, name='fornecedores_lista'),
+    path('fornecedores/<int:id>/', fornecedor_detalhe, name='fornecedor_detalhe'),
+    path('fornecedores/<int:id>/editar/', fornecedor_editar, name='fornecedor_editar'),
+    path('fornecedores/<int:id>/excluir/', fornecedor_excluir, name='fornecedor_excluir'),
+
+    # urls.py
+    path('patrimonio/dashboard/', views.dashboard_patrimonio, name='dashboard_patrimonio'),
+
+    # urls.py
+    path('patrimonio/relatorios/', views.relatorios_patrimonio, name='relatorios_patrimonio'),
+
+
+    path("api/contas/<int:escola_id>/", api_contas_bancarias, name="api_contas_bancarias"),
+
+    # Versão inicial (abre o formulário com seleção de escola)
+    path('banco-curriculos/pddereceita-despesa/', pddereceita_despesa, name='pddereceita_despesa'),
+
+    # Versão com dados da escola selecionada
+    path('banco-curriculos/pddereceita-despesa/<int:escola_id>/', pddereceita_despesa, name='pddereceita_despesa_escola'),
+
+    # (Opcional) Alias para contabilidade se quiser reutilizar o caminho
+    path('contabilidade/pddereceita-despesa/', pddereceita_despesa, name='contabilidade_pddereceita_despesa'),
+    path('contabilidade/pddereceita-despesa/<int:escola_id>/', pddereceita_despesa, name='contabilidade_pddereceita_despesa_escola'),
+
+    # (Opcional) Se quiser manter atalho /pdde/
+    path('pdde/', pddereceita_despesa, name='pdde'),
+    path('pdde/<int:escola_id>/', pddereceita_despesa, name='pdde_escola'),
+
+    path('banco-curriculos/pddereceita-despesa/', pddereceita_despesa, name='pddereceita_despesa_inicial'),
+    path('banco-curriculos/pddereceita-despesa/<int:escola_id>/', pddereceita_despesa, name='pddereceita_despesa'),
+
+    path("api/resumo-financeiro/<int:escola_id>/", get_resumo_financeiro, name="resumo_financeiro"),
 
 
 

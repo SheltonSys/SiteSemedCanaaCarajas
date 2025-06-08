@@ -6,7 +6,7 @@
     <!-- Título e Introdução -->
     <div class="text-center mb-5">
         <h1 class="display-4 text-primary fw-bold">Gestão de Escolas PDDE</h1>
-        <p class="lead text-secondary">Gerencie, visualize e explore as escolas cadastradas de forma dinâmica e eficiente.</p>
+        <h4>Gerencie, visualize e explore as escolas cadastradas de forma dinâmica e eficiente.</h4>
     </div>
 
     <!-- Barra de Ações -->
@@ -19,13 +19,16 @@
                 </button>
             </div>
         </div>
+
+        {% if user.is_superuser or user.username == "Neusa" %}
         <div class="col-lg-3 text-lg-end text-center mt-lg-0 mt-3">
             <a href="{% url 'adicionar_escola_pdde' %}" class="btn btn-success shadow-sm">
                 <i class="fas fa-plus-circle"></i> Nova Escola PDDE
             </a>
         </div>
-    </div>
+        {% endif %}
 
+    </div>
     <!-- Indicadores Dinâmicos -->
     <div class="row mb-5 justify-content-center">
         <div class="col-lg-2 col-md-4 col-sm-6">
@@ -111,11 +114,12 @@
                             <i class="fas fa-edit"></i> Editar
                         </a>
                         
-                        
+                        {% if user.is_superuser or user.username == "Neusa" %}
                         <a href="{% url 'excluir_escola_pdde' escola.id %}" class="btn btn-outline-danger btn-sm"
                            onclick="return confirm('Tem certeza que deseja excluir esta escola?');">
                             Excluir
                         </a>
+                        {% endif %}
                     </td>
                     
                 </tr>

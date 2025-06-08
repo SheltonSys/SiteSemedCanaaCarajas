@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block content %}
-<div class="container mt-5">
+<div class="container-fluid p-4">
     <h2 class="display-4 fw-bold text-info text-center">📊 Análise de Ocorrências Synaptic</h2>
     <hr class="mt-4 mb-5 stylish-divider">
 
@@ -19,6 +19,8 @@
                 </div>
             </div>
         </div>
+
+
         <div class="col-md-4">
             <div class="card stylish-card shadow-sm border-0">
                 <div class="card-body">
@@ -34,52 +36,101 @@
                 </div>
             </div>
         </div>
+
+
+        <div class="col-md-4">
+    <div class="card stylish-card shadow-sm border-0">
+        <div class="card-body">
+            <h5 class="card-title text-muted fw-bold">🗂️ Tipos</h5>
+            <ul class="list-group">
+                {% for tipo in tipos_count %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ tipo.tipo_ocorrencia_nome }}
+                        <span class="badge bg-primary rounded-pill">{{ tipo.count }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+
+
     </div>
 
 
-    <!-- Área de Filtragem -->
-    <form method="GET" class="row g-3 mb-4">
-        <div class="col-md-4">
-            <label for="classificacao" class="form-label fw-bold">Filtrar por Classificação</label>
-            <select id="classificacao" name="classificacao" class="form-select">
-                <option value="">Todas</option>
-                {% for classificacao in classificacoes_list %}
-                    <option value="{{ classificacao }}" {% if request.GET.classificacao == classificacao %}selected{% endif %}>
-                        {{ classificacao }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="status" class="form-label fw-bold">Filtrar por Status</label>
-            <select id="status" name="status" class="form-select">
-                <option value="">Todos</option>
-                {% for status in status_list %}
-                    <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>
-                        {{ status }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="unidade" class="form-label fw-bold">Filtrar por Unidade de Ensino</label>
-            <select id="unidade" name="unidade" class="form-select">
-                <option value="">Todas</option>
-                {% for unidade in unidades_list %}
-                    <option value="{{ unidade }}" {% if request.GET.unidade == unidade %}selected{% endif %}>
-                        {{ unidade }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-12 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-        </div>
-    </form>
-    
+<!-- Área de Filtragem -->
+<form method="GET" class="row g-3 mb-3 align-items-end">
+    <div class="col-12 col-md-3">
+        <label for="classificacao" class="form-label fw-bold">Classificação</label>
+        <select id="classificacao" name="classificacao" class="form-select">
+            <option value="">Todas</option>
+            {% for classificacao in classificacoes_list %}
+                <option value="{{ classificacao }}" {% if request.GET.classificacao == classificacao %}selected{% endif %}>
+                    {{ classificacao }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
 
-    <a href="{% url 'ocorrencias_synaptic_pdf' %}?classificacao={{ request.GET.classificacao }}&status={{ request.GET.status }}&unidade={{ request.GET.unidade }}" class="btn btn-danger mb-4" target="_blank">📄 Exportar para PDF</a>
+    <div class="col-12 col-md-3">
+        <label for="status" class="form-label fw-bold">Status</label>
+        <select id="status" name="status" class="form-select">
+            <option value="">Todos</option>
+            {% for status in status_list %}
+                <option value="{{ status }}" {% if request.GET.status == status %}selected{% endif %}>
+                    {{ status }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
 
+    <div class="col-12 col-md-3">
+        <label for="tipo" class="form-label fw-bold">Tipo</label>
+        <select id="tipo" name="tipo" class="form-select">
+            <option value="">Todos</option>
+            {% for tipo in tipos_list %}
+                <option value="{{ tipo }}" {% if request.GET.tipo == tipo %}selected{% endif %}>
+                    {{ tipo }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-12 col-md-3">
+    <label for="unidade" class="form-label fw-bold">Unidade</label>
+    <select id="unidade" name="unidade" class="form-select">
+        <option value="" {% if not request.GET.unidade %}selected{% endif %}>Todas</option>
+        {% for unidade in unidades_list %}
+            <option value="{{ unidade }}" {% if request.GET.unidade == unidade %}selected{% endif %}>
+                {{ unidade }}
+            </option>
+        {% endfor %}
+    </select>
+</div>
+
+
+    <div class="row g-3 mb-3 align-items-end">
+    <div class="col-12 col-md-3">
+        <label for="ano" class="form-label fw-bold">Ano</label>
+        <select id="ano" name="ano" class="form-select">
+            <option value="">Todos</option>
+            {% for ano in anos_list %}
+                <option value="{{ ano }}" {% if request.GET.ano == ano %}selected{% endif %}>
+                    {{ ano }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-12 col-md-9 d-flex justify-content-end align-items-end gap-2">
+        <button type="submit" class="btn btn-primary">FILTRAR DADOS SELECIONADOS</button>
+
+        <a href="{% url 'ocorrencias_synaptic_pdf' %}?classificacao={{ request.GET.classificacao }}&status={{ request.GET.status }}&unidade={{ request.GET.unidade }}&tipo={{ request.GET.tipo }}&ano={{ request.GET.ano }}" class="btn btn-danger" target="_blank">
+            📄 Exportar para PDF
+        </a>
+    </div>
+</div>
 
     <!-- Gráfico de Classificações -->
     <div class="card stylish-card shadow-sm mb-5">
@@ -94,45 +145,48 @@
 
 <div class="table-responsive">
     <table class="table table-striped table-hover align-middle">
-        <thead class="table-dark">
+    <thead class="table-dark">
+        <tr>
+            <th>Escola</th>
+            <th>Ano/Série</th>
+            <th>Turma</th>
+            <th>Classificação</th>
+            <th>Tipo</th>
+            <th>Registro</th>
+            <th>Status</th>
+            <th>ID Ocorrência</th> <!-- Nova coluna -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for registro in page_obj %}
             <tr>
-                <th>Unidade de Ensino</th>
-                <th>Ano/Série</th>
-                <th>Turma</th>
-                <th>Classificação</th>
-                <th>Tipo</th>
-                <th>Data do Registro</th>
-                <th>Status</th>
+                <td><span class="badge bg-primary">{{ registro.nome_unidade_ensino }}</span></td>
+                <td><span class="badge bg-secondary">{{ registro.ano_serie }}</span></td>
+                <td><span class="badge bg-dark">{{ registro.nome_turma }}</span></td>
+                <td><span class="badge bg-info">{{ registro.classificacao_nome }}</span></td>
+                <td><span class="badge bg-warning text-dark">{{ registro.tipo_ocorrencia_nome }}</span></td>
+                <td>{{ registro.registro|date:"d/m/Y H:i" }}</td>
+                <td>
+                    {% if registro.status_descricao == "Resolvida" %}
+                        <span class="badge bg-success">{{ registro.status_descricao }}</span>
+                    {% elif registro.status_descricao == "Pendente" %}
+                        <span class="badge bg-warning text-dark">{{ registro.status_descricao }}</span>
+                    {% elif registro.status_descricao == "Em análise" %}
+                        <span class="badge bg-danger">{{ registro.status_descricao }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ registro.status_descricao }}</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge bg-light text-dark">{{ registro.id_ocorrencia }}</span></td> <!-- Exibe o id_ocorrencia -->
             </tr>
-        </thead>
-        <tbody>
-            {% for registro in page_obj %}
-                <tr>
-                    <td><span class="badge bg-primary">{{ registro.nome_unidade_ensino }}</span></td>
-                    <td><span class="badge bg-secondary">{{ registro.ano_serie }}</span></td>
-                    <td><span class="badge bg-dark">{{ registro.nome_turma }}</span></td>
-                    <td><span class="badge bg-info">{{ registro.classificacao_nome }}</span></td>
-                    <td><span class="badge bg-warning text-dark">{{ registro.tipo_ocorrencia_nome }}</span></td>
-                    <td>{{ registro.registro|date:"d/m/Y H:i" }}</td>
-                    <td>
-                        {% if registro.status_descricao == "Resolvida" %}
-                            <span class="badge bg-success">{{ registro.status_descricao }}</span>
-                        {% elif registro.status_descricao == "Pendente" %}
-                            <span class="badge bg-warning text-dark">{{ registro.status_descricao }}</span>
-                        {% elif registro.status_descricao == "Em análise" %}
-                            <span class="badge bg-danger">{{ registro.status_descricao }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary">{{ registro.status_descricao }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center">Nenhuma ocorrência encontrada.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+        {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">Nenhuma ocorrência encontrada.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 </div>
 
 <!-- Paginação -->
@@ -203,6 +257,13 @@
     .table-responsive {
         border-radius: 12px;
         overflow: hidden;
+    }
+
+        form.d-flex > div {
+        min-width: 200px; /* Ou ajuste para 180px, 220px... */
+    }
+    form.d-flex select {
+        min-width: 100%;
     }
 </style>
 {% endblock %}

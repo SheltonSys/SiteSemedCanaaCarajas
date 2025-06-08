@@ -330,7 +330,7 @@
 
 
         <!-- Orientação Educacional -->
-        {% if user.username == "Valder" or user.username == "Tatiane" or user.is_superuser %}
+        {% if user.username == "Valder" or user.username == "Tatiane" or user.is_superuser or user.username == "Janayna" or user.username == "Wendrea" or user.username == "Lisboa" %}
         <li class="nav-item has-treeview">
             <a href="#" class="nav-link">
                 <i class="fas fa-chalkboard-teacher nav-icon"></i>
@@ -374,12 +374,18 @@
         </li>
         
         <!-- Legislação -->
+         {% if user.is_superuser %}
         <li class="nav-item">
             <a href="{% url 'legislacao' %}" class="nav-link" data-id="legislacao">
                 <i class="fas fa-gavel nav-icon"></i>
                 <p>Legislação</p>
             </a>
         </li>
+        {% endif %}
+
+
+
+
         {% endif %}
                 
 
@@ -466,8 +472,66 @@
                 </li>
                 {% endif %}
                 {% endif %}
-               
-                <!-- Script para exibir/ocultar submenu -->
+
+
+
+                <!-- Controle Patrimonial -->
+                {% if user.is_superuser %}
+                <li class="nav-item has-treeview">
+                    <a href="#" class="nav-link">
+                        <i class="fas fa-boxes nav-icon"></i>
+                        <p>Patrimônio <i class="right fas fa-angle-left"></i></p>
+                    </a>
+
+                    <ul class="nav nav-treeview">
+                        <li class="nav-item">
+                            <a href="{% url 'dashboard_patrimonio' %}" class="nav-link">
+                                <i class="fas fa-chart-bar nav-icon"></i>
+                                <p>Dashboard</p>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a href="{% url 'patrimonio_lista' %}" class="nav-link">
+                                <i class="fas fa-warehouse nav-icon"></i>
+                                <p>Todos os Bens</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'fornecedores_lista' %}" class="nav-link">
+                                <i class="fas fa-truck nav-icon"></i>
+                                <p>Fornecedores</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'notas_fiscais_lista' %}" class="nav-link">
+                                <i class="fas fa-file-invoice nav-icon"></i>
+                                <p>Notas Fiscais</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'contratos_lista' %}" class="nav-link">
+                                <i class="fas fa-handshake nav-icon"></i>
+                                <p>Contratos</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'localizacoes_lista' %}" class="nav-link">
+                                <i class="fas fa-map-marker-alt nav-icon"></i>
+                                <p>Localizações</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'relatorios_patrimonio' %}" class="nav-link">
+                                <i class="fas fa-file-alt nav-icon"></i>
+                                <p>Relatórios</p>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+                    
+                                <!-- Script para exibir/ocultar submenu -->
                 <script>
                     function toggleSubmenu(event, submenuId) {
                         event.preventDefault();
@@ -477,7 +541,7 @@
                 </script>
 
 
-            {% if user.is_superuser or user.username == "Neusa" or user.username == "Icleia" or user.username == "Alde" or user.username == "Mauro" %}
+            {% if user.is_superuser or user.username == "Neusa" or user.username == "Icleia" or user.username == "Alde" or user.username == "Mauro" or user.username == "Carlos" %}
             <!-- SEPPEC -->
             <li class="nav-item">
                 <a href="#" class="nav-link" onclick="toggleSubmenu(event, 'contabilidade-menu')" data-id="seppec">
@@ -555,6 +619,13 @@
                                 <a href="{% url 'adicionar_livro_caixa' %}" class="nav-link" data-id="pddecaixa">
                                     <i class="fas fa-cash-register nav-icon"></i>
                                     <p>Caixa</p>
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a href="{% url 'adicionar_programa_pdde' %}" class="nav-link" data-id="pddecaixa">
+                                    <i class="fas fa-cash-register nav-icon"></i>
+                                    <p>Adicionar Programa</p>
                                 </a>
                             </li>
                             

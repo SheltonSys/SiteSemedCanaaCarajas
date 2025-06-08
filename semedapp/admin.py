@@ -11,14 +11,22 @@ from . import custom_otp_admin  # Força uso dos admins seguros
 
 
 # ---------- Custom User Admin ----------
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import (
+    CustomUserProf, Escolas, EscolaPdde, TipoDemanda,
+    RoleModulePermission, Noticia, Module, UserModulePermission,
+    CertidaoEmitida
+)
+
 @admin.register(CustomUserProf)
 class CustomUserProfAdmin(UserAdmin):
     model = CustomUserProf
     list_display = (
         'username', 'first_name', 'last_name', 'cpf',
-        'escola', 'is_coordenador', 'is_professor', 'is_active'
+        'is_coordenador', 'is_professor', 'is_active'
     )
-    list_filter = ('is_coordenador', 'is_professor', 'is_active', 'escola')
+    list_filter = ('is_coordenador', 'is_professor', 'is_active')  # Remova 'escola'
     search_fields = ('username', 'first_name', 'last_name', 'cpf', 'matricula')
     ordering = ('username',)
 
@@ -28,7 +36,7 @@ class CustomUserProfAdmin(UserAdmin):
             'fields': ('first_name', 'last_name', 'cpf', 'email', 'telefone', 'especializacao', 'matricula')
         }),
         ('Vínculo com Escolas', {
-            'fields': ('escola', 'escolas', 'escola_pdde', 'is_coordenador', 'is_professor')
+            'fields': ('escolas', 'is_coordenador', 'is_professor')
         }),
         ('Permissões', {
             'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')
@@ -36,15 +44,7 @@ class CustomUserProfAdmin(UserAdmin):
         ('Datas importantes', {'fields': ('last_login', 'date_joined')}),
     )
 
-    add_fieldsets = (
-        (None, {
-            'classes': ('wide',),
-            'fields': ('username', 'cpf', 'first_name', 'last_name', 'password1', 'password2'),
-        }),
-    )
 
-
-# ---------- Escola Principal ----------
 @admin.register(Escolas)
 class EscolasAdmin(admin.ModelAdmin):
     list_display = ('id', 'nome', 'codigo_inep', 'cidade', 'bairro', 'uf', 'dependencia_administrativa')
@@ -52,7 +52,6 @@ class EscolasAdmin(admin.ModelAdmin):
     search_fields = ('nome', 'codigo_inep', 'cidade', 'bairro')
 
 
-# ---------- Escola PDDE ----------
 @admin.register(EscolaPdde)
 class EscolaPddeAdmin(admin.ModelAdmin):
     list_display = ('nome', 'codigo_inep', 'cnpj', 'ano', 'status', 'cidade', 'uf', 'coordenador')
@@ -61,7 +60,6 @@ class EscolaPddeAdmin(admin.ModelAdmin):
     autocomplete_fields = ['coordenador']
 
 
-# ---------- Tipo Demanda ----------
 @admin.register(TipoDemanda)
 class TipoDemandaAdmin(admin.ModelAdmin):
     list_display = ['id', 'nome', 'descricao', 'status', 'prioridade', 'data_cadastro']
@@ -69,15 +67,13 @@ class TipoDemandaAdmin(admin.ModelAdmin):
     search_fields = ['nome', 'descricao']
 
 
-# ---------- Permissões por Role ----------
 @admin.register(RoleModulePermission)
 class RoleModulePermissionAdmin(admin.ModelAdmin):
     list_display = ('role', 'module')
     list_filter = ('role',)
-    search_fields = ('module__nome',)  # Corrigido
+    search_fields = ('module__nome',)
 
 
-# ---------- Notícias ----------
 @admin.register(Noticia)
 class NoticiaAdmin(admin.ModelAdmin):
     list_display = ('titulo', 'publicado', 'criado_por', 'criado_em', 'publicado_em')
@@ -85,20 +81,17 @@ class NoticiaAdmin(admin.ModelAdmin):
     search_fields = ('titulo',)
 
 
-# ---------- Módulos ----------
 @admin.register(Module)
 class ModuleAdmin(admin.ModelAdmin):
-    list_display = ('id', 'nome', 'url')  # Corrigido
-    search_fields = ('nome', 'url')       # Corrigido
+    list_display = ('id', 'nome', 'url')
+    search_fields = ('nome', 'url')
 
 
-# ---------- Permissões por Usuário ----------
 @admin.register(UserModulePermission)
 class UserModulePermissionAdmin(admin.ModelAdmin):
     list_display = ('user', 'module')
-    search_fields = ('user__username', 'module__nome')  # Corrigido
+    search_fields = ('user__username', 'module__nome')
 
 
-
-from .models import CertidaoEmitida
+# Registro simples de modelo sem personalização
 admin.site.register(CertidaoEmitida)

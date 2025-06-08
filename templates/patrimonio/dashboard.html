@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard Patrimonial{% endblock %}
+{% block content %}
+<div class="content-wrapper" style="margin-left: 0; padding: 20px;">
+    <div class="container-fluid">
+
+        <!-- Cabeçalho -->
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary font-weight-bold">Painel Patrimonial</h1>
+            <h3 class="text-muted">Bem-vindo(a), {{ user.first_name }}! Acompanhe os principais indicadores do controle de bens.</h3>
+        </div>
+
+        <!-- Indicadores Patrimoniais -->
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-boxes fa-3x text-primary mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Total de Bens</h6>
+                        <p class="text-muted display-6 fw-bold">{{ total_bens }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center bg-light">
+                        <i class="fas fa-exchange-alt fa-3x text-success mb-2"></i>
+                        <h6 class="font-weight-bold mt-2">Movimentações</h6>
+                        <p class="text-muted display-6 fw-bold">{{ total_movimentacoes }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body bg-light">
+                        <h6 class="text-center text-primary fw-bold"><i class="fas fa-map-marker-alt"></i> Bens por Localização</h6>
+                        <ul class="list-group list-group-flush mt-3">
+                            {% for local in bens_por_local %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ local.nome }}
+                                <span class="badge bg-secondary rounded-pill">{{ local.qtd }}</span>
+                            </li>
+                            {% empty %}
+                            <li class="list-group-item text-muted text-center">Nenhum dado encontrado.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

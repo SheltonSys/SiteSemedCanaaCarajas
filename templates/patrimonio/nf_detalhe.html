@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}Detalhes da Nota Fiscal{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="mb-4 text-primary text-center">
+    <i class="fas fa-file-invoice-dollar me-2"></i> Detalhes da Nota Fiscal
+  </h2>
+
+  <div class="card shadow-sm p-4">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Número:</strong> {{ nota.numero }}</li>
+      <li class="list-group-item"><strong>Data:</strong> {{ nota.data|date:'d/m/Y' }}</li>
+      <li class="list-group-item"><strong>Valor Total:</strong> R$ {{ nota.valor_total|floatformat:2 }}</li>
+      <li class="list-group-item"><strong>Fornecedor:</strong> {{ nota.fornecedor.nome }}</li>
+      <li class="list-group-item"><strong>Descrição:</strong> {{ nota.descricao }}</li>
+    </ul>
+    <div class="mt-4 text-end">
+      <a href="{% url 'notas_lista' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

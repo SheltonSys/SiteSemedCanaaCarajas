@@ -2,7 +2,6 @@
 
 {% block content %}
 <div class="content-wrapper" style="padding: 0; margin: 0;">
-    <!-- Header -->
     <div class="content-header bg-light border-bottom">
         <div class="container-fluid">
             <div class="row mb-2">
@@ -22,10 +21,8 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <section class="content" style="padding: 20px;">
         <div class="container-fluid">
-            <!-- Membros Table -->
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
                     <h5 class="card-title font-weight-bold">
@@ -59,85 +56,23 @@
                                     <td>{{ membro.conselho }}</td>
                                     <td>{{ membro.telefone }}</td>
                                     <td class="text-center">
-                                        <!-- Botão Detalhes -->
-                                        <button type="button" class="btn btn-info btn-sm" data-toggle="modal" data-target="#detalhesMembroModal{{ forloop.counter }}">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <!-- Botão Editar -->
                                         <a href="{% url 'editar_membro' membro.id %}" class="btn btn-warning btn-sm">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <!-- Botão Excluir -->
+                                        {% if user.is_superuser or user.username == "Neusa" %}
                                         <form action="{% url 'excluir_membro' membro.id %}" method="post" style="display:inline;" class="form-excluir">
                                             {% csrf_token %}
                                             <button type="submit" class="btn btn-danger btn-sm">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
-
-                                <!-- Modal para Detalhes -->
-                                <div class="modal fade" id="detalhesMembroModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="detalhesMembroModalLabel{{ forloop.counter }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg">
-                                        <div class="modal-content shadow-lg border-0">
-                                            <div class="modal-header bg-primary text-white">
-                                                <h5 class="modal-title" id="detalhesMembroModalLabel{{ forloop.counter }}">
-                                                    <i class="fas fa-user-circle"></i> Detalhes do Membro
-                                                </h5>
-                                                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body p-4">
-                                                <ul class="list-group list-group-flush">
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-school text-primary"></i> <strong>Escola:</strong> {{ membro.escola }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-users text-primary"></i> <strong>Conselho:</strong> {{ membro.escola.nome_conselho }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-barcode text-primary"></i> <strong>Código INEP:</strong> {{ membro.inep }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-calendar-plus text-primary"></i> <strong>Data de Abertura:</strong> {{ membro.data_abertura }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-calendar-alt text-primary"></i> <strong>Data de Vencimento:</strong> {{ membro.data_vencimento }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-user text-primary"></i> <strong>Nome:</strong> {{ membro.nome }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-briefcase text-primary"></i> <strong>Função:</strong> {{ membro.funcao }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-map-marker-alt text-primary"></i> <strong>Endereço:</strong> {{ membro.endereco }}, {{ membro.bairro }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-phone-alt text-primary"></i> <strong>Telefone:</strong> {{ membro.telefone }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-envelope text-primary"></i> <strong>E-mail:</strong> {{ membro.email }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-map-pin text-primary"></i> <strong>CEP:</strong> {{ membro.cep }}
-                                                    </li>
-                                                    <li class="list-group-item">
-                                                        <i class="fas fa-id-card text-primary"></i> <strong>CPF:</strong> {{ membro.cpf }}
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary" data-dismiss="modal">
-                                                    <i class="fas fa-times"></i> Fechar
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Nenhum membro encontrado.</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -148,7 +83,6 @@
     </section>
 </div>
 
-<!-- Modal para Cadastro -->
 <!-- Modal para Cadastro -->
 <div class="modal fade" id="cadastroMembroModal" tabindex="-1" aria-labelledby="cadastroMembroModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -168,9 +102,7 @@
                             <select class="form-control" id="escola" name="escola" required>
                                 <option value="">Selecione...</option>
                                 {% for escola in escolas %}
-                                    <option value="{{ escola.nome }}" data-inep="{{ escola.codigo_inep }}" data-conselho="{{ escola.nome_conselho }}">
-                                        {{ escola.nome }}
-                                    </option>
+                                    <option value="{{ escola.id }}" data-inep="{{ escola.codigo_inep }}" data-conselho="{{ escola.nome_conselho }}">{{ escola.nome }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -184,7 +116,6 @@
                             <label for="conselho">Conselho:</label>
                             <input type="text" class="form-control" id="conselho" name="conselho" readonly required>
                         </div>
-                        
                     </div>
                     <div class="form-row">
                         <div class="form-group col-md-6">
@@ -240,13 +171,6 @@
                             <input type="text" class="form-control" id="cpf" name="cpf" required>
                         </div>
                     </div>
-                    <!-- Novo campo de vencimento -->
-                    <div class="form-row">
-                        <div class="form-group col-md-6">
-                            <label for="vencimento">Data de Vencimento:</label>
-                            <input type="date" class="form-control" id="vencimento" name="vencimento" required>
-                        </div>
-                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">Salvar</button>
@@ -257,54 +181,20 @@
     </div>
 </div>
 
-
-
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const escolaSelect = document.getElementById("escola");
-        const conselhoInput = document.getElementById("conselho");
-        const inepInput = document.getElementById("inep");
+document.addEventListener("DOMContentLoaded", function () {
+    const escolaSelect = document.getElementById("escola");
+    const conselhoInput = document.getElementById("conselho");
+    const inepInput = document.getElementById("inep");
 
-        escolaSelect.addEventListener("change", function () {
-            const selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
-            const conselhoNome = selectedOption.getAttribute("data-conselho");
-            const inepCodigo = selectedOption.getAttribute("data-inep");
+    escolaSelect.addEventListener("change", function () {
+        const selectedOption = escolaSelect.options[escolaSelect.selectedIndex];
+        const conselhoNome = selectedOption.getAttribute("data-conselho");
+        const inepCodigo = selectedOption.getAttribute("data-inep");
 
-            conselhoInput.value = conselhoNome || "";
-            inepInput.value = inepCodigo || "";
-        });
+        conselhoInput.value = conselhoNome || "";
+        inepInput.value = inepCodigo || "";
     });
+});
 </script>
-
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const deleteForms = document.querySelectorAll(".form-excluir");
-        deleteForms.forEach(form => {
-            form.addEventListener("submit", function(e) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Tem certeza?',
-                    text: "Essa ação não poderá ser desfeita!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sim, excluir!',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
-        });
-    });
-</script>
-
-
-
-
 {% endblock %}

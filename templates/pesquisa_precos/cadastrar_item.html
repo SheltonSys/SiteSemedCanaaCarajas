@@ -21,7 +21,13 @@
     <!-- Escola vinculada -->
     <div class="col-md-6">
         <label>Escola vinculada:</label>
-        <input type="text" class="form-control" value="{{ request.user.escolas.first.nome }}" readonly>
+        <select id="escola" name="escola" class="form-select" required>
+            <option value="" disabled selected>Selecione a escola</option>
+            {% for escola in escolas_vinculadas %}
+                <option value="{{ escola.id }}">{{ escola.nome }}</option>
+            {% endfor %}
+        </select>
+
     </div>
 
     <!-- Programas vinculados -->
@@ -39,6 +45,8 @@
             </ul>
         </div>
     </div>
+
+    
 </div>
 
 

@@ -1,4 +1,6 @@
 {% extends "base.html" %}
+{% load custom_filters %}
+
 {% load static %}
 
 {% block content %}
@@ -22,15 +24,15 @@
                     <div class="row">
 
                         <div class="col-md-6">
-    <label for="escola-select" class="form-label">Selecionar Escola:</label>
-    <select class="form-select" id="escola-select" name="escola" required>
-        <option value="">-- Escolha a escola --</option>
-        {% for escola in escolas %}
-            <option value="{{ escola.id }}" {% if escolas|length == 1 %}selected data-unico="true"{% endif %}>{{ escola.nome }}</option>
+                            <label for="escola-select" class="form-label">Selecionar Escola:</label>
+                            <select class="form-select" id="escola-select" name="escola" required>
+                                <option value="">-- Escolha a escola --</option>
+                                {% for escola in escolas %}
+                                    <option value="{{ escola.id }}" {% if escolas|length == 1 %}selected data-unico="true"{% endif %}>{{ escola.nome }}</option>
 
-        {% endfor %}
-    </select>
-</div>
+                                {% endfor %}
+                            </select>
+                        </div>
 
 
                         <div class="col-md-6">
@@ -91,22 +93,14 @@
     </div>
     <div class="card-body bg-light">
         <div class="row">
-            <!-- <div class="col-md-2">
-                <label for="data_inicio">Data Início:</label>
-                <input type="date" id="data_inicio" name="data_inicio" class="form-control"
-    value="{{ receita.data_inicio|date:'Y-m-d'|default:'' }}" readonly>
-            </div>
-            <div class="col-md-2">
-                <label for="data_fim">Data Fim:</label>
-                <input type="date" id="data_fim" name="data_fim" class="form-control"
-    value="{{ receita.data_fim|date:'Y-m-d'|default:'' }}" readonly>
-            </div> -->
 
             <div class="col-md-3">
-                <label for="saldo_anterior_custeio">01 – Saldo Reprogramado EA (Custeio)</label>
-                <input type="text" id="saldo_anterior_custeio" name="saldo_anterior_custeio"
-                    class="form-control" value="{{ receita.saldo_anterior_custeio|default:"0.00" }}" readonly>
-            </div>
+    <label for="saldo_anterior_custeio">01 – Saldo Reprogramado EA (Custeio)</label>
+    <input type="text" id="saldo_anterior_custeio" name="saldo_anterior_custeio"
+           class="form-control" value="{{ receita.saldo_anterior_custeio|default:"0.00" }}" readonly>
+</div>
+
+
             <div class="col-md-3">
                 <label for="saldo_anterior_capital">01 – Saldo Reprogramado EA (Capital)</label>
                 <input type="text" id="saldo_anterior_capital" name="saldo_anterior_capital"
@@ -114,10 +108,12 @@
             </div>
 
             <div class="col-md-3">
-                <label for="valor_creditado_custeio">02 – Valor Creditado FNDE EE (Custeio)</label>
-                <input type="text" id="valor_creditado_custeio" name="valor_creditado_custeio"
-                    class="form-control" value="{{ receita.valor_creditado_custeio|default:"0.00" }}" readonly>
-            </div>
+    <label for="valor_creditado_custeio">02 – Valor Creditado FNDE EE (Custeio)</label>
+    <input type="text" id="valor_creditado_custeio" name="valor_creditado_custeio"
+        class="form-control" value="{{ receita.valor_creditado_custeio|default:"0.00" }}" readonly>
+</div>
+
+
             <div class="col-md-3">
                 <label for="valor_creditado_capital">02 – Valor Creditado FNDE EE (Capital)</label>
                 <input type="text" id="valor_creditado_capital" name="valor_creditado_capital"
@@ -207,6 +203,20 @@
                 <input type="text" id="escolas_atendidas" name="escolas_atendidas"
                     class="form-control" value="{{ receita.escolas_atendidas|default:"1" }}" readonly>
             </div>
+
+            <div class="col-md-3">
+    <label for="total_receita">11 – Receita Total Consolidada</label>
+    <input type="text" id="total_receita" class="form-control" value="{{ receita.total_receita }}" readonly>
+</div>
+<div class="col-md-3">
+    <label for="total_despesa">12 – Despesa Total Consolidada</label>
+    <input type="text" id="total_despesa" class="form-control" value="{{ receita.total_despesa }}" readonly>
+</div>
+<div class="col-md-3">
+    <label for="receita_liquida">13 – Receita Líquida (Saldo)</label>
+    <input type="text" id="receita_liquida" class="form-control" value="{{ receita.receita_liquida }}" readonly>
+</div>
+
             
 
             <!-- <div class="col-md-3">
@@ -272,15 +282,19 @@
                             <td>{{ pagamento.cnpj_cpf }}</td>
                             <td class="text-start">{{ pagamento.tipo_bem_servico }}</td>
                             <td>{% if pagamento.origem %}{{ pagamento.origem }}{% else %}FNDE{% endif %}</td>
-                            <td>{{ pagamento.tipo_pagamento }}</td>
+                            <td class="valor-pagamento {% if pagamento.tipo_pagamento == 'Custeio' %}custeio{% else %}capital{% endif %}">
+                                {{ pagamento.valor|br_money }}
+                            </td>
+
+
                             <td>{{ pagamento.tipo_documento }}</td>
                             <td>{{ pagamento.numero_documento }}</td>
                             <td>{{ pagamento.data_documento|date:"d/m/Y" }}</td>
-                            <td>{{ pagamento.numero_pagamento }}</td>
+                            <td>{{ pagamento.numero_documento_pagamento }}</td>
                             <td>{{ pagamento.data_pagamento|date:"d/m/Y" }}</td>
-                            <td class="valor-pagamento {% if pagamento.tipo_pagamento == 'Custeio' %}custeio{% else %}capital{% endif %}">
+                            <!-- <td class="valor-pagamento {% if pagamento.tipo_pagamento == 'Custeio' %}custeio{% else %}capital{% endif %}">
                                 R$ {{ pagamento.valor|floatformat:2|stringformat:".2f"|default:"0,00" }}
-                            </td>
+                            </td> -->
                             <td>
                                 <a href="{% url 'editar_pagamento' pagamento.id %}" class="btn btn-sm btn-warning">
                                     <i class="fas fa-edit"></i> Editar
@@ -300,35 +314,29 @@
                             <td colspan="10" class="text-end pe-3 py-2">
                                 <i class="fas fa-coins text-primary me-2"></i> Total Custeio:
                             </td>
-                            <td id="total-custeio" class="text-primary fw-bold py-2" colspan="2">R$ 0,00</td>
+                            <td id="total-custeio" class="text-primary fw-bold py-2" colspan="2">{{ total_custeio|br_money }}</td>
                             <td></td>
                         </tr>
                         <tr class="bg-light fw-bold">
                             <td colspan="10" class="text-end pe-3 py-2">
                                 <i class="fas fa-piggy-bank text-success me-2"></i> Total Capital:
                             </td>
-                            <td id="total-capital" class="text-success fw-bold py-2" colspan="2">R$ 0,00</td>
+                            <td id="total-capital" class="text-success fw-bold py-2" colspan="2">{{ total_capital|br_money }}</td>
                             <td></td>
                         </tr>
                         <tr class="bg-gradient-secondary text-white fw-bold">
                             <td colspan="10" class="text-end pe-3 py-2">
                                 <i class="fas fa-hand-holding-usd text-warning me-2"></i> Total Pagamentos:
                             </td>
-                            <td id="total-geral" colspan="2" class="text-warning fw-bold py-2">R$ 0,00</td>
+                            <td id="total-geral" colspan="2" class="text-warning fw-bold py-2">{{ total_geral|br_money }}</td>
                             <td></td>
                         </tr>
                     </tfoot>
-                    
-
-
                 </table>
             </div>
         </div>
     </div>
     
-
-
-
         <!-- BLOCO 4 – AUTENTICAÇÃO -->
         <div class="card shadow-lg border-0 mt-4">
             <div class="card-header bg-gradient-primary text-white">
@@ -345,12 +353,9 @@
                         </div>
 
                     <div class="col-md-6">
-    <label for="dirigente" class="form-label">Nome do Dirigente:</label>
-    <input type="text" id="dirigente" name="dirigente" class="form-control" readonly>
-</div>
-
-
-
+                        <label for="dirigente" class="form-label">Nome do Dirigente:</label>
+                        <input type="text" id="dirigente" name="dirigente" class="form-control" readonly>
+                    </div>
 
                 </div>
             </div>
@@ -384,357 +389,135 @@
 
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const escolaSelect = document.getElementById("escola-select");
-        const programaSelect = document.getElementById("programa-select");
-        const tabelaPagamentos = document.getElementById("tabela-pagamentos");
+document.addEventListener("DOMContentLoaded", function () {
+    const escolaSelect = document.getElementById("escola-select");
+    const dirigenteInput = document.getElementById("dirigente");
+    const tabelaPagamentos = document.getElementById("tabela-pagamentos");
 
-        // 🔹 Elementos de totalização
-        const totalCusteio = document.getElementById("total-custeio");
-        const totalCapital = document.getElementById("total-capital");
-        const totalGeral = document.getElementById("total-geral");
+    const camposReceita = [
+        "saldo_anterior_custeio", "saldo_anterior_capital",
+        "valor_creditado_custeio", "valor_creditado_capital",
+        "recursos_proprios_custeio", "recursos_proprios_capital",
+        "rendimento_aplicacao_custeio", "rendimento_aplicacao_capital",
+        "devolucao_fnde_custeio", "devolucao_fnde_capital",
+        "saldo_devolvido_custeio", "saldo_devolvido_capital",
+        "valor_total_receita_custeio", "valor_total_receita_capital",
+        "valor_despesa_realizada_custeio", "valor_despesa_realizada_capital",
+        "saldo_reprogramar_custeio", "saldo_reprogramar_capital",
+        "escolas_atendidas", "total_receita", "total_despesa", "receita_liquida"
+    ];
 
-        // 🔹 Evento ao selecionar uma escola
-        escolaSelect.addEventListener("change", function () {
-            let escolaId = this.value;
-            if (!escolaId) return;
-
-            // Buscar dados da escola
-            fetch(`/get-escola-pdde/${escolaId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    ["nome_conselho", "cnpj", "endereco", "municipio", "uf"].forEach(campo => {
-                        let elemento = document.getElementById(campo);
-                        if (elemento) elemento.value = data[campo] || "Não informado";
-                    });
-                })
-                .catch(error => console.error("❌ Erro ao buscar os dados da escola:", error));
-
-            // Buscar receitas e despesas
-            fetch(`/get-receita-despesa/${escolaId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.erro) return console.error("❌ Erro ao carregar receitas e despesas:", data.erro);
-
-                    [
-                        "saldo_anterior_custeio", "saldo_anterior_capital",
-                        "valor_creditado_custeio", "valor_creditado_capital",
-                        "recursos_proprios_custeio", "recursos_proprios_capital",
-                        "rendimento_aplicacao_custeio", "rendimento_aplicacao_capital",
-                        "devolucao_fnde_custeio", "devolucao_fnde_capital",
-                        "saldo_devolvido_custeio", "saldo_devolvido_capital",
-                        "valor_total_receita_custeio", "valor_total_receita_capital",
-                        "valor_despesa_realizada_custeio", "valor_despesa_realizada_capital",
-                        "saldo_reprogramar_custeio", "saldo_reprogramar_capital"
-                    ].forEach(campo => {
-                        let campoElement = document.getElementById(campo);
-                        if (campoElement) {
-                            campoElement.value = data[campo] ? formatarValor(data[campo]) : "0,00";
-                        }
-                    });
-
-                    let periodoElement = document.getElementById("periodo_execucao");
-                    if (periodoElement) {
-                        periodoElement.value = `${data.data_inicio || "Não informado"} até ${data.data_fim || "Não informado"}`;
-                    }
-                })
-                .catch(error => console.error("❌ Erro ao buscar os dados financeiros:", error));
-
-            // Buscar programas vinculados
-            fetch(`/get-programas-vinculados/${escolaId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    let programasTextarea = document.getElementById("programas_vinculados");
-                    if (programasTextarea) {
-                        programasTextarea.value = data.programas.length > 0 ? data.programas.join(", ") : "Nenhum programa vinculado";
-                    }
-                })
-                .catch(error => console.error("❌ Erro ao buscar os programas vinculados:", error));
-
-            // Buscar pagamentos
-            carregarPagamentos(escolaId);
+    function preencherCampos(dados) {
+        camposReceita.forEach(campo => {
+            const el = document.getElementById(campo);
+            if (el) el.value = dados[campo] || "0,00";
         });
 
-        function carregarPagamentos(escolaId) {
-            if (!escolaId) return;
-            fetch(`/get-pagamentos/${escolaId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    tabelaPagamentos.innerHTML = "";
-                    let totalCusteioVal = 0;
-                    let totalCapitalVal = 0;
-
-                    if (data.pagamentos && data.pagamentos.length > 0) {
-                        data.pagamentos.forEach((pagamento, index) => {
-                            let valor = parseFloat(pagamento.valor) || 0;
-                            if (pagamento.tipo_pagamento === "Custeio") totalCusteioVal += valor;
-                            else totalCapitalVal += valor;
-
-                            let row = `
-                                <tr>
-                                    <td>${index + 1}</td>
-                                    <td class="text-start">${pagamento.nome_favorecido || "Não informado"}</td>
-                                    <td>${pagamento.cnpj_cpf || "N/A"}</td>
-                                    <td class="text-start">${pagamento.tipo_bem_servico || "N/A"}</td>
-                                    <td>${pagamento.origem || "FNDE"}</td>
-                                    <td>${pagamento.tipo_pagamento || "N/A"}</td>
-                                    <td>${pagamento.tipo_documento || ""}</td>
-                                    <td>${pagamento.numero_documento || ""}</td>
-                                    <td>${pagamento.data_documento || ""}</td>
-                                    <td>${pagamento.numero_pagamento || ""}</td>
-                                    <td>${pagamento.data_pagamento || ""}</td>
-                                    <td class="valor-pagamento ${pagamento.tipo_pagamento === 'Custeio' ? 'custeio' : 'capital'}">
-                                        R$ ${formatarValor(valor)}
-                                    </td>
-                                    <td>
-                                        <a href="${pagamento.url_editar}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-edit"></i> Editar
-                                        </a>
-                                    </td>
-                                </tr>`;
-                            tabelaPagamentos.innerHTML += row;
-                        });
-                    } else {
-                        tabelaPagamentos.innerHTML = `
-                            <tr>
-                                <td colspan="13" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
-                            </tr>`;
-                    }
-
-                    atualizarTotais(totalCusteioVal, totalCapitalVal);
-                })
-                .catch(error => console.error("❌ Erro ao carregar pagamentos:", error));
-        }
-
-        function atualizarTotais(custeio, capital) {
-            let total = custeio + capital;
-            totalCusteio.textContent = `R$ ${formatarValor(custeio)}`;
-            totalCapital.textContent = `R$ ${formatarValor(capital)}`;
-            totalGeral.textContent = `R$ ${formatarValor(total)}`;
-        }
-
-        function formatarValor(valor) {
-            return parseFloat(valor || 0).toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-
-        // 🔹 Após tudo carregado, se só houver uma escola, dispare o evento de seleção
-        const unica = escolaSelect.querySelector('option[selected][data-unico="true"]');
-        if (unica) {
-            escolaSelect.value = unica.value;
-            escolaSelect.dispatchEvent(new Event("change"));
-        }
-    });
-</script>
-
-
-
-<script>
-    function atualizarCamposReceita(escolaId) {
-        if (!escolaId) return;
-
-        fetch(`/get-receita-despesa/${escolaId}/`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.erro) return console.error("❌ Erro ao carregar receita:", data.erro);
-
-                document.getElementById("valor_despesa_realizada_custeio").value = formatarValor(data.valor_despesa_realizada_custeio || 0);
-                document.getElementById("valor_despesa_realizada_capital").value = formatarValor(data.valor_despesa_realizada_capital || 0);
-                document.getElementById("saldo_reprogramar_custeio").value = formatarValor(data.saldo_reprogramar_custeio || 0);
-                document.getElementById("saldo_reprogramar_capital").value = formatarValor(data.saldo_reprogramar_capital || 0);
-            })
-            .catch(error => console.error("❌ Erro ao atualizar os valores da receita:", error));
+        document.getElementById("total-custeio").textContent = "R$ " + (dados.total_custeio || "0,00");
+        document.getElementById("total-capital").textContent = "R$ " + (dados.total_capital || "0,00");
+        document.getElementById("total-geral").textContent = "R$ " + (dados.total_geral || "0,00");
     }
 
-    function formatarValor(valor) {
-        return parseFloat(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-    // Chama a função após cada pagamento salvo
-    document.addEventListener("DOMContentLoaded", function () {
-        let escolaId = document.getElementById("escola-select").value;
-        if (escolaId) {
-            atualizarCamposReceita(escolaId);
-        }
-    });
-</script>
-
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const escolaSelect = document.getElementById("escola-select");
-        const totalCusteio = document.getElementById("total-custeio");
-        const totalCapital = document.getElementById("total-capital");
-        const totalGeral = document.getElementById("total-geral");
-        const tabelaPagamentos = document.getElementById("tabela-pagamentos");
-
-        function formatarValor(valor) {
-            return parseFloat(valor || 0).toLocaleString("pt-BR", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-
-        function atualizarTotais(custeio, capital) {
-            let total = custeio + capital;
-            totalCusteio.textContent = `R$ ${formatarValor(custeio)}`;
-            totalCapital.textContent = `R$ ${formatarValor(capital)}`;
-            totalGeral.textContent = `R$ ${formatarValor(total)}`;
-        }
-
-        function carregarPagamentos(escolaId) {
-            fetch(`/get-pagamentos/${escolaId}/`)
-                .then(res => res.json())
-                .then(data => {
-                    let totalCusteioVal = 0;
-                    let totalCapitalVal = 0;
-                    tabelaPagamentos.innerHTML = "";
-
-                    if (data.pagamentos && data.pagamentos.length > 0) {
-                        data.pagamentos.forEach((p, i) => {
-                            const valor = parseFloat(p.valor) || 0;
-                            if (p.tipo_pagamento === "Custeio") totalCusteioVal += valor;
-                            else totalCapitalVal += valor;
-
-                            tabelaPagamentos.innerHTML += `
-                                <tr>
-                                    <td>${i + 1}</td>
-                                    <td class="text-start">${p.nome_favorecido || "-"}</td>
-                                    <td>${p.cnpj_cpf || "-"}</td>
-                                    <td class="text-start">${p.tipo_bem_servico || "-"}</td>
-                                    <td>${p.origem || "FNDE"}</td>
-                                    <td>${p.tipo_pagamento || "-"}</td>
-                                    <td>${p.tipo_documento || "-"}</td>
-                                    <td>${p.numero_documento || "-"}</td>
-                                    <td>${p.data_documento || "-"}</td>
-                                    <td>${p.numero_pagamento || "-"}</td>
-                                    <td>${p.data_pagamento || "-"}</td>
-                                    <td class="valor-pagamento ${p.tipo_pagamento === 'Custeio' ? 'custeio' : 'capital'}">R$ ${formatarValor(valor)}</td>
-                                    <td><a href="${p.url_editar}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i> Editar</a></td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        tabelaPagamentos.innerHTML = `
-                            <tr>
-                                <td colspan="13" class="text-center text-muted">Nenhum pagamento registrado ainda.</td>
-                            </tr>
-                        `;
-                    }
-
-                    atualizarTotais(totalCusteioVal, totalCapitalVal);
-                })
-                .catch(err => console.error("Erro ao carregar pagamentos:", err));
-        }
-
-        function atualizarCamposReceita(escolaId) {
-            fetch(`/get-receita-despesa/${escolaId}/`)
-                .then(res => res.json())
-                .then(data => {
-                    [
-                        "valor_despesa_realizada_custeio",
-                        "valor_despesa_realizada_capital",
-                        "saldo_reprogramar_custeio",
-                        "saldo_reprogramar_capital"
-                    ].forEach(id => {
-                        let el = document.getElementById(id);
-                        if (el) el.value = formatarValor(data[id] || 0);
-                    });
-                });
-        }
-
-        function carregarDadosEscola(escolaId) {
-            fetch(`/get-escola-pdde/${escolaId}/`)
-                .then(res => res.json())
-                .then(data => {
-                    ["nome_conselho", "cnpj", "endereco", "uf"].forEach(campo => {
-                        let el = document.getElementById(campo);
-                        if (el) el.value = data[campo] || "Não informado";
-                    });
-                });
-        }
-
-        function carregarProgramasVinculados(escolaId) {
-        fetch(`/get-programas-vinculados/${escolaId}/`)
+    function carregarDadosEscola(id) {
+        fetch(`/get-escola-pdde/${id}/`)
             .then(res => res.json())
             .then(data => {
-                let el = document.getElementById("programas_vinculados");
-                if (el) {
-                    if (data.programas.length > 0) {
-                        const texto = data.programas.map(p => `[${p}]`).join(", ");
-                        el.value = texto;
-                    } else {
-                        el.value = "Nenhum programa vinculado";
-                    }
-                }
-            })
-            .catch(err => {
-                console.error("Erro ao carregar programas vinculados:", err);
+                ["nome_conselho", "cnpj", "endereco", "uf"].forEach(campo => {
+                    const el = document.getElementById(campo);
+                    if (el) el.value = data[campo] || "Não informado";
+                });
             });
     }
 
+    function carregarProgramasVinculados(id) {
+        fetch(`/get-programas-vinculados/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                const el = document.getElementById("programas_vinculados");
+                if (el) {
+                    el.value = data.programas.length > 0
+                        ? data.programas.map(p => `[${p}]`).join(", ")
+                        : "Nenhum programa vinculado";
+                }
+            });
+    }
 
-        // Quando muda a escola manualmente
-        escolaSelect.addEventListener("change", () => {
-            let escolaId = escolaSelect.value;
-            if (escolaId) {
-                carregarDadosEscola(escolaId);
-                carregarProgramasVinculados(escolaId);
-                carregarPagamentos(escolaId);
-                atualizarCamposReceita(escolaId);
-            }
-        });
-
-        // Carregamento inicial
-        const escolaIdInicial = escolaSelect.value;
-        if (escolaIdInicial) {
-            carregarDadosEscola(escolaIdInicial);
-            carregarProgramasVinculados(escolaIdInicial);
-            carregarPagamentos(escolaIdInicial);
-            atualizarCamposReceita(escolaIdInicial);
-        }
-    });
-</script>
-
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const escolaSelect = document.getElementById("escola-select");  // Corrigido aqui
-    const dirigenteInput = document.getElementById("dirigente");
-
-    if (escolaSelect && dirigenteInput) {
-        escolaSelect.addEventListener("change", function () {
-            const escolaId = this.value;
-
-            if (!escolaId) {
-                dirigenteInput.value = "";
+    function carregarResumoFinanceiro(id) {
+    fetch(`/api/resumo-financeiro/${id}/`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.erro) {
+                console.warn(data.erro);
                 return;
             }
-
-            fetch(`/ajax/get-dirigente/${escolaId}/`)
-                .then(response => response.json())
-                .then(data => {
-                    dirigenteInput.value = data.nome_dirigente || "Não encontrado";
-                })
-                .catch(error => {
-                    console.error("Erro ao buscar dirigente:", error);
-                    dirigenteInput.value = "Erro";
-                });
+            console.log("💡 Pagamentos recebidos:", data.pagamentos);  // Adicione isso para debug
+            preencherCampos(data);
+            carregarPagamentos(data.pagamentos || []);
+        })
+        .catch(err => {
+            console.error("Erro ao buscar resumo financeiro:", err);
         });
+}
 
-        // Autopreencher se só houver uma escola
-        if (escolaSelect.dataset.unico === "true" || escolaSelect.querySelector("option[data-unico='true']")) {
-            escolaSelect.dispatchEvent(new Event('change'));
+
+    function carregarDirigente(id) {
+        fetch(`/ajax/get-dirigente/${id}/`)
+            .then(res => res.json())
+            .then(data => {
+                if (dirigenteInput) dirigenteInput.value = data.nome_dirigente || "Não encontrado";
+            });
+    }
+
+    function carregarPagamentos(pagamentos) {
+        tabelaPagamentos.innerHTML = "";
+
+        if (pagamentos.length > 0) {
+            pagamentos.forEach((p, i) => {
+                tabelaPagamentos.innerHTML += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td class="text-start">${p.nome_favorecido || "-"}</td>
+                        <td>${p.cnpj_cpf || "-"}</td>
+                        <td class="text-start">${p.tipo_bem_servico || "-"}</td>
+                        <td>${p.origem || "FNDE"}</td>
+                        <td>${p.tipo_pagamento || "-"}</td>
+                        <td>${p.tipo_documento || "-"}</td>
+                        <td>${p.numero_documento || "-"}</td>
+                        <td>${p.data_documento || "-"}</td>
+                        <td>${p.numero_documento_pagamento || "-"}</td>
+                        <td>${p.data_pagamento || "-"}</td>
+                        <td class="valor-pagamento ${p.tipo_pagamento === 'Custeio' ? 'custeio' : 'capital'}">R$ ${p.valor || "0,00"}</td>
+                        <td><a href="${p.url_editar}" class="btn btn-sm btn-warning"><i class="fas fa-edit"></i> Editar</a></td>
+                    </tr>
+                `;
+            });
+        } else {
+            tabelaPagamentos.innerHTML = `
+                <tr><td colspan="13" class="text-center text-muted">Nenhum pagamento registrado ainda.</td></tr>
+            `;
         }
+    }
+
+    function carregarTudo(id) {
+        carregarDadosEscola(id);
+        carregarProgramasVinculados(id);
+        carregarResumoFinanceiro(id);  // ✅ Ajuste aqui: nova rota unificada
+        carregarDirigente(id);
+    }
+
+    escolaSelect.addEventListener("change", () => {
+        const id = escolaSelect.value;
+        if (id) carregarTudo(id);
+    });
+
+    // Se houver apenas uma escola selecionável marcada como única
+    const unica = escolaSelect.querySelector("option[selected][data-unico='true']");
+    if (unica) {
+        escolaSelect.value = unica.value;
+        escolaSelect.dispatchEvent(new Event("change"));
     }
 });
 </script>
-
-
-
-
 
 
 

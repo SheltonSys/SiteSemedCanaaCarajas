@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Detalhe da Localização{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="text-primary text-center mb-4">
+    <i class="fas fa-map-marker-alt me-2"></i> Detalhes da Localização
+  </h2>
+
+  <div class="card shadow-sm p-4">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Escola:</strong> {{ local.escola }}</li>
+      <li class="list-group-item"><strong>Nome:</strong> {{ local.nome }}</li>
+      <li class="list-group-item"><strong>Descrição:</strong> {{ local.descricao }}</li>
+    </ul>
+    <div class="mt-3 text-end">
+      <a href="{% url 'localizacoes_lista' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i> Voltar
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

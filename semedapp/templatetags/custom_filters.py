@@ -1,5 +1,6 @@
 from django import template
 from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 
 register = template.Library()
 
@@ -15,25 +16,25 @@ def get_item(dictionary, key):
 def sub(value, arg):
     return value - arg
 
-@register.filter(name='br_money')
+@register.filter
 def br_money(value):
-    """
-    Formata um número como R$ no padrão brasileiro.
-    Exemplo: 1234.56 -> 1.234,56
-    """
     try:
-        if value is None or value == "":
-            return "0,00"
+        # Se None ou vazio, trata como zero
+        if value in [None, '', 'None']:
+            value = Decimal('0.00')
+        elif not isinstance(value, Decimal):
+            # Substitui vírgula por ponto se necessário
+            value_str = str(value).replace(",", ".")
+            value = Decimal(value_str)
 
-        if isinstance(value, str):
-            value = value.strip().replace(".", "").replace(",", ".")
+        # Quantize para duas casas decimais
+        value = value.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
 
-        valor = Decimal(value).quantize(Decimal("0.01"))
-        return f"{valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-    
-    except (ValueError, TypeError, InvalidOperation) as e:
-        print(f"⚠️ Erro em br_money: {e} | Valor recebido: {value}")
-        return "0,00"
+        # Formatar para o padrão brasileiro
+        valor_formatado = f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+        return f"R$ {valor_formatado}"
+    except (InvalidOperation, TypeError, ValueError):
+        return "R$ 0,00"
 
 @register.filter
 def get_dict_value(d, key):

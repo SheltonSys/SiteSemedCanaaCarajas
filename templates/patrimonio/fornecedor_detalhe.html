@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Detalhes do Fornecedor{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+  <h2 class="mb-4 text-info text-center">
+    <i class="fas fa-eye me-2"></i> Detalhes do Fornecedor
+  </h2>
+
+  <div class="card shadow-sm">
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item"><strong>Nome:</strong> {{ fornecedor.nome }}</li>
+      <li class="list-group-item"><strong>CNPJ:</strong> {{ fornecedor.cnpj }}</li>
+      <li class="list-group-item"><strong>Telefone:</strong> {{ fornecedor.telefone }}</li>
+      <li class="list-group-item"><strong>Email:</strong> {{ fornecedor.email }}</li>
+      <li class="list-group-item"><strong>Endereço:</strong> {{ fornecedor.endereco }}</li>
+    </ul>
+  </div>
+
+  <div class="text-end mt-3">
+    <a href="{% url 'fornecedores_lista' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left me-1"></i> Voltar
+    </a>
+  </div>
+</div>
+{% endblock %}

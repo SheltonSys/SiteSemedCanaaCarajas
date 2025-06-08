@@ -1,44 +1,54 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="content-wrapper" style="padding: 0; margin: 0;">
     <div class="content-header bg-light border-bottom">
         <div class="container-fluid">
             <div class="row mb-2 align-items-center">
-                <div class="col-md-6">
-                    <h1 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-hand-holding-usd"></i> Programa Dinheiro Direto na Escola - PDDE
-                    </h1>
+
+                <!-- Título Centralizado -->
+                <div class="col-md-12 mb-4">
+                    <div class="p-4 shadow-sm bg-gradient-primary text-white rounded d-flex flex-column align-items-center text-center">
+                        <i class="fas fa-hand-holding-usd fa-3x mb-3 text-warning"></i>
+                        <h2 class="mb-1 fw-bold" style="font-size: 1.75rem;">Programa Dinheiro Direto na Escola</h2>
+                        <h5 class="fw-light" style="opacity: 0.9;">PDDE - Gestão Transparente e Efetiva</h5>
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-right text-center">
-                    <ol class="breadcrumb float-md-right bg-transparent p-0">
-                        <li class="breadcrumb-item"><a href="{% url 'dashboardadmin' %}" class="text-primary">Dashboard</a></li>
-                        <li class="breadcrumb-item active">PDDE</li>
+
+                <!-- Breadcrumb à direita -->
+                <div class="col-md-12 d-flex justify-content-end">
+                    <ol class="breadcrumb bg-transparent p-0 m-0">
+                        <li class="breadcrumb-item">
+                            <a href="{% url 'dashboardadmin' %}" class="text-primary fw-semibold">
+                                <i class="fas fa-home me-1"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active fw-light text-muted">PDDE</li>
                     </ol>
                 </div>
+
             </div>
         </div>
     </div>
 
+
     <section class="content" style="padding: 20px;">
         <div class="container-fluid">
 
-
-            
-
-
-
             <!-- Botões para Ações PDDE -->
             {% if pdde_data or user.is_superuser or user.username == "Icleia" or user.username == "Alde" or user.username == "Mauro"  %}
-<!-- Botões para Ações PDDE -->
-<div class="card shadow-lg border-0 mb-4">
-    <div class="card-header bg-primary text-white">
-        <h5 class="card-title font-weight-bold">
-            <i class="fas fa-plus-circle"></i> Ações PDDE
-        </h5>
-    </div>
-                <div class="card-body">
-                    <div class="d-flex flex-wrap justify-content-center gap-2">
+            <!-- Botões para Ações PDDE -->
+            <div class="card shadow border-0 mb-4 rounded-lg">
+                <div class="card-header bg-gradient-primary text-white d-flex align-items-center">
+                <h5 class="mb-0 fw-bold">
+                    <i class="fas fa-plus-circle me-2"></i> Ações PDDE
+                </h5>
+            </div>
+
+                <div class="card-body bg-light rounded-bottom">
+                    <div class="d-flex flex-wrap justify-content-center gap-3">
+
+                        
+
                         <!-- PDDE - Opções -->
                         <div class="dropdown m-1">
                             <button class="btn btn-outline-primary dropdown-toggle" type="button" id="dropdownPDDE"
@@ -61,12 +71,10 @@
                                 </a>
 
                                 {% if user.is_superuser %}
-<a class="dropdown-item text-danger fw-bold" href="{% url 'vincular_escola_programa' %}">
-    <i class="fas fa-money-check-alt"></i> Vinculação (Apenas Superuser)
-</a>
-{% endif %}
-
-
+                                <a class="dropdown-item text-danger fw-bold" href="{% url 'vincular_escola_programa' %}">
+                                    <i class="fas fa-money-check-alt"></i> Vinculação (Apenas Superuser)
+                                </a>
+                                {% endif %}
                             </div>
                         </div>
 
@@ -88,12 +96,16 @@
                                 <a class="dropdown-item" href="{% url 'conciliacao_extrato' %}">
                                     <i class="fas fa-file-alt"></i> Extrato Bancário
                                 </a>
+
+                                {% if user.is_superuser %}
                                 <a class="dropdown-item" href="{% url 'conciliacao_lancamento' %}">
                                     <i class="fas fa-exchange-alt"></i> Lançamentos Bancários
                                 </a>
                                 <a class="dropdown-item" href="{% url 'conciliacao_saldo' %}">
                                     <i class="fas fa-balance-scale"></i> Verificar Saldos
                                 </a>
+                                {% endif %}
+
                                 <!-- <a class="dropdown-item" href="{% url 'conciliacao_conferencia' %}">
                                     <i class="fas fa-search-dollar"></i> Conferência de Movimentação
                                 </a> -->
@@ -141,8 +153,6 @@
                             </div>
                         </div>
                         
-
-
                         <div class="btn-group m-1">
                             <!-- Botão Principal -->
                             <button class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -177,9 +187,6 @@
                             </div>
                         </div>
                         
-                        
-
-
                         <div class="btn-group m-1">
                             <!-- Botão Principal -->
                             <button class="btn btn-outline-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -212,15 +219,12 @@
                                 {% endif %}
                             </div>
                         </div>
-                        
-                        
-                        
-                        
-
-
                     </div>
                 </div>
             </div>
+
+
+
 
             <!-- Tabela de Dados PDDE -->
             <div class="card shadow-lg border-0">
@@ -271,20 +275,15 @@
                         
                     </div>
                 </div>
-
-
-                
-
-
-
             </div>
             <!-- Fim Tabela de Dados -->
+
         </div>
     </section>
-</div>
+<!-- </div> -->
 
 <!-- Cards de Dados do PDDE -->
-<div class="row">
+<!-- <div class="row">
     {% for pdde in pdde_data %}
     <div class="col-md-6 col-lg-4 mb-4">
         <div class="card shadow border-0 h-100">
@@ -314,7 +313,7 @@
         <p class="mt-4">Nenhum registro encontrado.</p>
     </div>
     {% endfor %}
-</div>
+</div> -->
 
 
 {% else %}
@@ -322,6 +321,59 @@
         <i class="fas fa-exclamation-triangle"></i> Você não está vinculado a nenhuma escola PDDE.
     </div>
 {% endif %}
+
+
+
+
+<!-- Início: Seção de Informações e Comunicações -->
+<div class="card shadow-lg border-0 mt-5">
+    <div class="card-header bg-info text-white d-flex align-items-center">
+        <i class="fas fa-comments fa-lg me-2"></i>
+        <h5 class="mb-0 fw-bold">Informações e Comunicações</h5>
+    </div>
+    <div class="card-body">
+
+        <!-- Alertas Recentes -->
+        <div class="alert alert-warning d-flex align-items-center" role="alert">
+            <i class="fas fa-exclamation-circle fa-lg me-2"></i>
+            <div>
+                <strong>Aviso:</strong> O prazo para envio dos relatórios financeiros do 1º semestre encerra em <strong>15 de junho</strong>.
+            </div>
+        </div>
+
+        <!-- Comunicados da Secretaria -->
+        <div class="mb-4">
+            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-bullhorn me-1"></i> Comunicados Recentes</h6>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><i class="fas fa-chevron-right text-primary me-1"></i> Atualização obrigatória dos dados bancários das escolas até o final do mês.</li>
+                <li class="list-group-item"><i class="fas fa-chevron-right text-primary me-1"></i> Nova resolução do FNDE sobre aquisição de materiais permanentes disponível no sistema.</li>
+                <li class="list-group-item"><i class="fas fa-chevron-right text-primary me-1"></i> Capacitação online sobre prestação de contas no dia <strong>10 de junho</strong>.</li>
+            </ul>
+        </div>
+
+        <!-- Documentos e Links Úteis -->
+        <div class="mb-4">
+            <h6 class="fw-bold text-success mb-2"><i class="fas fa-folder-open me-1"></i> Documentos e Links Úteis</h6>
+            <ul class="list-unstyled">
+                <li><a href="#" class="text-decoration-none"><i class="fas fa-file-pdf text-danger me-1"></i> Manual de Prestação de Contas 2025 (PDF)</a></li>
+                <li><a href="#" class="text-decoration-none"><i class="fas fa-external-link-alt text-info me-1"></i> Acesso ao Portal do FNDE</a></li>
+                <li><a href="#" class="text-decoration-none"><i class="fas fa-calendar-alt text-primary me-1"></i> Cronograma de Execução PDDE 2025</a></li>
+            </ul>
+        </div>
+
+        <!-- Canal de Comunicação -->
+        <div class="mb-0">
+            <h6 class="fw-bold text-dark mb-2"><i class="fas fa-envelope-open-text me-1"></i> Canal de Comunicação</h6>
+            <p class="text-muted mb-1">
+                Em caso de dúvidas ou suporte, entre em contato diretamente com a equipe da SEMED pelo e-mail <strong>pdde@semed.canaadoscarajas.pa.gov.br</strong> ou utilize o sistema de mensagens internas.
+            </p>
+        </div>
+    </div>
+</div>
+<!-- Fim: Seção de Informações e Comunicações -->
+
+</div>
+
 
 
 <script>
