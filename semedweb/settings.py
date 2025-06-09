@@ -134,9 +134,6 @@ DATABASES = {
 # }
 
 
-
-
-
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
 
@@ -217,9 +214,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 # settings.py
 
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 50000  # Aumente o valor conforme necessário
-
-
-
 
 
 SESSION_COOKIE_HTTPONLY = True
